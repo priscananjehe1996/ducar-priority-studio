@@ -1125,6 +1125,35 @@ input[type="range"]::-webkit-slider-runnable-track {
   z-index: 1;
 }
 
+.maplibre-container {
+  width: 100%;
+  height: min(72vh, 780px);
+  min-height: 560px;
+  background: #dbeafe;
+  border-top: 1px solid var(--line);
+}
+
+.map3d-panel {
+  overflow: hidden;
+}
+
+.maplibregl-canvas {
+  outline: none;
+}
+
+.maplibregl-popup-content {
+  border-radius: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.16);
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.2);
+  color: #102033;
+  font: 800 13px/1.45 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.maplibregl-popup-content strong {
+  font-size: 15px;
+  font-weight: 950;
+}
+
 /* Layer toggle buttons */
 .layer-toggles {
   display: flex;
@@ -1314,6 +1343,22 @@ input[type="range"]::-webkit-slider-runnable-track {
   border-top: 3px dashed #64748b;
   vertical-align: middle;
 }
+
+.line-swatch {
+  width: 34px;
+  height: 0;
+  display: inline-block;
+  margin-right: 8px;
+  border-top: 6px solid #64748b;
+  border-radius: 99px;
+  box-shadow: 0 0 0 3px #ffffff;
+  vertical-align: middle;
+}
+
+.ducar-line { border-color: #f59e0b; }
+.national-line { border-color: #64748b; border-top-style: dashed; }
+.open-line { border-color: #059669; }
+.urban-line { border-color: #9333ea; }
 
 /* ─── Leaflet overrides ─── */
 .leaflet-container {

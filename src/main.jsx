@@ -28,6 +28,8 @@ import {
 } from "lucide-react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import maplibregl from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
 import sample from "../data/sample_assets.json";
 import { prioritise, summarise } from "./prioritisation.js";
 import "./styles.css";
@@ -380,6 +382,191 @@ function TrafficAnalyticsPanel({ programme, grouped }) {
         </div>
       </section>
     </div>
+  );
+}
+
+function MapScene3D({ programme }) {
+  const mapRef = useRef(null);
+  const mapInstance = useRef(null);
+  const [roads, setRoads] = useState(null);
+  const [roadSystemFilter, setRoadSystemFilter] = useState("All");
+  const [roadClassFilter, setRoadClassFilter] = useState("All");
+  const [surfaceFilter, setSurfaceFilter] = useState("All");
+  const [roadSort, setRoadSort] = useState("length_km");
+  const [showSummary, setShowSummary] = useState(true);
+  const [showAssets, setShowAssets] = useState(true);
+
+  const roadOptions = useMemo(() => {
+    const features = roads?.features || [];
+    const values = (field) => ["All", ...[...new Set(features.map((f) => f.properties?.[field]).filter(Boolean))].sort()];
+    return { systems: values("road_system"), classes: values("road_class"), surfaces: values("surface") };
+  }, [roads]);
+
+  const filteredRoads = useMemo(() => {
+    const features = roads?.features || [];
+    return features
+      .filter((f) => roadSystemFilter === "All" || f.properties?.road_system === roadSystemFilter)
+      .filter((f) => roadClassFilter === "All" || f.properties?.road_class === roadClassFilter)
+      .filter((f) => surfaceFilter === "All" || f.properties?.surface === surfaceFilter)
+      .sort((a, b) => {
+        const av = a.properties?.[roadSort];
+        const bv = b.properties?.[roadSort];
+        return typeof av === "number" && typeof bv === "number" ? bv - av : String(av || "").localeCompare(String(bv || ""));
+      });
+  }, [roads, roadSystemFilter, roadClassFilter, surfaceFilter, roadSort]);
+
+  const programmeGeoJson = useMemo(() => ({
+    type: "FeatureCollection",
+    features: programme.map((p) => ({
+      type: "Feature",
+      properties: { status: p.status, label: p.assetId, risk: p.riskBand },
+      geometry: { type: "Point", coordinates: [p.lon, p.lat] },
+    })),
+  }), [programme]);
+
+  useEffect(() => {
+    if (mapInstance.current) return;
+    const map = new maplibregl.Map({
+      container: mapRef.current,
+      center: [32.5, 1.3],
+      zoom: 6.9,
+      pitch: 62,
+      bearing: -20,
+      antialias: true,
+      style: {
+        version: 8,
+        sources: {
+          carto: {
+            type: "raster",
+            tiles: ["https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png", "https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png", "https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png"],
+            tileSize: 256,
+            attribution: "© OpenStreetMap © CARTO",
+          },
+        },
+        layers: [{ id: "carto", type: "raster", source: "carto" }],
+      },
+    });
+    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
+    mapInstance.current = map;
+    map.on("load", async () => {
+      const [roadData, summaryData] = await Promise.all([
+        fetch(`${BASE}data/uganda_unified_roads_web.geojson`).then((r) => r.json()),
+        fetch(`${BASE}data/uganda_roads_district_summary.geojson`).then((r) => r.json()),
+      ]);
+      setRoads(roadData);
+      map.addSource("roads", { type: "geojson", data: roadData });
+      map.addSource("summary", { type: "geojson", data: summaryData });
+      map.addSource("assets", { type: "geojson", data: programmeGeoJson });
+      map.addLayer({
+        id: "summary-fill",
+        type: "fill",
+        source: "summary",
+        paint: {
+          "fill-color": ["interpolate", ["linear"], ["to-number", ["get", "total_km"]], 0, "#ecfeff", 600, "#a7f3d0", 2500, "#22c55e"],
+          "fill-opacity": 0.28,
+        },
+      });
+      const roadLayers = [
+        ["roads-ducar", "DUCAR", "#f59e0b", 5.8, null],
+        ["roads-national", "National", "#64748b", 5.2, [2, 1.2]],
+        ["roads-open", "Open mapping", "#059669", 3.4, null],
+        ["roads-urban", "Urban", "#9333ea", 4.6, null],
+      ];
+      for (const [id, system, color, width, dash] of roadLayers) {
+        map.addLayer({
+          id: `${id}-halo`,
+          type: "line",
+          source: "roads",
+          filter: ["==", ["get", "road_system"], system],
+          paint: { "line-color": "#ffffff", "line-width": width + 4, "line-opacity": 0.94, "line-blur": 0.6 },
+        });
+        map.addLayer({
+          id,
+          type: "line",
+          source: "roads",
+          filter: ["==", ["get", "road_system"], system],
+          paint: { "line-color": color, "line-width": width, "line-opacity": system === "National" ? 0.58 : 0.96, ...(dash ? { "line-dasharray": dash } : {}) },
+        });
+      }
+      map.addLayer({
+        id: "assets",
+        type: "circle",
+        source: "assets",
+        paint: {
+          "circle-radius": ["case", ["==", ["get", "status"], "Selected"], 8, 6],
+          "circle-color": ["match", ["get", "status"], "Selected", "#10b981", "Deferred", "#f59e0b", "Referred", "#ef4444", "#2563eb"],
+          "circle-stroke-color": "#102033",
+          "circle-stroke-width": 2,
+        },
+      });
+      map.on("mousemove", "roads-ducar", (e) => showRoadPopup(map, e));
+      map.on("mousemove", "roads-national", (e) => showRoadPopup(map, e));
+      map.on("mousemove", "roads-open", (e) => showRoadPopup(map, e));
+      map.on("mousemove", "roads-urban", (e) => showRoadPopup(map, e));
+    });
+    return () => { map.remove(); mapInstance.current = null; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function showRoadPopup(map, e) {
+    map.getCanvas().style.cursor = "pointer";
+    const p = e.features?.[0]?.properties || {};
+    new maplibregl.Popup({ closeButton: false, closeOnClick: true, offset: 12 })
+      .setLngLat(e.lngLat)
+      .setHTML(`<strong>${p.road_name || "Road"}</strong><br/>${p.road_system} / ${p.road_class}<br/>${p.surface} • ${Number(p.length_km || 0).toLocaleString()} km<br/><b>${p.ducar_analysis_scope || ""}</b>`)
+      .addTo(map);
+  }
+
+  useEffect(() => {
+    const map = mapInstance.current;
+    if (!map?.isStyleLoaded() || !map.getSource("roads")) return;
+    map.getSource("roads").setData({ type: "FeatureCollection", features: filteredRoads });
+  }, [filteredRoads]);
+
+  useEffect(() => {
+    const map = mapInstance.current;
+    if (!map?.isStyleLoaded()) return;
+    if (map.getLayer("summary-fill")) map.setLayoutProperty("summary-fill", "visibility", showSummary ? "visible" : "none");
+  }, [showSummary]);
+
+  useEffect(() => {
+    const map = mapInstance.current;
+    if (!map?.isStyleLoaded()) return;
+    if (map.getSource("assets")) map.getSource("assets").setData(programmeGeoJson);
+    if (map.getLayer("assets")) map.setLayoutProperty("assets", "visibility", showAssets ? "visible" : "none");
+  }, [programmeGeoJson, showAssets]);
+
+  return (
+    <section className="panel map-panel map3d-panel" id="gis">
+      <div className="map-header">
+        <div className="panel-title" style={{ borderBottom: "none", marginBottom: 0, paddingBottom: 0 }}>
+          <Layers size={18} />
+          <h2>3D Uganda Road Intelligence Scene</h2>
+        </div>
+        <div className="layer-toggles">
+          <button className="layer-btn active unified">3D Roads</button>
+          <button className={`layer-btn ${showSummary ? "active summary" : ""}`} onClick={() => setShowSummary(!showSummary)}>{showSummary ? <Eye size={14} /> : <EyeOff size={14} />} Density</button>
+          <button className={`layer-btn ${showAssets ? "active green" : ""}`} onClick={() => setShowAssets(!showAssets)}>{showAssets ? <Eye size={14} /> : <EyeOff size={14} />} Assets</button>
+        </div>
+      </div>
+      <div className="road-filter-bar">
+        <p className="scope-note">{DUCAR_EXEMPTION_TEXT}</p>
+        <label><ListFilter size={16} /> System<select value={roadSystemFilter} onChange={(e) => setRoadSystemFilter(e.target.value)}>{roadOptions.systems.map((x) => <option key={x}>{x}</option>)}</select></label>
+        <label>Class<select value={roadClassFilter} onChange={(e) => setRoadClassFilter(e.target.value)}>{roadOptions.classes.map((x) => <option key={x}>{x}</option>)}</select></label>
+        <label>Surface<select value={surfaceFilter} onChange={(e) => setSurfaceFilter(e.target.value)}>{roadOptions.surfaces.map((x) => <option key={x}>{x}</option>)}</select></label>
+        <label>Sort<select value={roadSort} onChange={(e) => setRoadSort(e.target.value)}>{["length_km", "road_name", "road_class", "region", "district", "quality_flag"].map((x) => <option key={x}>{x}</option>)}</select></label>
+        <strong>{filteredRoads.length.toLocaleString()} roads</strong>
+      </div>
+      <div className="maplibre-container" ref={mapRef} />
+      <div className="map-legend logical-legend">
+        <span><i className="line-swatch ducar-line" /> DUCAR roads</span>
+        <span><i className="line-swatch national-line" /> National reference only</span>
+        <span><i className="line-swatch open-line" /> Open mapping candidates</span>
+        <span><i className="line-swatch urban-line" /> Urban/KCCA</span>
+        <span><i className="dot summary-dot" /> Road density surface</span>
+        <span><i className="dot selected" /> Selected asset</span>
+      </div>
+    </section>
   );
 }
 
@@ -1116,7 +1303,7 @@ function App() {
 
           {activeSection === "framework" && <ProcessFlow analysis={analysis} grouped={grouped} />}
           {activeSection === "traffic" && <TrafficAnalyticsPanel programme={programme} grouped={grouped} />}
-          {activeSection === "gis" && <MapPanel programme={programme} />}
+          {activeSection === "gis" && <MapScene3D programme={programme} />}
 
           {activeSection === "allocation" && (
             <section className="panel">
