@@ -26,12 +26,20 @@ body {
   color: var(--ink);
   background: var(--bg);
   background-image: 
-    linear-gradient(135deg, rgba(37, 99, 235, 0.08), transparent 28%),
-    linear-gradient(45deg, transparent 55%, rgba(5, 150, 105, 0.1)),
-    radial-gradient(circle at 90% 8%, rgba(245, 158, 11, 0.18), transparent 20%);
+    radial-gradient(circle at 15% 50%, rgba(37, 99, 235, 0.08), transparent 35%),
+    radial-gradient(circle at 85% 30%, rgba(5, 150, 105, 0.08), transparent 35%),
+    radial-gradient(circle at 50% 80%, rgba(245, 158, 11, 0.06), transparent 35%);
+  background-size: 200% 200%;
+  animation: moveBGs 20s ease infinite;
   background-attachment: fixed;
   min-height: 100vh;
   font-weight: 720;
+}
+
+@keyframes moveBGs {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 button,
@@ -268,17 +276,20 @@ button.secondary:hover {
   gap: 10px;
   padding: 22px;
   border-radius: 12px;
-  border: 1px solid rgba(37, 99, 235, 0.16);
-  background: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(16px);
   color: var(--ink);
   text-decoration: none;
-  box-shadow: var(--shadow);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .page-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 46px rgba(37, 99, 235, 0.18);
+  transform: translateY(-5px) scale(1.02);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 20px 40px rgba(37, 99, 235, 0.12);
+  border-color: rgba(37, 99, 235, 0.2);
 }
 
 .page-card svg {
@@ -303,10 +314,17 @@ button.secondary:hover {
 .traffic-hero-card,
 .signal-tile,
 .viz-card {
-  border: 1px solid rgba(15, 23, 42, 0.1);
-  border-radius: 12px;
-  background: #ffffff;
-  box-shadow: var(--shadow);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 15px 35px rgba(15, 23, 42, 0.06);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.viz-card:hover, .signal-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.1);
 }
 
 .traffic-hero-card {
@@ -705,6 +723,70 @@ button.secondary:hover {
   font-size: 16px;
   line-height: 1.6;
   margin: 0;
+}
+
+.media-ribbon {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.media-ribbon article {
+  position: relative;
+  min-height: 118px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 14px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(240, 249, 255, 0.98)),
+    radial-gradient(circle at 12% 12%, rgba(225, 29, 72, 0.14), transparent 34%);
+  box-shadow: 0 16px 38px rgba(15, 23, 42, 0.09);
+  animation: mediaLift 0.55s ease both;
+  animation-delay: var(--delay);
+}
+
+.media-ribbon article::after {
+  content: "";
+  position: absolute;
+  inset: auto -20% -45% 20%;
+  height: 90px;
+  background: linear-gradient(90deg, rgba(14, 165, 233, 0.28), rgba(225, 29, 72, 0.22), rgba(245, 158, 11, 0.2));
+  transform: rotate(-6deg);
+}
+
+.media-ribbon svg {
+  flex: 0 0 auto;
+  z-index: 1;
+  color: #e11d48;
+  filter: drop-shadow(0 8px 16px rgba(225, 29, 72, 0.24));
+}
+
+.media-ribbon div {
+  z-index: 1;
+  display: grid;
+  gap: 5px;
+}
+
+.media-ribbon strong {
+  color: #0f172a;
+  font-size: 15px;
+  font-weight: 950;
+}
+
+.media-ribbon span {
+  color: #334155;
+  font-size: 12px;
+  font-weight: 850;
+  line-height: 1.35;
+}
+
+@keyframes mediaLift {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .hero-actions {
@@ -1137,6 +1219,169 @@ input[type="range"]::-webkit-slider-runnable-track {
   overflow: hidden;
 }
 
+.scene-shell {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(14, 165, 233, 0.24), transparent 28%),
+    radial-gradient(circle at 80% 20%, rgba(225, 29, 72, 0.16), transparent 28%),
+    #dbeafe;
+}
+
+.scene-hud {
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  z-index: 3;
+  display: grid;
+  gap: 4px;
+  width: min(320px, calc(100% - 36px));
+  padding: 14px 16px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 12px;
+  color: #0f172a;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.14);
+  backdrop-filter: blur(12px);
+}
+
+.scene-hud strong {
+  font-size: 14px;
+  font-weight: 950;
+}
+
+.scene-hud span {
+  font-size: 12px;
+  font-weight: 850;
+  color: #334155;
+}
+
+.road-info-pane {
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  z-index: 4;
+  width: min(430px, calc(100% - 36px));
+  max-height: calc(100% - 36px);
+  overflow: auto;
+  padding: 18px;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #0f172a;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+  transform: translateX(calc(100% + 32px));
+  opacity: 0;
+  transition: transform 0.34s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.24s ease;
+  backdrop-filter: blur(16px);
+}
+
+.road-info-pane.open {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.road-info-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.road-info-header h3 {
+  margin: 2px 0 0;
+  font-size: 24px;
+  line-height: 1.12;
+  font-weight: 950;
+}
+
+.pane-close {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 8px;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 18px;
+  font-weight: 950;
+  box-shadow: none;
+}
+
+.road-badges,
+.road-score-strip {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.road-badges span,
+.road-score-strip span,
+.road-score-strip strong {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #eef2ff;
+  color: #1e1b4b;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.road-score-strip strong {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.attribute-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.attribute-grid div {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.attribute-grid span {
+  text-transform: uppercase;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.attribute-grid strong {
+  color: #0f172a;
+  font-size: 12px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.road-info-empty {
+  display: grid;
+  gap: 8px;
+  min-height: 120px;
+  align-content: center;
+}
+
+.road-info-empty strong {
+  font-size: 20px;
+  font-weight: 950;
+}
+
+.road-info-empty span {
+  color: #475569;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
 .maplibregl-canvas {
   outline: none;
 }
@@ -1359,6 +1604,7 @@ input[type="range"]::-webkit-slider-runnable-track {
 .national-line { border-color: #64748b; border-top-style: dashed; }
 .open-line { border-color: #059669; }
 .urban-line { border-color: #9333ea; }
+.cbd-line { border-color: #e11d48; border-top-width: 8px; }
 
 /* ─── Leaflet overrides ─── */
 .leaflet-container {
@@ -1597,6 +1843,90 @@ td .range-value {
   color: var(--blue);
 }
 
+/* Modern Maplibre Popup styling */
+.modern-popup .maplibregl-popup-content, .modern-popup .leaflet-popup-content-wrapper {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12), 0 4px 12px rgba(37, 99, 235, 0.08);
+  font-family: 'Inter', sans-serif;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.5;
+  transition: all 0.3s ease;
+  animation: popupIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes popupIn {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modern-popup .maplibregl-popup-tip {
+  border-top-color: rgba(255, 255, 255, 0.85);
+}
+
+.modern-popup strong {
+  display: block;
+  font-size: 16px;
+  color: #102033;
+  margin-bottom: 6px;
+  font-weight: 900;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+  padding-bottom: 6px;
+}
+
+.modern-popup b {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border-radius: 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Modern Legend styling */
+.modern-legend {
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08) !important;
+  padding: 16px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modern-legend strong {
+  font-size: 14px;
+  color: var(--ink);
+  margin-bottom: 4px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  padding-bottom: 8px;
+}
+
+.modern-legend .legend-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px 20px;
+}
+
+.modern-legend span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #35506b;
+}
+
 @media (max-width: 1200px) {
   .shell {
     grid-template-columns: 78px minmax(0, 1fr);
@@ -1625,7 +1955,8 @@ td .range-value {
   }
   .infographic-panel,
   .analytics-viz-grid,
-  .traffic-page-grid {
+  .traffic-page-grid,
+  .media-ribbon {
     grid-template-columns: 1fr;
   }
 }
@@ -1686,6 +2017,30 @@ td .range-value {
   }
   .map-container {
     height: 420px;
+  }
+  .maplibre-container {
+    min-height: 620px;
+  }
+  .scene-hud {
+    position: absolute;
+    left: 12px;
+    top: 12px;
+    width: calc(100% - 24px);
+  }
+  .road-info-pane {
+    left: 12px;
+    right: 12px;
+    top: auto;
+    bottom: 12px;
+    width: auto;
+    max-height: 58%;
+    transform: translateY(calc(100% + 24px));
+  }
+  .road-info-pane.open {
+    transform: translateY(0);
+  }
+  .media-ribbon article {
+    min-height: 96px;
   }
   .page-topbar,
   .page-heading {

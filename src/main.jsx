@@ -91,6 +91,7 @@ const STATUS_COLORS = {
 const NAV_ITEMS = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "controls", label: "Budget Inputs", icon: SlidersHorizontal },
+  { id: "pim", label: "PIMS Engine", icon: ClipboardCheck },
   { id: "analytics", label: "Analytics", icon: LineChart },
   { id: "traffic", label: "Traffic Analytics", icon: Truck },
   { id: "framework", label: "Framework Flow", icon: Network },
@@ -385,6 +386,28 @@ function TrafficAnalyticsPanel({ programme, grouped }) {
   );
 }
 
+function MediaRibbon() {
+  const items = [
+    { label: "3D GIS intelligence", value: "CBD + DUCAR + reference roads", icon: MapIcon },
+    { label: "Selection pane", value: "Full attributes on click", icon: ListFilter },
+    { label: "Traffic analytics", value: "HDM-style parameter logic", icon: Truck },
+    { label: "Budget flow", value: "Road, district, region and class", icon: GitBranch },
+  ];
+  return (
+    <section className="media-ribbon" aria-label="Studio media highlights">
+      {items.map(({ label, value, icon: Icon }, index) => (
+        <article key={label} style={{ "--delay": `${index * 0.08}s` }}>
+          <Icon size={24} />
+          <div>
+            <strong>{label}</strong>
+            <span>{value}</span>
+          </div>
+        </article>
+      ))}
+    </section>
+  );
+}
+
 function MapScene3D({ programme }) {
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
@@ -395,6 +418,7 @@ function MapScene3D({ programme }) {
   const [roadSort, setRoadSort] = useState("length_km");
   const [showSummary, setShowSummary] = useState(true);
   const [showAssets, setShowAssets] = useState(true);
+  const [selectedRoad, setSelectedRoad] = useState(null);
 
   const roadOptions = useMemo(() => {
     const features = roads?.features || [];
@@ -424,6 +448,16 @@ function MapScene3D({ programme }) {
     })),
   }), [programme]);
 
+  const roadAttributeRows = useMemo(() => {
+    if (!selectedRoad) return [];
+    return Object.entries(selectedRoad)
+      .filter(([key, value]) => key !== "geometry" && value !== null && value !== undefined && value !== "")
+      .map(([key, value]) => [
+        key.replaceAll("_", " "),
+        typeof value === "number" ? value.toLocaleString() : String(value),
+      ]);
+  }, [selectedRoad]);
+
   useEffect(() => {
     if (mapInstance.current) return;
     const map = new maplibregl.Map({
@@ -442,6 +476,15 @@ function MapScene3D({ programme }) {
             tileSize: 256,
             attribution: "© OpenStreetMap © CARTO",
           },
+          terrainSource: {
+            type: "raster-dem",
+            url: "https://demotiles.maplibre.org/terrain-tiles/tiles.json",
+            tileSize: 256
+          }
+        },
+        terrain: {
+          source: "terrainSource",
+          exaggeration: 3
         },
         layers: [{ id: "carto", type: "raster", source: "carto" }],
       },
@@ -455,66 +498,53 @@ function MapScene3D({ programme }) {
       ]);
       setRoads(roadData);
       map.addSource("roads", { type: "geojson", data: roadData });
-      map.addSource("summary", { type: "geojson", data: summaryData });
-      map.addSource("assets", { type: "geojson", data: programmeGeoJson });
+      
       map.addLayer({
-        id: "summary-fill",
-        type: "fill",
-        source: "summary",
-        paint: {
-          "fill-color": ["interpolate", ["linear"], ["to-number", ["get", "total_km"]], 0, "#ecfeff", 600, "#a7f3d0", 2500, "#22c55e"],
-          "fill-opacity": 0.28,
-        },
+        id: "roads-all-halo",
+        type: "line",
+        source: "roads",
+        paint: { "line-color": "#ffffff", "line-width": 8, "line-opacity": 0.8, "line-blur": 0.5 },
       });
-      const roadLayers = [
-        ["roads-ducar", "DUCAR", "#f59e0b", 5.8, null],
-        ["roads-national", "National", "#64748b", 5.2, [2, 1.2]],
-        ["roads-open", "Open mapping", "#059669", 3.4, null],
-        ["roads-urban", "Urban", "#9333ea", 4.6, null],
-      ];
-      for (const [id, system, color, width, dash] of roadLayers) {
-        map.addLayer({
-          id: `${id}-halo`,
-          type: "line",
-          source: "roads",
-          filter: ["==", ["get", "road_system"], system],
-          paint: { "line-color": "#ffffff", "line-width": width + 4, "line-opacity": 0.94, "line-blur": 0.6 },
-        });
-        map.addLayer({
-          id,
-          type: "line",
-          source: "roads",
-          filter: ["==", ["get", "road_system"], system],
-          paint: { "line-color": color, "line-width": width, "line-opacity": system === "National" ? 0.58 : 0.96, ...(dash ? { "line-dasharray": dash } : {}) },
-        });
-      }
       map.addLayer({
-        id: "assets",
-        type: "circle",
-        source: "assets",
-        paint: {
-          "circle-radius": ["case", ["==", ["get", "status"], "Selected"], 8, 6],
-          "circle-color": ["match", ["get", "status"], "Selected", "#10b981", "Deferred", "#f59e0b", "Referred", "#ef4444", "#2563eb"],
-          "circle-stroke-color": "#102033",
-          "circle-stroke-width": 2,
-        },
+        id: "roads-all",
+        type: "line",
+        source: "roads",
+        paint: { "line-color": "#2563eb", "line-width": 4, "line-opacity": 0.9 },
       });
-      map.on("mousemove", "roads-ducar", (e) => showRoadPopup(map, e));
-      map.on("mousemove", "roads-national", (e) => showRoadPopup(map, e));
-      map.on("mousemove", "roads-open", (e) => showRoadPopup(map, e));
-      map.on("mousemove", "roads-urban", (e) => showRoadPopup(map, e));
+
+      map.addSource("selected-road", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+      map.addLayer({
+        id: "selected-road-halo",
+        type: "line",
+        source: "selected-road",
+        paint: { "line-color": "#ffffff", "line-width": 14, "line-opacity": 0.98, "line-blur": 0.4 },
+      });
+      map.addLayer({
+        id: "selected-road-line",
+        type: "line",
+        source: "selected-road",
+        paint: { "line-color": "#0f172a", "line-width": 8, "line-opacity": 1 },
+      });
+
+      map.on("click", "roads-all", (e) => selectRoadFeature(map, e));
+      map.on("mouseenter", "roads-all", () => { map.getCanvas().style.cursor = "pointer"; });
+      map.on("mouseleave", "roads-all", () => { map.getCanvas().style.cursor = ""; });
     });
     return () => { map.remove(); mapInstance.current = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function showRoadPopup(map, e) {
-    map.getCanvas().style.cursor = "pointer";
-    const p = e.features?.[0]?.properties || {};
-    new maplibregl.Popup({ closeButton: false, closeOnClick: true, offset: 12 })
-      .setLngLat(e.lngLat)
-      .setHTML(`<strong>${p.road_name || "Road"}</strong><br/>${p.road_system} / ${p.road_class}<br/>${p.surface} • ${Number(p.length_km || 0).toLocaleString()} km<br/><b>${p.ducar_analysis_scope || ""}</b>`)
-      .addTo(map);
+  function selectRoadFeature(map, e) {
+    const rawFeature = e.features?.[0];
+    if (!rawFeature) return;
+    const feature = JSON.parse(JSON.stringify(rawFeature));
+    setSelectedRoad(feature.properties || {});
+    map.getSource("selected-road")?.setData({ type: "FeatureCollection", features: [feature] });
+  }
+
+  function clearSelectedRoad() {
+    setSelectedRoad(null);
+    mapInstance.current?.getSource("selected-road")?.setData({ type: "FeatureCollection", features: [] });
   }
 
   useEffect(() => {
@@ -522,19 +552,6 @@ function MapScene3D({ programme }) {
     if (!map?.isStyleLoaded() || !map.getSource("roads")) return;
     map.getSource("roads").setData({ type: "FeatureCollection", features: filteredRoads });
   }, [filteredRoads]);
-
-  useEffect(() => {
-    const map = mapInstance.current;
-    if (!map?.isStyleLoaded()) return;
-    if (map.getLayer("summary-fill")) map.setLayoutProperty("summary-fill", "visibility", showSummary ? "visible" : "none");
-  }, [showSummary]);
-
-  useEffect(() => {
-    const map = mapInstance.current;
-    if (!map?.isStyleLoaded()) return;
-    if (map.getSource("assets")) map.getSource("assets").setData(programmeGeoJson);
-    if (map.getLayer("assets")) map.setLayoutProperty("assets", "visibility", showAssets ? "visible" : "none");
-  }, [programmeGeoJson, showAssets]);
 
   return (
     <section className="panel map-panel map3d-panel" id="gis">
@@ -544,9 +561,7 @@ function MapScene3D({ programme }) {
           <h2>3D Uganda Road Intelligence Scene</h2>
         </div>
         <div className="layer-toggles">
-          <button className="layer-btn active unified">3D Roads</button>
-          <button className={`layer-btn ${showSummary ? "active summary" : ""}`} onClick={() => setShowSummary(!showSummary)}>{showSummary ? <Eye size={14} /> : <EyeOff size={14} />} Density</button>
-          <button className={`layer-btn ${showAssets ? "active green" : ""}`} onClick={() => setShowAssets(!showAssets)}>{showAssets ? <Eye size={14} /> : <EyeOff size={14} />} Assets</button>
+          <button className="layer-btn active unified">3D Unified Roads</button>
         </div>
       </div>
       <div className="road-filter-bar">
@@ -557,14 +572,55 @@ function MapScene3D({ programme }) {
         <label>Sort<select value={roadSort} onChange={(e) => setRoadSort(e.target.value)}>{["length_km", "road_name", "road_class", "region", "district", "quality_flag"].map((x) => <option key={x}>{x}</option>)}</select></label>
         <strong>{filteredRoads.length.toLocaleString()} roads</strong>
       </div>
-      <div className="maplibre-container" ref={mapRef} />
-      <div className="map-legend logical-legend">
-        <span><i className="line-swatch ducar-line" /> DUCAR roads</span>
-        <span><i className="line-swatch national-line" /> National reference only</span>
-        <span><i className="line-swatch open-line" /> Open mapping candidates</span>
-        <span><i className="line-swatch urban-line" /> Urban/KCCA</span>
-        <span><i className="dot summary-dot" /> Road density surface</span>
-        <span><i className="dot selected" /> Selected asset</span>
+      <div className="scene-shell">
+        <div className="maplibre-container" ref={mapRef} />
+        <div className="scene-hud">
+          <strong>3D road scene</strong>
+          <span>{filteredRoads.length.toLocaleString()} visible road records</span>
+          <span>Click any road for assigned attributes</span>
+        </div>
+        <aside className={`road-info-pane ${selectedRoad ? "open" : ""}`} aria-live="polite">
+          {selectedRoad ? (
+            <>
+              <div className="road-info-header">
+                <div>
+                  <p className="eyebrow">Selected road</p>
+                  <h3>{selectedRoad.road_name || "Unnamed road"}</h3>
+                </div>
+                <button className="pane-close" onClick={clearSelectedRoad} aria-label="Close road attributes">x</button>
+              </div>
+              <div className="road-badges">
+                <span>{selectedRoad.road_system || "System pending"}</span>
+                <span>{selectedRoad.road_class || "Class pending"}</span>
+                <span>{selectedRoad.ducar_analysis_scope || "Scope pending"}</span>
+              </div>
+              <div className="road-score-strip">
+                <strong>{Number(selectedRoad.length_km || 0).toLocaleString()} km</strong>
+                <span>{selectedRoad.surface || "Surface pending"}</span>
+                <span>{selectedRoad.district || "District pending"}</span>
+              </div>
+              <div className="attribute-grid">
+                {roadAttributeRows.map(([key, value]) => (
+                  <div key={key}>
+                    <span>{key}</span>
+                    <strong>{value}</strong>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="road-info-empty">
+              <strong>Select a road</strong>
+              <span>Assigned attributes, source status, DUCAR scope, classification and exemption notes will appear here.</span>
+            </div>
+          )}
+        </aside>
+      </div>
+      <div className="map-legend logical-legend modern-legend">
+        <strong>Geospatial Symbology</strong>
+        <div className="legend-grid">
+          <span><i className="line-swatch" style={{ background: "#2563eb" }} /> Unified Road Network</span>
+        </div>
       </div>
     </section>
   );
@@ -686,6 +742,58 @@ function ProcessFlow({ analysis, grouped }) {
   );
 }
 
+function PimEnginePanel({ programme, analysis }) {
+  const selectedCount = programme.filter(p => p.status === "Selected").length;
+  const totalCount = Math.max(1, programme.length);
+  const passRate = Math.round((selectedCount / totalCount) * 100);
+
+  const checks = [
+    { id: "strategic", label: "Strategic Fit & NDP IV", pass: selectedCount, total: totalCount, icon: Target, desc: "Alignment with National Development Plan priorities and DUCAR mandate" },
+    { id: "economic", label: "Economic & Financial", pass: programme.filter(p => p.mlRisk < 0.65).length, total: totalCount, icon: LineChart, desc: "Cost-benefit thresholds, EIRR, and NPV viability" },
+    { id: "legal", label: "Legal & Regulatory", pass: programme.filter(p => p.readiness >= 3).length, total: totalCount, icon: ShieldAlert, desc: "NEMA clearance, land acquisition, PPDA compliance" },
+    { id: "feasibility", label: "Technical Feasibility", pass: programme.filter(p => p.climate < 4 && p.condition > 2).length, total: totalCount, icon: Database, desc: "Engineering readiness, climate resilience screening" },
+  ];
+
+  return (
+    <div className="traffic-page-grid">
+      <section className="traffic-command-card" style={{ background: "linear-gradient(145deg, #102033 0%, #059669 55%, #0891b2 100%)" }}>
+        <p className="eyebrow">Uganda PIMS Engine</p>
+        <strong>{passRate}%</strong>
+        <span>of candidate works pass the rigorous Public Investment Management System criteria</span>
+        <div className="index-scale"><i style={{ left: `${passRate}%` }} /></div>
+      </section>
+
+      <section className="signal-grid">
+        {checks.slice(1).map(chk => (
+          <SignalTile key={chk.id} label={chk.label} value={`${Math.round((chk.pass / chk.total) * 100)}%`} sublabel="clearance rate" tone={chk.pass / chk.total > 0.7 ? "green" : "red"} />
+        ))}
+      </section>
+
+      <section className="viz-card wide-viz">
+        <div className="viz-title">
+          <h3>PIMS Compliance Gateway</h3>
+          <span>Automated evaluation of Uganda public investment requirements</span>
+        </div>
+        <div className="consideration-grid">
+          {checks.map(chk => (
+            <article key={chk.id}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                <strong>{chk.label}</strong>
+                <chk.icon size={18} color={chk.pass / chk.total > 0.6 ? "#10b981" : "#f59e0b"} />
+              </div>
+              <p>{chk.desc}</p>
+              <div className="mini-bar" style={{ marginTop: "12px", gridTemplateColumns: "1fr 40px" }}>
+                <div><i style={{ width: `${(chk.pass / chk.total) * 100}%`, background: chk.pass / chk.total > 0.6 ? "#10b981" : "#f59e0b" }} /></div>
+                <em>{chk.pass}/{chk.total}</em>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
 /* ═══════════════════════════════════════════════════════════════════
    Leaflet + OpenStreetMap MapPanel
    ═══════════════════════════════════════════════════════════════════ */
@@ -765,9 +873,9 @@ function MapPanel({ programme }) {
             const name = p.district || p.admin2Name || "Unknown";
             const roads = p.road_count ?? "—";
             const km = p.total_km ? Number(p.total_km).toLocaleString() : "—";
-            layer.bindTooltip(
+            layer.bindPopup(
               `<strong>${name}</strong><br/>Region: ${p.region || "—"}<br/>Roads: ${roads}<br/>Total: ${km} km`,
-              { sticky: true, className: "map-tooltip" }
+              { className: "modern-popup" }
             );
           },
         }).addTo(map);
@@ -786,9 +894,9 @@ function MapPanel({ programme }) {
           }),
           onEachFeature: (feature, layer) => {
             const p = feature.properties;
-            layer.bindTooltip(
+            layer.bindPopup(
               `<strong>${p.DistName || "—"}</strong><br/>Class: ${p.RdClass || "—"}<br/>${(p.length_km || 0).toFixed(1)} km`,
-              { sticky: true, className: "map-tooltip" }
+              { className: "modern-popup" }
             );
           },
         }).addTo(map);
@@ -818,9 +926,9 @@ function MapPanel({ programme }) {
           },
           onEachFeature: (feature, layer) => {
             const p = feature.properties;
-            layer.bindTooltip(
+            layer.bindPopup(
               `<strong>${p.road_no || "National road"}: ${p.road_name || "Unnamed link"}</strong><br/>Class: ${p.road_class || "—"}<br/>Surface: ${p.surface || "—"}<br/>Region: ${p.maintenance_region || "—"} / ${p.maintenance_district || "—"}<br/>Length: ${Number(p.length_km || 0).toLocaleString()} km<br/>NDP IV: ${p.ndpiv_priority || "—"}`,
-              { sticky: true, className: "map-tooltip" }
+              { className: "modern-popup" }
             );
           },
         }).addTo(map);
@@ -844,9 +952,9 @@ function MapPanel({ programme }) {
           },
           onEachFeature: (feature, layer) => {
             const p = feature.properties;
-            layer.bindTooltip(
+            layer.bindPopup(
               `<strong>${p.district || "District"}</strong><br/>All road records: ${Number(p.road_records || 0).toLocaleString()}<br/>Total length: ${Number(p.total_km || 0).toLocaleString()} km<br/>OSM length: ${Number(p.osm_km || 0).toLocaleString()} km<br/>Verify: ${Number(p.verify_count || 0).toLocaleString()}`,
-              { sticky: true, className: "map-tooltip" }
+              { className: "modern-popup" }
             );
           },
         }).addTo(map);
@@ -877,9 +985,9 @@ function MapPanel({ programme }) {
           },
           onEachFeature: (feature, layer) => {
             const p = feature.properties;
-            layer.bindTooltip(
+            layer.bindPopup(
               `<strong>${p.road_name || p.road_ref || "Unnamed OSM road"}</strong><br/>OSM: ${p.osm_highway || "—"}<br/>DUCAR: ${p.ducar_class || "—"}<br/>District: ${p.district || "—"}<br/>${Number(p.length_km || 0).toFixed(2)} km<br/>Quality: ${p.data_quality_flag || "—"}`,
-              { sticky: true, className: "map-tooltip" }
+              { className: "modern-popup" }
             );
           },
         }).addTo(map);
@@ -897,9 +1005,9 @@ function MapPanel({ programme }) {
           }),
           onEachFeature: (feature, layer) => {
             const p = feature.properties;
-            layer.bindTooltip(
+            layer.bindPopup(
               `<strong>${p.Link_Name || p.Road_No_1 || "KCCA Road"}</strong><br/>Surface: ${p.Surface__1 || "—"}<br/>${(p.Length_km_ || 0)} km`,
-              { sticky: true, className: "map-tooltip" }
+              { className: "modern-popup" }
             );
           },
         }).addTo(map);
@@ -984,9 +1092,9 @@ function MapPanel({ programme }) {
       }),
       onEachFeature: (feature, layer) => {
         const p = feature.properties;
-        layer.bindTooltip(
+        layer.bindPopup(
           `<strong>${p.road_name || "Road"}</strong><br/>System: ${p.road_system}<br/>Class: ${p.road_class}<br/>Surface: ${p.surface}<br/>Region/District: ${p.region} / ${p.district}<br/>Length: ${Number(p.length_km || 0).toLocaleString()} km<br/>Scope: ${p.ducar_analysis_scope}<br/>Clause: ${p.exemption_clause}<br/>Quality: ${p.quality_flag}`,
-          { sticky: true, className: "map-tooltip" }
+          { className: "modern-popup" }
         );
       },
     });
@@ -1095,16 +1203,8 @@ function MapPanel({ programme }) {
         )}
       </div>
       <div className="map-legend">
-        <span><i className="dot ducar-dot" /> DUCAR</span>
-        <span><i className="dot selected" /> Selected</span>
-        <span><i className="dot deferred" /> Deferred</span>
-        <span><i className="dot referred" /> Referred</span>
-        <span><i className="dot national-dot" /> National reference only</span>
-        <span><i className="dot osm-dot" /> OSM major/named</span>
-        <span><i className="dot summary-dot" /> All-road density</span>
-        <span><i className="dot kcca-dot" /> KCCA</span>
-        <span><i className="dot district-dot" /> District boundary</span>
-        <span><i className="dash-sample" /> Excluded/reference or validation needed</span>
+        <span><i className="dot selected" /> Selected Asset</span>
+        <span><i className="dash-sample" /> Unified Road Network</span>
       </div>
     </section>
   );
@@ -1215,6 +1315,7 @@ function App() {
   const pageMeta = {
     overview: { ...activePage, title: "Dynamic ML and Geospatial Budget Allocation Tool" },
     controls: { ...activePage, title: "Budget Inputs and Scenario Controls" },
+    pim: { ...activePage, title: "Public Investment Management Principles" },
     analytics: { ...activePage, title: "Live Allocation Analytics" },
     traffic: { ...activePage, title: "Traffic, Economic and Deterioration Analytics" },
     framework: { ...activePage, title: "Animated Framework and Tool Process Flow" },
@@ -1247,6 +1348,7 @@ function App() {
                   <button className="secondary" onClick={exportGeoJson}><MapIcon size={16} /> Export GeoJSON</button>
                 </div>
               </header>
+              <MediaRibbon />
               <section className="metrics-grid">
                 <Metric icon={CircleDollarSign} label="Net budget" value={`UGX ${currency.format(analysis.netBudget || 0)}`} />
                 <Metric icon={Activity} label="Selected cost" value={`UGX ${currency.format(analysis.summary?.selectedCost || 0)}`} tone="green" />
@@ -1301,6 +1403,7 @@ function App() {
             </>
           )}
 
+          {activeSection === "pim" && <PimEnginePanel programme={programme} analysis={analysis} />}
           {activeSection === "framework" && <ProcessFlow analysis={analysis} grouped={grouped} />}
           {activeSection === "traffic" && <TrafficAnalyticsPanel programme={programme} grouped={grouped} />}
           {activeSection === "gis" && <MapScene3D programme={programme} />}

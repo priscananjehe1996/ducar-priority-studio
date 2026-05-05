@@ -1,13 +1,14 @@
 {
-  "generated_at_utc": "2026-05-05T12:58:18.261428+00:00",
+  "generated_at_utc": "2026-05-05T13:12:18.004541+00:00",
   "output": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\data\\uganda_unified_roads_web.geojson",
-  "record_count": 16260,
-  "total_length_km": 93342.09,
-  "ducar_analysis_record_count": 13441,
-  "ducar_analysis_length_km": 67502.43,
+  "record_count": 16319,
+  "total_length_km": 93391.21,
+  "ducar_analysis_record_count": 13500,
+  "ducar_analysis_length_km": 67551.55,
   "reference_exempt_record_count": 2819,
   "reference_exempt_length_km": 25839.67,
   "by_road_system": {
+    "CBD Selected": 59,
     "DUCAR": 345,
     "National": 1014,
     "Open mapping": 14821,
@@ -15,7 +16,7 @@
   },
   "by_ducar_analysis_scope": {
     "Included": 345,
-    "Included pending urban mandate confirmation": 80,
+    "Included pending urban mandate confirmation": 139,
     "Included pending validation": 13016,
     "Reference only - excluded": 2819
   },
@@ -23,9 +24,11 @@
     "DUCAR district roads": 345,
     "KCCA roads": 80,
     "National road network FY25/26": 1014,
-    "OpenStreetMap / Geofabrik": 14821
+    "OpenStreetMap / Geofabrik": 14821,
+    "Selected Roads in CBD": 59
   },
   "by_quality_flag": {
+    "CBD source - verify surface and class": 59,
     "District join missing": 146,
     "Name missing in OSM": 7420,
     "OK": 8694

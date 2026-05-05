@@ -19,6 +19,8 @@ PUBLIC = ROOT / "public" / "data"
 DATA = ROOT / "data"
 OUT = PUBLIC / "uganda_unified_roads_web.geojson"
 SUMMARY = DATA / "uganda_unified_roads_summary.json"
+CBD_SELECTED_DIR = ROOT.parents[1] / "Selected Roads in CBD"
+CBD_SELECTED_OUT = PUBLIC / "selected_cbd_roads.geojson"
 
 
 def safe(value, default=None):
@@ -131,8 +133,39 @@ def kcca_roads() -> gpd.GeoDataFrame:
     return out
 
 
+def selected_cbd_roads() -> gpd.GeoDataFrame:
+    src = CBD_SELECTED_DIR / "KCCA.shp"
+    if not src.exists():
+        return gpd.GeoDataFrame(columns=["geometry"], geometry="geometry", crs="EPSG:4326")
+    gdf = read_layer(src)
+    out = gdf.copy()
+    out["road_uid"] = [f"CBD-SEL-{i + 1:04d}" for i in range(len(out))]
+    out["road_source"] = "Selected Roads in CBD"
+    out["road_system"] = "CBD Selected"
+    out["road_name"] = out.apply(lambda r: safe(r.get("Road_Name")) or "Selected CBD road", axis=1)
+    out["road_ref"] = out["road_uid"]
+    out["road_class"] = "Urban CBD Priority Link"
+    out["surface"] = "Urban paved - verify"
+    out["district"] = "Kampala"
+    out["region"] = "Central"
+    out["length_km"] = out.apply(lambda r: float(r.get("Length_km") or 0), axis=1)
+    out["quality_flag"] = out["road_name"].map(lambda x: "Name missing" if not x else "CBD source - verify surface and class")
+    out["mapping_status"] = "selected-cbd-source"
+    out["visual_intelligence_status"] = "complete-cbd-mapping-layer-ready-for-roadside-validation"
+    out["ducar_analysis_scope"] = "Included pending urban mandate confirmation"
+    out["exemption_clause"] = "Selected CBD road retained for DUCAR/KCCA coordination analysis and budget rationalisation, subject to mandate confirmation and field validation."
+    out["source_file"] = str(src)
+    out["source_shape_leng"] = out.apply(lambda r: safe(r.get("Shape_Leng")), axis=1)
+    out["source_start_x"] = out.apply(lambda r: safe(r.get("Start_X")), axis=1)
+    out["source_start_y"] = out.apply(lambda r: safe(r.get("Start_Y")), axis=1)
+    out["source_end_x"] = out.apply(lambda r: safe(r.get("End_X")), axis=1)
+    out["source_end_y"] = out.apply(lambda r: safe(r.get("End_Y")), axis=1)
+    out.to_file(CBD_SELECTED_OUT, driver="GeoJSON")
+    return out
+
+
 def main() -> None:
-    layers = [district_roads(), national_roads(), osm_roads(), kcca_roads()]
+    layers = [district_roads(), national_roads(), osm_roads(), kcca_roads(), selected_cbd_roads()]
     cols = [
         "road_uid",
         "road_source",
@@ -150,8 +183,17 @@ def main() -> None:
         "ducar_analysis_scope",
         "exemption_clause",
         "source_file",
+        "source_shape_leng",
+        "source_start_x",
+        "source_start_y",
+        "source_end_x",
+        "source_end_y",
         "geometry",
     ]
+    for layer in layers:
+        for col in cols:
+            if col not in layer.columns:
+                layer[col] = None
     merged = gpd.GeoDataFrame(pd.concat([layer[cols] for layer in layers], ignore_index=True), geometry="geometry", crs="EPSG:4326")
     merged["length_km"] = merged["length_km"].fillna(0).astype(float).round(3)
     ducar_scope = merged[~merged["ducar_analysis_scope"].str.startswith("Reference", na=False)]
