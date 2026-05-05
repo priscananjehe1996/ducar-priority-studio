@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState, useCallback } from "react"
 import { createRoot } from "react-dom/client";
 import {
   Activity,
+  ArrowLeft,
   Bot,
   Brain,
   CircleDollarSign,
@@ -169,15 +170,16 @@ function VerticalNav({ activeSection, onNavigate }) {
       </div>
       <nav>
         {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
-          <button
+          <a
             key={id}
+            href={`#${id}`}
             className={`nav-item ${activeSection === id ? "active" : ""}`}
             onClick={() => onNavigate(id)}
             title={label}
           >
             <Icon size={18} />
             <span>{label}</span>
-          </button>
+          </a>
         ))}
       </nav>
       <div className="nav-status">
@@ -185,6 +187,31 @@ function VerticalNav({ activeSection, onNavigate }) {
         <span>Live allocation engine</span>
       </div>
     </aside>
+  );
+}
+
+function PageChrome({ page, onBack, children }) {
+  const Icon = page.icon;
+  const isHome = page.id === "overview";
+  return (
+    <section className={`page page-${page.id}`} id={page.id}>
+      <div className="page-topbar">
+        {!isHome && (
+          <a className="back-link" href="#overview" onClick={onBack}>
+            <ArrowLeft size={18} />
+            <span>Back</span>
+          </a>
+        )}
+        <div className="page-heading">
+          <Icon size={24} />
+          <div>
+            <p className="eyebrow">{page.label}</p>
+            <h1>{page.title}</h1>
+          </div>
+        </div>
+      </div>
+      {children}
+    </section>
   );
 }
 
@@ -276,8 +303,8 @@ function MapPanel({ programme }) {
       attributionControl: false,
     });
 
-    // Dark tile layer
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+    // Light OSM-derived tile layer
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
       maxZoom: 18,
       subdomains: "abcd",
     }).addTo(map);
@@ -608,7 +635,7 @@ function App() {
   const [analysis, setAnalysis] = useState(() => localAnalysis(sample, 250000000, 5));
   const [apiMode, setApiMode] = useState("checking");
   const [filter, setFilter] = useState("All");
-  const [activeSection, setActiveSection] = useState("overview");
+  const [activeSection, setActiveSection] = useState(() => window.location.hash.replace("#", "") || "overview");
 
   async function runAnalysis(nextRecords = records) {
     try {
@@ -633,18 +660,14 @@ function App() {
   }, [budget, reservePercent]);
 
   useEffect(() => {
-    const sections = NAV_ITEMS.map((item) => document.getElementById(item.id)).filter(Boolean);
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible?.target?.id) setActiveSection(visible.target.id);
-      },
-      { rootMargin: "-20% 0px -65% 0px", threshold: [0.1, 0.25, 0.5] }
-    );
-    sections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
+    function syncPage() {
+      const next = window.location.hash.replace("#", "") || "overview";
+      setActiveSection(NAV_ITEMS.some((item) => item.id === next) ? next : "overview");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    window.addEventListener("hashchange", syncPage);
+    syncPage();
+    return () => window.removeEventListener("hashchange", syncPage);
   }, []);
 
   const programme = analysis.programme || [];
@@ -691,81 +714,120 @@ function App() {
   }
 
   function navigateToSection(id) {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
     setActiveSection(id);
+    if (window.location.hash !== `#${id}`) window.location.hash = id;
   }
+
+  const activePage = NAV_ITEMS.find((item) => item.id === activeSection) || NAV_ITEMS[0];
+  const pageMeta = {
+    overview: { ...activePage, title: "Dynamic ML and Geospatial Budget Allocation Tool" },
+    controls: { ...activePage, title: "Budget Inputs and Scenario Controls" },
+    analytics: { ...activePage, title: "Live Allocation Analytics" },
+    framework: { ...activePage, title: "Animated Framework and Tool Process Flow" },
+    gis: { ...activePage, title: "GIS Surface and National Road Layers" },
+    allocation: { ...activePage, title: "Budget Rationalisation by Region and Functional Class" },
+    programme: { ...activePage, title: "Editable Prioritised Programme Table" },
+  }[activePage.id];
+
+  const overviewCards = NAV_ITEMS.filter((item) => item.id !== "overview");
 
   return (
     <div className="shell">
       <VerticalNav activeSection={activeSection} onNavigate={navigateToSection} />
       <div className="app">
-        <header className="hero" id="overview">
-          <div>
-            <p className="eyebrow">DUCAR Priority Studio v0.5</p>
-            <h1>Dynamic ML and Geospatial Budget Allocation Tool</h1>
-            <p>
-              React + Leaflet/OSM interface with real DUCAR district road networks, KCCA urban roads,
-              ML risk scoring, geospatial clustering, and GIS-ready outputs.
-            </p>
-          </div>
-          <div className="hero-actions">
-            <span className="api-pill"><Brain size={16} /> {apiMode}</span>
-            <button onClick={() => runAnalysis()}><RefreshCcw size={16} /> Re-run ML</button>
-            <button className="secondary" onClick={exportGeoJson}><MapIcon size={16} /> Export GeoJSON</button>
-          </div>
-        </header>
-
-        <section className="control-strip" id="controls">
-          <label>
-            Received Budget UGX
-            <input type="number" value={budget} onChange={(e) => setBudget(Number(e.target.value))} />
-          </label>
-          <label>
-            Emergency Reserve %
-            <input type="number" value={reservePercent} onChange={(e) => setReservePercent(Number(e.target.value))} />
-          </label>
-          <label>
-            Programme Filter
-            <select value={filter} onChange={(e) => setFilter(e.target.value)}>
-              {["All", "Selected", "Deferred", "Referred", "Check cost"].map((x) => <option key={x}>{x}</option>)}
-            </select>
-          </label>
-        </section>
-
-        <section className="metrics-grid" id="analytics">
-          <Metric icon={CircleDollarSign} label="Net budget" value={`UGX ${currency.format(analysis.netBudget || 0)}`} />
-          <Metric icon={Activity} label="Selected cost" value={`UGX ${currency.format(analysis.summary?.selectedCost || 0)}`} tone="green" />
-          <Metric icon={ShieldAlert} label="High ML risk assets" value={analysis.summary?.highRisk || 0} tone="red" />
-          <Metric icon={Layers} label="Regions / classes" value={grouped.length} tone="gold" />
-        </section>
-
-        <main className="dashboard-grid">
-          <ProcessFlow analysis={analysis} grouped={grouped} />
-          <MapPanel programme={programme} />
-
-          <section className="panel" id="allocation">
-            <div className="panel-title">
-              <GitBranch size={18} />
-              <h2>Budget Rationalisation by Region and Functional Class</h2>
-            </div>
-            <div className="bars">
-              {grouped.map(([key, value]) => (
-                <div className="bar-row" key={key}>
-                  <span>{key}</span>
-                  <div><i style={{ width: `${Math.min(100, (value / Math.max(...grouped.map((g) => g[1]))) * 100)}%` }} /></div>
-                  <strong>{currency.format(value)}</strong>
+        <PageChrome page={pageMeta} onBack={() => navigateToSection("overview")}>
+          {activeSection === "overview" && (
+            <>
+              <header className="hero">
+                <div>
+                  <p className="eyebrow">DUCAR Priority Studio v0.6</p>
+                  <h1>Bright, page-based allocation studio for DUCAR decisions</h1>
+                  <p>
+                    Hyperlinked pages for budget inputs, analytics, GIS layers, framework flow, allocation,
+                    and editable programme outputs.
+                  </p>
                 </div>
-              ))}
-            </div>
-          </section>
+                <div className="hero-actions">
+                  <span className="api-pill"><Brain size={16} /> {apiMode}</span>
+                  <button onClick={() => runAnalysis()}><RefreshCcw size={16} /> Re-run ML</button>
+                  <button className="secondary" onClick={exportGeoJson}><MapIcon size={16} /> Export GeoJSON</button>
+                </div>
+              </header>
+              <section className="metrics-grid">
+                <Metric icon={CircleDollarSign} label="Net budget" value={`UGX ${currency.format(analysis.netBudget || 0)}`} />
+                <Metric icon={Activity} label="Selected cost" value={`UGX ${currency.format(analysis.summary?.selectedCost || 0)}`} tone="green" />
+                <Metric icon={ShieldAlert} label="High ML risk assets" value={analysis.summary?.highRisk || 0} tone="red" />
+                <Metric icon={Layers} label="Regions / classes" value={grouped.length} tone="gold" />
+              </section>
+              <section className="page-card-grid">
+                {overviewCards.map(({ id, label, icon: Icon }) => (
+                  <a className="page-card" href={`#${id}`} key={id} onClick={() => navigateToSection(id)}>
+                    <Icon size={28} />
+                    <strong>{label}</strong>
+                    <span>Open page</span>
+                  </a>
+                ))}
+              </section>
+            </>
+          )}
 
-          <section className="panel wide" id="programme">
-            <div className="panel-title">
-              <Route size={18} />
-              <h2>Editable Programme Table</h2>
-            </div>
-            <div className="table-wrap">
-              <table>
+          {activeSection === "controls" && (
+            <section className="control-strip">
+              <label>
+                Received Budget UGX
+                <input type="number" value={budget} onChange={(e) => setBudget(Number(e.target.value))} />
+              </label>
+              <label>
+                Emergency Reserve %
+                <input type="number" value={reservePercent} onChange={(e) => setReservePercent(Number(e.target.value))} />
+              </label>
+              <label>
+                Programme Filter
+                <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+                  {["All", "Selected", "Deferred", "Referred", "Check cost"].map((x) => <option key={x}>{x}</option>)}
+                </select>
+              </label>
+            </section>
+          )}
+
+          {activeSection === "analytics" && (
+            <section className="metrics-grid">
+              <Metric icon={CircleDollarSign} label="Net budget" value={`UGX ${currency.format(analysis.netBudget || 0)}`} />
+              <Metric icon={Activity} label="Selected cost" value={`UGX ${currency.format(analysis.summary?.selectedCost || 0)}`} tone="green" />
+              <Metric icon={ShieldAlert} label="High ML risk assets" value={analysis.summary?.highRisk || 0} tone="red" />
+              <Metric icon={Layers} label="Regions / classes" value={grouped.length} tone="gold" />
+            </section>
+          )}
+
+          {activeSection === "framework" && <ProcessFlow analysis={analysis} grouped={grouped} />}
+          {activeSection === "gis" && <MapPanel programme={programme} />}
+
+          {activeSection === "allocation" && (
+            <section className="panel">
+              <div className="panel-title">
+                <GitBranch size={18} />
+                <h2>Budget Rationalisation by Region and Functional Class</h2>
+              </div>
+              <div className="bars">
+                {grouped.map(([key, value]) => (
+                  <div className="bar-row" key={key}>
+                    <span>{key}</span>
+                    <div><i style={{ width: `${Math.min(100, (value / Math.max(...grouped.map((g) => g[1]))) * 100)}%` }} /></div>
+                    <strong>{currency.format(value)}</strong>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {activeSection === "programme" && (
+            <section className="panel wide">
+              <div className="panel-title">
+                <Route size={18} />
+                <h2>Editable Programme Table</h2>
+              </div>
+              <div className="table-wrap">
+                <table>
                 <thead>
                   <tr>
                     <th>Rank</th>
@@ -820,10 +882,11 @@ function App() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
-            </div>
-          </section>
-        </main>
+                </table>
+              </div>
+            </section>
+          )}
+        </PageChrome>
       </div>
     </div>
   );
