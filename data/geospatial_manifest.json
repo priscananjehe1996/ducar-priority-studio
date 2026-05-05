@@ -1,0 +1,13 @@
+{
+  "districts": {
+    "records": 135,
+    "total_roads": 32477,
+    "total_km": 96917.2
+  },
+  "district_roads": {
+    "records": 32662
+  },
+  "kcca_roads": {
+    "records": 80
+  }
+}

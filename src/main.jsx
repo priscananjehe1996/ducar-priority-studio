@@ -1,22 +1,28 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { createRoot } from "react-dom/client";
 import {
   Activity,
   Brain,
   CircleDollarSign,
+  Eye,
+  EyeOff,
   GitBranch,
   Layers,
-  Map,
+  MapIcon,
   RefreshCcw,
   Route,
   ShieldAlert,
 } from "lucide-react";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import sample from "../data/sample_assets.json";
 import { prioritise, summarise } from "./prioritisation.js";
 import "./styles.css";
 
+const BASE = import.meta.env.BASE_URL || "/ducar-priority-studio/";
 const currency = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 
+/* ─── local ML fallback ─── */
 function localAnalysis(records, budget, reservePercent) {
   const netBudget = budget * (1 - reservePercent / 100);
   const programme = prioritise(records, netBudget).map((item) => {
@@ -47,10 +53,9 @@ function localAnalysis(records, budget, reservePercent) {
       referrals: summary.Referred || 0,
       highRisk: programme.filter((p) => p.riskBand === "High").length,
     },
-    ml: { model: "Browser fallback risk model", note: "Start Python API for deeper NumPy MLP/geospatial analysis." },
+    ml: { model: "Browser fallback risk model" },
     geospatial: {
       hotspots: [],
-      nearestBridge: {},
       bbox: {
         minLat: Math.min(...programme.map((p) => p.lat)),
         maxLat: Math.max(...programme.map((p) => p.lat)),
@@ -61,6 +66,14 @@ function localAnalysis(records, budget, reservePercent) {
   };
 }
 
+/* ─── Status colours ─── */
+const STATUS_COLORS = {
+  Selected: "#10b981",
+  Deferred: "#f59e0b",
+  Referred: "#ef4444",
+};
+
+/* ─── Metric card ─── */
 function Metric({ icon: Icon, label, value, tone = "blue" }) {
   return (
     <div className={`metric ${tone}`}>
@@ -73,80 +86,244 @@ function Metric({ icon: Icon, label, value, tone = "blue" }) {
   );
 }
 
-function MapPanel({ programme, geospatial }) {
-  const bbox = geospatial?.bbox || { minLat: -1, maxLat: 4, minLon: 29, maxLon: 35 };
-  const width = 760;
-  const height = 480;
-  const project = (lat, lon) => {
-    const x = ((lon - bbox.minLon) / Math.max(0.001, bbox.maxLon - bbox.minLon)) * (width - 80) + 40;
-    const y = height - (((lat - bbox.minLat) / Math.max(0.001, bbox.maxLat - bbox.minLat)) * (height - 80) + 40);
-    return [x, y];
-  };
+/* ═══════════════════════════════════════════════════════════════════
+   Leaflet + OpenStreetMap MapPanel
+   ═══════════════════════════════════════════════════════════════════ */
+function MapPanel({ programme }) {
+  const mapRef = useRef(null);
+  const mapInstance = useRef(null);
+  const layersRef = useRef({});
+  const assetsLayerRef = useRef(null);
 
-  // Group by region to draw abstract "road networks"
-  const regions = [...new Set(programme.map((p) => p.region))];
+  const [showDistricts, setShowDistricts] = useState(true);
+  const [showRoads, setShowRoads] = useState(true);
+  const [showKCCA, setShowKCCA] = useState(true);
+  const [showAssets, setShowAssets] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  // Initialise map once
+  useEffect(() => {
+    if (mapInstance.current) return;
+
+    const map = L.map(mapRef.current, {
+      center: [1.3, 32.5],
+      zoom: 7,
+      zoomControl: false,
+      attributionControl: false,
+    });
+
+    // Dark tile layer
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+      maxZoom: 18,
+      subdomains: "abcd",
+    }).addTo(map);
+
+    L.control.zoom({ position: "topright" }).addTo(map);
+    L.control
+      .attribution({ position: "bottomright", prefix: false })
+      .addAttribution('&copy; <a href="https://www.openstreetmap.org/">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>')
+      .addTo(map);
+
+    mapInstance.current = map;
+
+    // Load GeoJSON layers
+    loadLayers(map);
+
+    return () => {
+      map.remove();
+      mapInstance.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function loadLayers(map) {
+    setLoading(true);
+    try {
+      // District boundaries
+      const distRes = await fetch(`${BASE}data/districts.geojson`);
+      if (distRes.ok) {
+        const distData = await distRes.json();
+        layersRef.current.districts = L.geoJSON(distData, {
+          style: () => ({
+            color: "rgba(59,130,246,0.4)",
+            weight: 1,
+            fillColor: "rgba(59,130,246,0.05)",
+            fillOpacity: 1,
+          }),
+          onEachFeature: (feature, layer) => {
+            const p = feature.properties;
+            const name = p.district || p.admin2Name || "Unknown";
+            const roads = p.road_count ?? "—";
+            const km = p.total_km ? Number(p.total_km).toLocaleString() : "—";
+            layer.bindTooltip(
+              `<strong>${name}</strong><br/>Region: ${p.region || "—"}<br/>Roads: ${roads}<br/>Total: ${km} km`,
+              { sticky: true, className: "map-tooltip" }
+            );
+          },
+        }).addTo(map);
+      }
+
+      // District roads (dissolved)
+      const roadsRes = await fetch(`${BASE}data/district_roads_dissolved.geojson`);
+      if (roadsRes.ok) {
+        const roadsData = await roadsRes.json();
+        layersRef.current.roads = L.geoJSON(roadsData, {
+          style: () => ({
+            color: "rgba(245,158,11,0.35)",
+            weight: 1.5,
+            dashArray: "4 3",
+          }),
+          onEachFeature: (feature, layer) => {
+            const p = feature.properties;
+            layer.bindTooltip(
+              `<strong>${p.DistName || "—"}</strong><br/>Class: ${p.RdClass || "—"}<br/>${(p.length_km || 0).toFixed(1)} km`,
+              { sticky: true, className: "map-tooltip" }
+            );
+          },
+        }).addTo(map);
+      }
+
+      // KCCA roads
+      const kccaRes = await fetch(`${BASE}data/kcca_roads.geojson`);
+      if (kccaRes.ok) {
+        const kccaData = await kccaRes.json();
+        layersRef.current.kcca = L.geoJSON(kccaData, {
+          style: () => ({
+            color: "#a855f7",
+            weight: 2.5,
+            opacity: 0.8,
+          }),
+          onEachFeature: (feature, layer) => {
+            const p = feature.properties;
+            layer.bindTooltip(
+              `<strong>${p.Link_Name || p.Road_No_1 || "KCCA Road"}</strong><br/>Surface: ${p.Surface__1 || "—"}<br/>${(p.Length_km_ || 0)} km`,
+              { sticky: true, className: "map-tooltip" }
+            );
+          },
+        }).addTo(map);
+      }
+    } catch (e) {
+      console.warn("GeoJSON layer load error:", e);
+    }
+    setLoading(false);
+  }
+
+  // Update asset markers when programme changes
+  useEffect(() => {
+    const map = mapInstance.current;
+    if (!map) return;
+
+    // Remove old assets
+    if (assetsLayerRef.current) {
+      map.removeLayer(assetsLayerRef.current);
+    }
+
+    const markers = programme.map((p) => {
+      const color = STATUS_COLORS[p.status] || "#94a3b8";
+      const radius = p.assetType === "Bridge" ? 8 : 6;
+      const marker = L.circleMarker([p.lat, p.lon], {
+        radius,
+        color: "#020617",
+        weight: 1.5,
+        fillColor: color,
+        fillOpacity: 0.9,
+      });
+      marker.bindPopup(
+        `<div class="map-popup">
+          <strong>${p.assetId}</strong> <span class="status ${p.status}">${p.status}</span>
+          <table>
+            <tr><td>Type</td><td>${p.assetType} / ${p.surface}</td></tr>
+            <tr><td>District</td><td>${p.admin}</td></tr>
+            <tr><td>Region</td><td>${p.region}</td></tr>
+            <tr><td>Intervention</td><td>${p.intervention}</td></tr>
+            <tr><td>Cost</td><td>UGX ${currency.format(p.cost)}</td></tr>
+            <tr><td>ML Risk</td><td><span class="risk ${p.riskBand}">${Math.round((p.mlRisk || 0) * 100)}%</span></td></tr>
+          </table>
+        </div>`,
+        { className: "dark-popup" }
+      );
+      return marker;
+    });
+
+    assetsLayerRef.current = L.layerGroup(markers);
+    if (showAssets) assetsLayerRef.current.addTo(map);
+  }, [programme, showAssets]);
+
+  // Toggle layer visibility
+  const toggleLayer = useCallback((key, visible) => {
+    const map = mapInstance.current;
+    if (!map) return;
+    const layer = key === "assets" ? assetsLayerRef.current : layersRef.current[key];
+    if (!layer) return;
+    if (visible) map.addLayer(layer);
+    else map.removeLayer(layer);
+  }, []);
+
+  useEffect(() => { toggleLayer("districts", showDistricts); }, [showDistricts, toggleLayer]);
+  useEffect(() => { toggleLayer("roads", showRoads); }, [showRoads, toggleLayer]);
+  useEffect(() => { toggleLayer("kcca", showKCCA); }, [showKCCA, toggleLayer]);
+  useEffect(() => { toggleLayer("assets", showAssets); }, [showAssets, toggleLayer]);
 
   return (
     <section className="panel map-panel">
-      <div className="panel-title">
-        <Map size={18} />
-        <h2>Geospatial Risk Surface</h2>
-      </div>
-      <div className="map-container">
-        <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="DUCAR geospatial risk map">
-          <rect x="0" y="0" width={width} height={height} className="map-bg" />
-          
-          {/* Grid lines */}
-          {[...Array(8)].map((_, i) => (
-            <line key={`v${i}`} x1={40 + i * 94} x2={40 + i * 94} y1="35" y2={height - 35} className="grid-line" />
-          ))}
-          {[...Array(6)].map((_, i) => (
-            <line key={`h${i}`} x1="35" x2={width - 35} y1={55 + i * 75} y2={55 + i * 75} className="grid-line" />
-          ))}
-
-          {/* Network Lines */}
-          {regions.map((region) => {
-            const pts = programme
-              .filter((p) => p.region === region)
-              .sort((a, b) => a.lat - b.lat)
-              .map((p) => project(p.lat, p.lon));
-            if (pts.length > 1) {
-              const d = `M ${pts.map(pt => pt.join(',')).join(' L ')}`;
-              return <path key={region} d={d} className="map-layer-roads" />;
-            }
-            return null;
-          })}
-
-          {geospatial?.hotspots?.map((h) => {
-            const [x, y] = project(h.lat, h.lon);
-            return (
-              <g key={h.cluster}>
-                <circle cx={x} cy={y} r={24 + h.averageRisk * 24} className="hotspot" />
-                <text x={x} y={y + 4} className="hotspot-label">{h.cluster}</text>
-              </g>
-            );
-          })}
-          {programme.map((p) => {
-            const [x, y] = project(p.lat, p.lon);
-            return (
-              <g key={p.assetId}>
-                <circle cx={x} cy={y} r={p.assetType === "Bridge" ? 7 : 5} className={`asset ${p.status}`} />
-                <text x={x + 9} y={y - 7} className="asset-label">{p.assetId}</text>
-              </g>
-            );
-          })}
-        </svg>
-        <div className="legend">
-          <span><i className="dot selected" /> Selected</span>
-          <span><i className="dot deferred" /> Deferred</span>
-          <span><i className="dot referred" /> Referred</span>
-          <span><i className="halo" /> ML hotspot</span>
+      <div className="map-header">
+        <div className="panel-title" style={{ borderBottom: "none", marginBottom: 0, paddingBottom: 0 }}>
+          <Layers size={18} />
+          <h2>Geospatial Risk Surface — OpenStreetMap</h2>
         </div>
+        <div className="layer-toggles">
+          <button
+            className={`layer-btn ${showDistricts ? "active" : ""}`}
+            onClick={() => setShowDistricts(!showDistricts)}
+            title="District boundaries"
+          >
+            {showDistricts ? <Eye size={14} /> : <EyeOff size={14} />} Districts
+          </button>
+          <button
+            className={`layer-btn ${showRoads ? "active" : ""}`}
+            onClick={() => setShowRoads(!showRoads)}
+            title="District road network"
+          >
+            {showRoads ? <Eye size={14} /> : <EyeOff size={14} />} Roads
+          </button>
+          <button
+            className={`layer-btn ${showKCCA ? "active kcca" : ""}`}
+            onClick={() => setShowKCCA(!showKCCA)}
+            title="KCCA urban roads"
+          >
+            {showKCCA ? <Eye size={14} /> : <EyeOff size={14} />} KCCA
+          </button>
+          <button
+            className={`layer-btn ${showAssets ? "active green" : ""}`}
+            onClick={() => setShowAssets(!showAssets)}
+            title="DUCAR programme assets"
+          >
+            {showAssets ? <Eye size={14} /> : <EyeOff size={14} />} Assets
+          </button>
+        </div>
+      </div>
+      <div className="map-container" ref={mapRef}>
+        {loading && (
+          <div className="map-loading">
+            <div className="spinner" />
+            <span>Loading geospatial layers…</span>
+          </div>
+        )}
+      </div>
+      <div className="map-legend">
+        <span><i className="dot selected" /> Selected</span>
+        <span><i className="dot deferred" /> Deferred</span>
+        <span><i className="dot referred" /> Referred</span>
+        <span><i className="dot kcca-dot" /> KCCA</span>
+        <span><i className="dot district-dot" /> District boundary</span>
       </div>
     </section>
   );
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   App
+   ═══════════════════════════════════════════════════════════════════ */
 function App() {
   const [records, setRecords] = useState(sample);
   const [budget, setBudget] = useState(250000000);
@@ -224,17 +401,17 @@ function App() {
     <div className="app">
       <header className="hero">
         <div>
-          <p className="eyebrow">DUCAR Priority Studio v0.3</p>
+          <p className="eyebrow">DUCAR Priority Studio v0.4</p>
           <h1>Dynamic ML and Geospatial Budget Allocation Tool</h1>
           <p>
-            React interface, Python NumPy ML risk scoring, geospatial clustering, budget rationalisation by region,
-            district and functional classification, and GIS-ready outputs.
+            React + Leaflet/OSM interface with real DUCAR district road networks, KCCA urban roads,
+            ML risk scoring, geospatial clustering, and GIS-ready outputs.
           </p>
         </div>
         <div className="hero-actions">
           <span className="api-pill"><Brain size={16} /> {apiMode}</span>
           <button onClick={() => runAnalysis()}><RefreshCcw size={16} /> Re-run ML</button>
-          <button className="secondary" onClick={exportGeoJson}><Map size={16} /> Export GeoJSON</button>
+          <button className="secondary" onClick={exportGeoJson}><MapIcon size={16} /> Export GeoJSON</button>
         </div>
       </header>
 
@@ -263,7 +440,7 @@ function App() {
       </section>
 
       <main className="dashboard-grid">
-        <MapPanel programme={programme} geospatial={analysis.geospatial} />
+        <MapPanel programme={programme} />
 
         <section className="panel">
           <div className="panel-title">
@@ -317,48 +494,20 @@ function App() {
                     <td>{p.functionalClass}</td>
                     <td>{p.intervention}</td>
                     <td>UGX {currency.format(p.cost)}</td>
-                    <td>
-                      <div className="range-wrap">
-                        <input type="range" min="1" max="5" value={records.find((r) => r.assetId === p.assetId)?.condition || 1} onChange={(e) => updateRecord(p.assetId, "condition", Number(e.target.value))} />
-                        <span className="range-value">{records.find((r) => r.assetId === p.assetId)?.condition || 1}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="range-wrap">
-                        <input type="range" min="1" max="5" value={records.find((r) => r.assetId === p.assetId)?.criticality || 1} onChange={(e) => updateRecord(p.assetId, "criticality", Number(e.target.value))} />
-                        <span className="range-value">{records.find((r) => r.assetId === p.assetId)?.criticality || 1}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="range-wrap">
-                        <input type="range" min="1" max="5" value={records.find((r) => r.assetId === p.assetId)?.climate || 1} onChange={(e) => updateRecord(p.assetId, "climate", Number(e.target.value))} />
-                        <span className="range-value">{records.find((r) => r.assetId === p.assetId)?.climate || 1}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="range-wrap">
-                        <input type="range" min="1" max="5" value={records.find((r) => r.assetId === p.assetId)?.safety || 1} onChange={(e) => updateRecord(p.assetId, "safety", Number(e.target.value))} />
-                        <span className="range-value">{records.find((r) => r.assetId === p.assetId)?.safety || 1}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="range-wrap">
-                        <input type="range" min="1" max="5" value={records.find((r) => r.assetId === p.assetId)?.traffic || 1} onChange={(e) => updateRecord(p.assetId, "traffic", Number(e.target.value))} />
-                        <span className="range-value">{records.find((r) => r.assetId === p.assetId)?.traffic || 1}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="range-wrap">
-                        <input type="range" min="1" max="5" value={records.find((r) => r.assetId === p.assetId)?.equity || 1} onChange={(e) => updateRecord(p.assetId, "equity", Number(e.target.value))} />
-                        <span className="range-value">{records.find((r) => r.assetId === p.assetId)?.equity || 1}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="range-wrap">
-                        <input type="range" min="1" max="5" value={records.find((r) => r.assetId === p.assetId)?.readiness || 1} onChange={(e) => updateRecord(p.assetId, "readiness", Number(e.target.value))} />
-                        <span className="range-value">{records.find((r) => r.assetId === p.assetId)?.readiness || 1}</span>
-                      </div>
-                    </td>
+                    {["condition", "criticality", "climate", "safety", "traffic", "equity", "readiness"].map((field) => (
+                      <td key={field}>
+                        <div className="range-wrap">
+                          <input
+                            type="range"
+                            min="1"
+                            max="5"
+                            value={records.find((r) => r.assetId === p.assetId)?.[field] || 1}
+                            onChange={(e) => updateRecord(p.assetId, field, Number(e.target.value))}
+                          />
+                          <span className="range-value">{records.find((r) => r.assetId === p.assetId)?.[field] || 1}</span>
+                        </div>
+                      </td>
+                    ))}
                     <td><span className={`risk ${p.riskBand}`}>{Math.round((p.mlRisk || 0) * 100)}%</span></td>
                     <td><span className={`status ${p.status}`}>{p.status}</span></td>
                     <td>
