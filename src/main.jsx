@@ -13,6 +13,7 @@ import {
   FileSpreadsheet,
   GitBranch,
   Gauge,
+  ListFilter,
   Layers,
   LayoutDashboard,
   LineChart,
@@ -23,6 +24,7 @@ import {
   ShieldAlert,
   SlidersHorizontal,
   Target,
+  Truck,
 } from "lucide-react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -88,6 +90,7 @@ const NAV_ITEMS = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "controls", label: "Budget Inputs", icon: SlidersHorizontal },
   { id: "analytics", label: "Analytics", icon: LineChart },
+  { id: "traffic", label: "Traffic Analytics", icon: Truck },
   { id: "framework", label: "Framework Flow", icon: Network },
   { id: "gis", label: "GIS Surface", icon: MapIcon },
   { id: "allocation", label: "Allocation", icon: GitBranch },
@@ -143,6 +146,37 @@ const FLOW_STEPS = [
     detail: "Produce editable tables, GeoJSON, dashboards, manuals, reports, and implementation packs.",
     icon: Target,
   },
+];
+
+const TRAFFIC_CONSIDERATIONS = [
+  ["Data Type", "Inventory, condition, traffic, climate, crash, cost, speed, works, emissions, and economic parameter records."],
+  ["Representative Vehicles", "Motorcycles, passenger cars, taxis, minibuses, buses, light goods, medium/heavy goods, and multi-axle trucks."],
+  ["Climate Zones", "Rainfall, temperature, flood exposure, terrain, drainage sensitivity, and climate-stress screening."],
+  ["Axle Loading", "Equivalent standard axle loading, overloaded freight flags, weighbridge evidence, and vehicle mass assumptions."],
+  ["Road Deterioration Models", "Roughness, cracking, rutting, gravel loss, potholing, drainage distress, and bridge/culvert risk."],
+  ["Work Effects Models", "Routine maintenance, grading, resealing, overlay, rehabilitation, reconstruction, and climate resilience effects."],
+  ["Road User Effects Models", "Vehicle operating cost, speed, travel time, safety, reliability, emissions, and detour impacts."],
+  ["Unit Costs by Surface Type", "Bituminous, gravel, earth, concrete, structures, drainage, safety furniture, and traffic management rates."],
+  ["Traffic Flow Patterns", "Hourly/daily/seasonal profiles, peak spreading, market days, school traffic, freight corridors, and urban delay."],
+  ["Speed Flow Types", "Free-flow, interrupted, urban arterial, rural two-lane, gravel, steep terrain, and congested approaches."],
+  ["Speed Reduction Factors", "Surface, curvature, gradient, narrow carriageway, settlements, work zones, weather, and heavy vehicle share."],
+  ["Traffic Growth Rates", "Base year AADT, normal growth, generated traffic, diverted traffic, freight growth, and induced demand."],
+  ["Vehicle Utilization", "Annual kilometres, occupancy/load factors, operating hours, empty running, and fleet age."],
+  ["Travel Time Valuation", "Passenger work/non-work time, freight inventory time, public transport occupancy, and regional income assumptions."],
+  ["Unit Costs of Vehicle Resources", "Fuel, tyres, oil, maintenance parts, crew, depreciation, capital cost, insurance, and overheads."],
+  ["Accident Data", "Fatal, serious, minor, damage-only crashes, risk exposure, blackspots, and safety countermeasure benefits."],
+  ["Emissions", "Fuel use, CO2e, NOx, PM, speed-emission curves, roughness effects, and climate-cost screening."],
+  ["Road Network Matrix", "Origin-destination, district-region links, functional class, alternative routes, bridges, and service access."],
+  ["Work Standards", "Trigger thresholds, treatment rules, service levels, design lives, unit rates, and implementation constraints."],
+  ["Economic Analysis Parameters", "Discount rate, analysis period, residual value, shadow pricing, VOC/time/safety benefits, and sensitivity tests."],
+  ["Analysis Groups", "Region, district, functional class, surface, traffic band, climate-risk band, poverty/equity band, and agency owner."],
+];
+
+const OPEN_DATA_LOGIC = [
+  "OpenStreetMap/Geofabrik highway tags feed road type, name/ref, and open mapping confidence.",
+  "World Bank HDM-4 road user cost logic informs vehicle resource costs, travel time, emissions, and accident-cost placeholders.",
+  "WorldClim and NASA POWER-style climate fields are reserved for rainfall, temperature, and climate-stress joins.",
+  "Local UNRA/DUCAR/KCCA shapefiles remain authoritative where they conflict with generic open mapping.",
 ];
 
 /* ─── Metric card ─── */
@@ -298,6 +332,53 @@ function InfographicPanel({ analysis, grouped, programme }) {
   );
 }
 
+function TrafficAnalyticsPanel({ programme, grouped }) {
+  const trafficIndex = Math.round(
+    Math.min(100, 18 + programme.reduce((sum, p) => sum + Number(p.traffic || 0) + Number(p.safety || 0), 0) * 2.4)
+  );
+  const climateIndex = Math.round(
+    Math.min(100, 12 + programme.reduce((sum, p) => sum + Number(p.climate || 0), 0) * 4.6)
+  );
+  return (
+    <div className="traffic-page-grid">
+      <section className="traffic-command-card">
+        <p className="eyebrow">Traffic and economic engine</p>
+        <strong>{trafficIndex}</strong>
+        <span>network pressure score from traffic, safety, surface and risk inputs</span>
+        <div className="index-scale"><i style={{ left: `${trafficIndex}%` }} /></div>
+      </section>
+      <section className="signal-grid">
+        <SignalTile label="Climate stress" value={`${climateIndex}%`} sublabel="screening placeholder" tone="cyan" />
+        <SignalTile label="Analysis groups" value={grouped.length} sublabel="region/class budget groups" tone="green" />
+        <SignalTile label="Open data logic" value={OPEN_DATA_LOGIC.length} sublabel="linked evidence streams" tone="red" />
+      </section>
+      <section className="viz-card traffic-model-card">
+        <div className="viz-title">
+          <h3>Required analytical considerations</h3>
+          <span>HDM-style parameter library</span>
+        </div>
+        <div className="consideration-grid">
+          {TRAFFIC_CONSIDERATIONS.map(([label, detail]) => (
+            <article key={label}>
+              <strong>{label}</strong>
+              <p>{detail}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="viz-card">
+        <div className="viz-title">
+          <h3>Open-source data thinking</h3>
+          <span>provenance-first</span>
+        </div>
+        <div className="open-data-list">
+          {OPEN_DATA_LOGIC.map((item) => <p key={item}>{item}</p>)}
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function VerticalNav({ activeSection, onNavigate }) {
   return (
     <aside className="vertical-nav" aria-label="DUCAR workspace navigation">
@@ -422,15 +503,22 @@ function MapPanel({ programme }) {
   const mapInstance = useRef(null);
   const layersRef = useRef({});
   const assetsLayerRef = useRef(null);
+  const unifiedRoadLayerRef = useRef(null);
 
   const [showDistricts, setShowDistricts] = useState(true);
-  const [showRoads, setShowRoads] = useState(true);
-  const [showNational, setShowNational] = useState(true);
-  const [showOsmMajor, setShowOsmMajor] = useState(true);
+  const [showRoads, setShowRoads] = useState(false);
+  const [showUnifiedRoads, setShowUnifiedRoads] = useState(true);
+  const [showNational, setShowNational] = useState(false);
+  const [showOsmMajor, setShowOsmMajor] = useState(false);
   const [showRoadSummary, setShowRoadSummary] = useState(true);
-  const [showKCCA, setShowKCCA] = useState(true);
+  const [showKCCA, setShowKCCA] = useState(false);
   const [showAssets, setShowAssets] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [roadData, setRoadData] = useState(null);
+  const [roadSystemFilter, setRoadSystemFilter] = useState("All");
+  const [roadClassFilter, setRoadClassFilter] = useState("All");
+  const [surfaceFilter, setSurfaceFilter] = useState("All");
+  const [roadSort, setRoadSort] = useState("length_km");
 
   // Initialise map once
   useEffect(() => {
@@ -492,6 +580,7 @@ function MapPanel({ programme }) {
             );
           },
         }).addTo(map);
+        if (!showRoads) map.removeLayer(layersRef.current.roads);
       }
 
       // District roads (dissolved)
@@ -512,6 +601,7 @@ function MapPanel({ programme }) {
             );
           },
         }).addTo(map);
+        if (!showNational) map.removeLayer(layersRef.current.national);
       }
 
       // National road network FY25/26
@@ -543,6 +633,7 @@ function MapPanel({ programme }) {
             );
           },
         }).addTo(map);
+        if (!showOsmMajor) map.removeLayer(layersRef.current.osmMajor);
       }
 
       // All-road district summary from OSM + DUCAR master build
@@ -568,7 +659,10 @@ function MapPanel({ programme }) {
             );
           },
         }).addTo(map);
+        if (!showKCCA) map.removeLayer(layersRef.current.kcca);
       }
+      const unifiedRes = await fetch(`${BASE}data/uganda_unified_roads_web.geojson`);
+      if (unifiedRes.ok) setRoadData(await unifiedRes.json());
 
       // OSM major/named roads
       const osmRes = await fetch(`${BASE}data/uganda_osm_major_roads_web.geojson`);
@@ -666,17 +760,60 @@ function MapPanel({ programme }) {
     if (showAssets) assetsLayerRef.current.addTo(map);
   }, [programme, showAssets]);
 
+  const roadOptions = useMemo(() => {
+    const features = roadData?.features || [];
+    const values = (field) => ["All", ...[...new Set(features.map((f) => f.properties?.[field]).filter(Boolean))].sort()];
+    return { systems: values("road_system"), classes: values("road_class"), surfaces: values("surface") };
+  }, [roadData]);
+
+  const filteredRoads = useMemo(() => {
+    const features = roadData?.features || [];
+    return features
+      .filter((f) => roadSystemFilter === "All" || f.properties?.road_system === roadSystemFilter)
+      .filter((f) => roadClassFilter === "All" || f.properties?.road_class === roadClassFilter)
+      .filter((f) => surfaceFilter === "All" || f.properties?.surface === surfaceFilter)
+      .sort((a, b) => {
+        const av = a.properties?.[roadSort];
+        const bv = b.properties?.[roadSort];
+        return typeof av === "number" && typeof bv === "number" ? bv - av : String(av || "").localeCompare(String(bv || ""));
+      });
+  }, [roadData, roadSystemFilter, roadClassFilter, surfaceFilter, roadSort]);
+
+  useEffect(() => {
+    const map = mapInstance.current;
+    if (!map || !roadData) return;
+    if (unifiedRoadLayerRef.current) map.removeLayer(unifiedRoadLayerRef.current);
+    const colors = { DUCAR: "#f59e0b", National: "#2563eb", "Open mapping": "#059669", Urban: "#9333ea" };
+    unifiedRoadLayerRef.current = L.geoJSON({ type: "FeatureCollection", features: filteredRoads }, {
+      style: (feature) => ({
+        color: colors[feature.properties.road_system] || "#64748b",
+        weight: feature.properties.road_system === "National" ? 2.7 : 1.6,
+        opacity: feature.properties.quality_flag === "OK" ? 0.84 : 0.48,
+        dashArray: feature.properties.quality_flag === "OK" ? null : "5 4",
+      }),
+      onEachFeature: (feature, layer) => {
+        const p = feature.properties;
+        layer.bindTooltip(
+          `<strong>${p.road_name || "Road"}</strong><br/>System: ${p.road_system}<br/>Class: ${p.road_class}<br/>Surface: ${p.surface}<br/>Region/District: ${p.region} / ${p.district}<br/>Length: ${Number(p.length_km || 0).toLocaleString()} km<br/>Mapping: ${p.visual_intelligence_status}<br/>Quality: ${p.quality_flag}`,
+          { sticky: true, className: "map-tooltip" }
+        );
+      },
+    });
+    if (showUnifiedRoads) unifiedRoadLayerRef.current.addTo(map);
+  }, [roadData, filteredRoads, showUnifiedRoads]);
+
   // Toggle layer visibility
   const toggleLayer = useCallback((key, visible) => {
     const map = mapInstance.current;
     if (!map) return;
-    const layer = key === "assets" ? assetsLayerRef.current : layersRef.current[key];
+    const layer = key === "assets" ? assetsLayerRef.current : key === "unifiedRoads" ? unifiedRoadLayerRef.current : layersRef.current[key];
     if (!layer) return;
     if (visible) map.addLayer(layer);
     else map.removeLayer(layer);
   }, []);
 
   useEffect(() => { toggleLayer("districts", showDistricts); }, [showDistricts, toggleLayer]);
+  useEffect(() => { toggleLayer("unifiedRoads", showUnifiedRoads); }, [showUnifiedRoads, toggleLayer]);
   useEffect(() => { toggleLayer("roads", showRoads); }, [showRoads, toggleLayer]);
   useEffect(() => { toggleLayer("national", showNational); }, [showNational, toggleLayer]);
   useEffect(() => { toggleLayer("osmMajor", showOsmMajor); }, [showOsmMajor, toggleLayer]);
@@ -693,6 +830,13 @@ function MapPanel({ programme }) {
         </div>
         <div className="layer-toggles">
           <button
+            className={`layer-btn ${showUnifiedRoads ? "active unified" : ""}`}
+            onClick={() => setShowUnifiedRoads(!showUnifiedRoads)}
+            title="Merged growing road intelligence layer"
+          >
+            {showUnifiedRoads ? <Eye size={14} /> : <EyeOff size={14} />} Unified Roads
+          </button>
+          <button
             className={`layer-btn ${showDistricts ? "active" : ""}`}
             onClick={() => setShowDistricts(!showDistricts)}
             title="District boundaries"
@@ -700,21 +844,21 @@ function MapPanel({ programme }) {
             {showDistricts ? <Eye size={14} /> : <EyeOff size={14} />} Districts
           </button>
           <button
-            className={`layer-btn ${showRoads ? "active" : ""}`}
+            className={`layer-btn legacy-road-toggle ${showRoads ? "active" : ""}`}
             onClick={() => setShowRoads(!showRoads)}
             title="District road network"
           >
             {showRoads ? <Eye size={14} /> : <EyeOff size={14} />} Roads
           </button>
           <button
-            className={`layer-btn ${showNational ? "active national" : ""}`}
+            className={`layer-btn legacy-road-toggle ${showNational ? "active national" : ""}`}
             onClick={() => setShowNational(!showNational)}
             title="National road network FY25/26"
           >
             {showNational ? <Eye size={14} /> : <EyeOff size={14} />} National
           </button>
           <button
-            className={`layer-btn ${showOsmMajor ? "active osm" : ""}`}
+            className={`layer-btn legacy-road-toggle ${showOsmMajor ? "active osm" : ""}`}
             onClick={() => setShowOsmMajor(!showOsmMajor)}
             title="OpenStreetMap major and named roads"
           >
@@ -728,7 +872,7 @@ function MapPanel({ programme }) {
             {showRoadSummary ? <Eye size={14} /> : <EyeOff size={14} />} All-road Summary
           </button>
           <button
-            className={`layer-btn ${showKCCA ? "active kcca" : ""}`}
+            className={`layer-btn legacy-road-toggle ${showKCCA ? "active kcca" : ""}`}
             onClick={() => setShowKCCA(!showKCCA)}
             title="KCCA urban roads"
           >
@@ -743,6 +887,13 @@ function MapPanel({ programme }) {
           </button>
         </div>
       </div>
+      <div className="road-filter-bar">
+        <label><ListFilter size={16} /> System<select value={roadSystemFilter} onChange={(e) => setRoadSystemFilter(e.target.value)}>{roadOptions.systems.map((x) => <option key={x}>{x}</option>)}</select></label>
+        <label>Class<select value={roadClassFilter} onChange={(e) => setRoadClassFilter(e.target.value)}>{roadOptions.classes.map((x) => <option key={x}>{x}</option>)}</select></label>
+        <label>Surface<select value={surfaceFilter} onChange={(e) => setSurfaceFilter(e.target.value)}>{roadOptions.surfaces.map((x) => <option key={x}>{x}</option>)}</select></label>
+        <label>Sort<select value={roadSort} onChange={(e) => setRoadSort(e.target.value)}>{["length_km", "road_name", "road_class", "region", "district", "quality_flag"].map((x) => <option key={x}>{x}</option>)}</select></label>
+        <strong>{filteredRoads.length.toLocaleString()} roads</strong>
+      </div>
       <div className="map-container" ref={mapRef}>
         {loading && (
           <div className="map-loading">
@@ -752,6 +903,7 @@ function MapPanel({ programme }) {
         )}
       </div>
       <div className="map-legend">
+        <span><i className="dot ducar-dot" /> DUCAR</span>
         <span><i className="dot selected" /> Selected</span>
         <span><i className="dot deferred" /> Deferred</span>
         <span><i className="dot referred" /> Referred</span>
@@ -775,6 +927,8 @@ function App() {
   const [analysis, setAnalysis] = useState(() => localAnalysis(sample, 250000000, 5));
   const [apiMode, setApiMode] = useState("checking");
   const [filter, setFilter] = useState("All");
+  const [programmeSortField, setProgrammeSortField] = useState("rank");
+  const [programmeSortDirection, setProgrammeSortDirection] = useState("asc");
   const [activeSection, setActiveSection] = useState(() => window.location.hash.replace("#", "") || "overview");
 
   async function runAnalysis(nextRecords = records) {
@@ -811,7 +965,13 @@ function App() {
   }, []);
 
   const programme = analysis.programme || [];
-  const shown = filter === "All" ? programme : programme.filter((p) => p.status === filter);
+  const programmeAttributes = Object.keys(programme[0] || {});
+  const shown = (filter === "All" ? programme : programme.filter((p) => p.status === filter)).toSorted((a, b) => {
+    const av = a[programmeSortField];
+    const bv = b[programmeSortField];
+    const result = typeof av === "number" && typeof bv === "number" ? av - bv : String(av || "").localeCompare(String(bv || ""));
+    return programmeSortDirection === "asc" ? result : -result;
+  });
   const grouped = useMemo(() => {
     const group = {};
     for (const item of programme) {
@@ -863,6 +1023,7 @@ function App() {
     overview: { ...activePage, title: "Dynamic ML and Geospatial Budget Allocation Tool" },
     controls: { ...activePage, title: "Budget Inputs and Scenario Controls" },
     analytics: { ...activePage, title: "Live Allocation Analytics" },
+    traffic: { ...activePage, title: "Traffic, Economic and Deterioration Analytics" },
     framework: { ...activePage, title: "Animated Framework and Tool Process Flow" },
     gis: { ...activePage, title: "GIS Surface and National Road Layers" },
     allocation: { ...activePage, title: "Budget Rationalisation by Region and Functional Class" },
@@ -948,6 +1109,7 @@ function App() {
           )}
 
           {activeSection === "framework" && <ProcessFlow analysis={analysis} grouped={grouped} />}
+          {activeSection === "traffic" && <TrafficAnalyticsPanel programme={programme} grouped={grouped} />}
           {activeSection === "gis" && <MapPanel programme={programme} />}
 
           {activeSection === "allocation" && (
@@ -973,6 +1135,11 @@ function App() {
               <div className="panel-title">
                 <Route size={18} />
                 <h2>Editable Programme Table</h2>
+              </div>
+              <div className="table-toolbar">
+                <label>Sort attribute<select value={programmeSortField} onChange={(e) => setProgrammeSortField(e.target.value)}>{programmeAttributes.map((x) => <option key={x}>{x}</option>)}</select></label>
+                <label>Direction<select value={programmeSortDirection} onChange={(e) => setProgrammeSortDirection(e.target.value)}><option value="asc">Ascending</option><option value="desc">Descending</option></select></label>
+                <strong>{shown.length} displayed records</strong>
               </div>
               <div className="table-wrap">
                 <table>

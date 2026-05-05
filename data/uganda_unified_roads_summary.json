@@ -1,0 +1,24 @@
+{
+  "generated_at_utc": "2026-05-05T12:48:20.641255+00:00",
+  "output": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\data\\uganda_unified_roads_web.geojson",
+  "record_count": 16260,
+  "total_length_km": 93342.09,
+  "by_road_system": {
+    "DUCAR": 345,
+    "National": 1014,
+    "Open mapping": 14821,
+    "Urban": 80
+  },
+  "by_source": {
+    "DUCAR district roads": 345,
+    "KCCA roads": 80,
+    "National road network FY25/26": 1014,
+    "OpenStreetMap / Geofabrik": 14821
+  },
+  "by_quality_flag": {
+    "District join missing": 146,
+    "Name missing in OSM": 7420,
+    "OK": 8694
+  },
+  "growth_logic": "Re-run source mapping scripts, then this merge script. New road features inherit source/provenance and are appended into one app road layer."
+}
