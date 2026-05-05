@@ -1,10 +1,22 @@
 {
-  "name": "ducar-decision-support-app",
-  "version": "0.1.0",
-  "description": "Offline DUCAR maintenance prioritisation decision support app",
+  "name": "ducar-priority-studio",
+  "version": "0.3.0",
+  "description": "Dynamic React and Python ML/geospatial decision-support app for DUCAR road and bridge maintenance prioritisation",
   "type": "module",
   "scripts": {
-    "test": "node tests/prioritisation.test.js"
+    "dev": "vite --host 127.0.0.1 --port 5173",
+    "api": "python api/server.py",
+    "test": "node tests/prioritisation.test.js",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 4173"
   },
+  "dependencies": {
+    "@vitejs/plugin-react": "^5.0.4",
+    "vite": "^7.1.11",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "lucide-react": "^0.468.0"
+  },
+  "devDependencies": {},
   "license": "MIT"
 }

@@ -30,3 +30,14 @@ export function prioritise(records, budget) {
     return {...record, rank: index + 1, status};
   });
 }
+
+export function summarise(programme) {
+  return programme.reduce((acc, item) => {
+    acc.total += 1;
+    acc.cost += item.cost || 0;
+    acc[item.status] = (acc[item.status] || 0) + 1;
+    acc.byRegion[item.region || "Unclassified"] = (acc.byRegion[item.region || "Unclassified"] || 0) + (item.cost || 0);
+    acc.byClass[item.functionalClass || "Unclassified"] = (acc.byClass[item.functionalClass || "Unclassified"] || 0) + (item.cost || 0);
+    return acc;
+  }, { total: 0, cost: 0, Selected: 0, Deferred: 0, Referred: 0, "Check cost": 0, byRegion: {}, byClass: {} });
+}
