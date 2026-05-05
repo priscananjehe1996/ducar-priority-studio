@@ -4,3 +4,7 @@ dist/
 *.log
 __pycache__/
 *.pyc
+data_sources/
+data/*.gpkg
+data/uganda_roads_master.geojson
+public/data/uganda_osm_roads_web.geojson

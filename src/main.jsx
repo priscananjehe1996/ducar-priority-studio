@@ -258,6 +258,8 @@ function MapPanel({ programme }) {
 
   const [showDistricts, setShowDistricts] = useState(true);
   const [showRoads, setShowRoads] = useState(true);
+  const [showOsmMajor, setShowOsmMajor] = useState(true);
+  const [showRoadSummary, setShowRoadSummary] = useState(true);
   const [showKCCA, setShowKCCA] = useState(true);
   const [showAssets, setShowAssets] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -344,6 +346,61 @@ function MapPanel({ programme }) {
         }).addTo(map);
       }
 
+      // All-road district summary from OSM + DUCAR master build
+      const summaryRes = await fetch(`${BASE}data/uganda_roads_district_summary.geojson`);
+      if (summaryRes.ok) {
+        const summaryData = await summaryRes.json();
+        layersRef.current.roadSummary = L.geoJSON(summaryData, {
+          style: (feature) => {
+            const km = Number(feature.properties.total_km || 0);
+            const intensity = Math.min(0.44, 0.08 + km / 90000);
+            return {
+              color: "rgba(52,211,153,0.5)",
+              weight: 1,
+              fillColor: "#34d399",
+              fillOpacity: intensity,
+            };
+          },
+          onEachFeature: (feature, layer) => {
+            const p = feature.properties;
+            layer.bindTooltip(
+              `<strong>${p.district || "District"}</strong><br/>All road records: ${Number(p.road_records || 0).toLocaleString()}<br/>Total length: ${Number(p.total_km || 0).toLocaleString()} km<br/>OSM length: ${Number(p.osm_km || 0).toLocaleString()} km<br/>Verify: ${Number(p.verify_count || 0).toLocaleString()}`,
+              { sticky: true, className: "map-tooltip" }
+            );
+          },
+        }).addTo(map);
+      }
+
+      // OSM major/named roads
+      const osmRes = await fetch(`${BASE}data/uganda_osm_major_roads_web.geojson`);
+      if (osmRes.ok) {
+        const osmData = await osmRes.json();
+        const classColor = {
+          "National Road": "#60a5fa",
+          "District Road": "#fbbf24",
+          "Urban Road": "#c084fc",
+          "Community Access Road": "#34d399",
+          "Unclassified - Verify": "#94a3b8",
+        };
+        layersRef.current.osmMajor = L.geoJSON(osmData, {
+          style: (feature) => {
+            const cls = feature.properties.ducar_class;
+            return {
+              color: classColor[cls] || "#94a3b8",
+              weight: cls === "National Road" ? 2.2 : 1.3,
+              opacity: cls === "Unclassified - Verify" ? 0.35 : 0.68,
+            };
+          },
+          onEachFeature: (feature, layer) => {
+            const p = feature.properties;
+            layer.bindTooltip(
+              `<strong>${p.road_name || p.road_ref || "Unnamed OSM road"}</strong><br/>OSM: ${p.osm_highway || "—"}<br/>DUCAR: ${p.ducar_class || "—"}<br/>District: ${p.district || "—"}<br/>${Number(p.length_km || 0).toFixed(2)} km<br/>Quality: ${p.data_quality_flag || "—"}`,
+              { sticky: true, className: "map-tooltip" }
+            );
+          },
+        }).addTo(map);
+      }
+
       // KCCA roads
       const kccaRes = await fetch(`${BASE}data/kcca_roads.geojson`);
       if (kccaRes.ok) {
@@ -422,6 +479,8 @@ function MapPanel({ programme }) {
 
   useEffect(() => { toggleLayer("districts", showDistricts); }, [showDistricts, toggleLayer]);
   useEffect(() => { toggleLayer("roads", showRoads); }, [showRoads, toggleLayer]);
+  useEffect(() => { toggleLayer("osmMajor", showOsmMajor); }, [showOsmMajor, toggleLayer]);
+  useEffect(() => { toggleLayer("roadSummary", showRoadSummary); }, [showRoadSummary, toggleLayer]);
   useEffect(() => { toggleLayer("kcca", showKCCA); }, [showKCCA, toggleLayer]);
   useEffect(() => { toggleLayer("assets", showAssets); }, [showAssets, toggleLayer]);
 
@@ -446,6 +505,20 @@ function MapPanel({ programme }) {
             title="District road network"
           >
             {showRoads ? <Eye size={14} /> : <EyeOff size={14} />} Roads
+          </button>
+          <button
+            className={`layer-btn ${showOsmMajor ? "active osm" : ""}`}
+            onClick={() => setShowOsmMajor(!showOsmMajor)}
+            title="OpenStreetMap major and named roads"
+          >
+            {showOsmMajor ? <Eye size={14} /> : <EyeOff size={14} />} OSM Roads
+          </button>
+          <button
+            className={`layer-btn ${showRoadSummary ? "active summary" : ""}`}
+            onClick={() => setShowRoadSummary(!showRoadSummary)}
+            title="District-level all-road summary"
+          >
+            {showRoadSummary ? <Eye size={14} /> : <EyeOff size={14} />} All-road Summary
           </button>
           <button
             className={`layer-btn ${showKCCA ? "active kcca" : ""}`}
@@ -475,6 +548,8 @@ function MapPanel({ programme }) {
         <span><i className="dot selected" /> Selected</span>
         <span><i className="dot deferred" /> Deferred</span>
         <span><i className="dot referred" /> Referred</span>
+        <span><i className="dot osm-dot" /> OSM major/named</span>
+        <span><i className="dot summary-dot" /> All-road density</span>
         <span><i className="dot kcca-dot" /> KCCA</span>
         <span><i className="dot district-dot" /> District boundary</span>
       </div>
