@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DUCAR Priority Studio</title>
+<style>
+:root{
+  --blue:#1f4e79;--green:#2f7d32;--gold:#d9a441;--red:#b42318;
+  --ink:#1f2937;--muted:#667085;--line:#d0d5dd;--bg:#f7f9fb;--paper:#fff;
+  --wash:#eaf3f8;--softgreen:#edf7ee;--softgold:#fff7df;--shadow:0 16px 40px rgba(31,78,121,.12)
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Aptos,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 22px}
+.brand{display:flex;align-items:center;gap:12px}
+.mark{width:42px;height:42px;border-radius:8px;background:var(--blue);display:grid;place-items:center;color:#fff;font-weight:800}
+h1{font-size:21px;line-height:1.15;margin:0;color:var(--blue);letter-spacing:0}
+.sub{font-size:12px;color:var(--muted);margin-top:3px}
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+button{border:0;border-radius:7px;background:var(--blue);color:white;padding:9px 12px;font-weight:700;cursor:pointer}
+button.secondary{background:#e4e7ec;color:#344054}
+button.ghost{background:transparent;color:var(--blue);border:1px solid var(--line)}
+main{max-width:1540px;margin:0 auto;padding:18px;display:grid;grid-template-columns:360px 1fr;gap:18px}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow)}
+.panel h2{font-size:15px;color:var(--blue);margin:0 0 8px 0}
+.panel-body{padding:15px}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{display:block;font-size:11px;font-weight:800;color:#344054}
+input,select,textarea{width:100%;margin-top:5px;padding:9px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink)}
+textarea{font-family:Consolas,monospace}
+.wide{grid-column:1/-1}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:12px;margin-bottom:14px}
+.metric{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:13px;position:relative;overflow:hidden}
+.metric:before{content:"";position:absolute;inset:0 auto 0 0;width:5px;background:var(--blue)}
+.metric.green:before{background:var(--green)}.metric.gold:before{background:var(--gold)}.metric.red:before{background:var(--red)}
+.metric strong{display:block;font-size:22px;color:var(--ink);line-height:1.05}
+.metric span{font-size:11px;color:var(--muted)}
+.workspace{padding:14px}
+.tabs{display:flex;gap:8px;margin-bottom:12px;align-items:center;flex-wrap:wrap}
+.tabs button{margin:0;background:#e4e7ec;color:#344054}.tabs button.active{background:var(--blue);color:#fff}
+.filterbar{display:flex;gap:10px;align-items:end;margin:8px 0 12px 0;flex-wrap:wrap}
+.filterbar label{min-width:170px}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+th{position:sticky;top:73px;background:#edf4fa;color:var(--blue);z-index:2}
+th,td{border-bottom:1px solid var(--line);padding:9px;text-align:left;vertical-align:top}
+tbody tr:hover{background:#f9fbfd}
+.status{display:inline-flex;align-items:center;border-radius:999px;padding:3px 8px;font-size:11px;font-weight:800}
+.Selected{background:var(--softgreen);color:var(--green)}.Deferred{background:var(--softgold);color:#8a5a00}.Referred{background:#fee4e2;color:var(--red)}.Check{background:#eef2f6;color:#475467}
+.scorebar{height:7px;background:#e4e7ec;border-radius:99px;overflow:hidden;margin-top:5px}.scorebar div{height:100%;background:var(--blue)}
+.split{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}
+.note{background:var(--wash);border-left:4px solid var(--blue);border-radius:8px;padding:12px;font-size:13px;line-height:1.5}
+.mini-table td:first-child{font-weight:800;color:var(--blue)}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+@media(max-width:1000px){main{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}.formgrid{grid-template-columns:1fr}th{top:89px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="topbar">
+    <div class="brand"><div class="mark">D</div><div><h1>DUCAR Priority Studio</h1><div class="sub">Offline, editable, source-traceable decision support for roads, bridges, drainage and access</div></div></div>
+    <div class="toolbar">
+      <button class="ghost" onclick="saveState()">Save local draft</button>
+      <button class="ghost" onclick="loadState()">Load draft</button>
+      <button class="secondary" onclick="loadSample()">Sample data</button>
+      <button onclick="downloadCsv()">CSV</button>
+      <button onclick="downloadGeoJson()">GeoJSON</button>
+    </div>
+  </div>
+</header>
+<main>
+<aside class="panel">
+  <div class="panel-body">
+    <h2>Planning Controls</h2>
+    <div class="formgrid">
+      <label class="wide">Received Budget UGX<input id="budget" type="number" value="250000000" oninput="calc()"></label>
+      <label>Emergency Reserve %<input id="reserve" type="number" value="5" oninput="calc()"></label>
+      <label>Scenario<select id="scenario" onchange="setScenario()"><option value="250000000">Base</option><option value="125000000">Low</option><option value="500000000">Enhanced</option></select></label>
+    </div>
+  </div>
+  <div class="panel-body" style="border-top:1px solid var(--line)">
+    <h2>Add / Edit Record</h2>
+    <div class="formgrid">
+      <label>Asset Type<select id="assetType"><option>Road</option><option>Bridge</option></select></label>
+      <label>Asset ID<input id="assetId" value="DR-NEW"></label>
+      <label class="wide">Administrative Area<input id="admin" value="Sample District"></label>
+      <label class="wide">Intervention<input id="intervention" value="Grading"></label>
+      <label>Condition<input id="condition" type="number" min="1" max="5" value="3"></label>
+      <label>Criticality<input id="criticality" type="number" min="1" max="5" value="4"></label>
+      <label>Traffic / Usage<input id="traffic" type="number" min="1" max="5" value="3"></label>
+      <label>Climate / Drainage<input id="climate" type="number" min="1" max="5" value="4"></label>
+      <label>Safety<input id="safety" type="number" min="1" max="5" value="3"></label>
+      <label>Equity<input id="equity" type="number" min="1" max="5" value="3"></label>
+      <label>Readiness<input id="readiness" type="number" min="1" max="5" value="4"></label>
+      <label>Maintainable<select id="maint"><option>Yes</option><option>No</option></select></label>
+      <label>Quantity<input id="qty" type="number" value="5"></label>
+      <label>Unit Rate UGX<input id="rate" type="number" value="620000"></label>
+      <button class="wide" onclick="addRecord()">Add record</button>
+    </div>
+  </div>
+</aside>
+<section class="panel workspace">
+  <div class="metrics">
+    <div class="metric"><strong id="mBudget">0</strong><span>Budget net of reserve</span></div>
+    <div class="metric green"><strong id="mSelected">0</strong><span>Selected cost</span></div>
+    <div class="metric gold"><strong id="mDeferred">0</strong><span>Deferred maintenance backlog</span></div>
+    <div class="metric red"><strong id="mReferral">0</strong><span>Referral cost / capital backlog</span></div>
+  </div>
+  <div class="tabs">
+    <button class="active" onclick="showTab('programme',this)">Programme</button>
+    <button onclick="showTab('analytics',this)">Analytics</button>
+    <button onclick="showTab('assumptions',this)">Assumptions</button>
+    <button onclick="showTab('gis',this)">GIS</button>
+  </div>
+  <div id="programme">
+    <div class="filterbar">
+      <label>Status Filter<select id="statusFilter" onchange="renderTable()"><option>All</option><option>Selected</option><option>Deferred</option><option>Referred</option><option>Check cost</option></select></label>
+      <label>Search<input id="search" placeholder="Asset, area, intervention" oninput="renderTable()"></label>
+    </div>
+    <table id="tbl"></table>
+  </div>
+  <div id="analytics" style="display:none" class="split">
+    <div><table class="mini-table" id="analyticsTbl"></table></div>
+    <div class="note"><strong>Reading the output:</strong><br>Selected items are eligible maintenance works that fit within the budget after reserve. Deferred items are eligible maintenance needs that do not fit. Referred items are beyond maintenance or require capital/rehabilitation decision pathways.</div>
+  </div>
+  <div id="assumptions" style="display:none">
+    <table class="mini-table" id="assumptionsTbl"></table>
+  </div>
+  <div id="gis" style="display:none">
+    <textarea id="geo" rows="22"></textarea>
+  </div>
+</section>
+</main>
+<script>
+const CONFIG={
+ roadWeights:{condition:25,criticality:20,traffic:15,climate:15,safety:10,equity:10,readiness:5},
+ bridgeWeights:{condition:30,criticality:25,traffic:10,climate:15,safety:10,equity:5,readiness:5}
+};
+let records=[];
+const ids=["assetType","assetId","admin","intervention","condition","criticality","traffic","climate","safety","equity","readiness","maint","qty","rate"];
+function el(id){return document.getElementById(id)}
+function n(v){return Number(v||0)}
+function money(v){return Math.round(v).toLocaleString("en-US")}
+function recordFromForm(){let r={}; ids.forEach(id=>r[id]=el(id).value); ["condition","criticality","traffic","climate","safety","equity","readiness","qty","rate"].forEach(k=>r[k]=n(r[k])); return r}
+function score(r){const w=r.assetType==="Bridge"?CONFIG.bridgeWeights:CONFIG.roadWeights; return Math.round((r.condition*w.condition+r.criticality*w.criticality+r.traffic*w.traffic+r.climate*w.climate+r.safety*w.safety+r.equity*w.equity+r.readiness*w.readiness)/5*100)/100}
+function calc(){const budget=n(el("budget").value)*(1-n(el("reserve").value)/100); let running=0,deferred=0,referral=0,selected=0;
+ records.forEach(r=>{r.cost=n(r.qty)*n(r.rate);r.score=score(r);r.elig=r.maint==="No"?"Referral":(r.cost>0?"Eligible":"Check cost")});
+ records.sort((a,b)=>b.score-a.score);
+ records.forEach((r,i)=>{r.rank=i+1;if(r.elig==="Referral"){r.status="Referred";referral+=r.cost}else if(r.elig==="Eligible"&&running+r.cost<=budget){r.status="Selected";running+=r.cost;selected++}else if(r.elig==="Eligible"){r.status="Deferred";deferred+=r.cost}else{r.status="Check cost"}});
+ el("mBudget").textContent=money(budget);el("mSelected").textContent=money(running);el("mDeferred").textContent=money(deferred);el("mReferral").textContent=money(referral);
+ renderTable();renderAnalytics({budget,running,deferred,referral,selected});renderAssumptions();renderGeo();
+}
+function addRecord(){records.push(recordFromForm());calc()}
+function badge(status){return `<span class="status ${status.split(" ")[0]}">${status}</span>`}
+function renderTable(){const f=el("statusFilter").value;const q=el("search").value.toLowerCase();let rows=records.filter(r=>(f==="All"||r.status===f)&&[r.assetId,r.admin,r.intervention,r.assetType].join(" ").toLowerCase().includes(q));
+ if(!rows.length){el("tbl").innerHTML='<tr><td class="empty">No matching records</td></tr>';return}
+ let h="<thead><tr><th>Rank</th><th>Asset</th><th>Area</th><th>Intervention</th><th>Priority</th><th>Cost</th><th>Status</th></tr></thead><tbody>";
+ rows.forEach(r=>{h+=`<tr><td>${r.rank}</td><td><strong>${r.assetType}</strong><br>${r.assetId}</td><td>${r.admin}</td><td>${r.intervention}</td><td>${r.score}<div class="scorebar"><div style="width:${Math.min(100,r.score)}%"></div></div></td><td>${money(r.cost)}</td><td>${badge(r.status)}</td></tr>`});
+ el("tbl").innerHTML=h+"</tbody>";
+}
+function renderAnalytics(m){const total=records.length;el("analyticsTbl").innerHTML=`<tr><td>Total records</td><td>${total}</td></tr><tr><td>Selected items</td><td>${m.selected}</td></tr><tr><td>Budget utilisation</td><td>${m.budget?Math.round(m.running/m.budget*100):0}%</td></tr><tr><td>Average priority</td><td>${total?Math.round(records.reduce((a,r)=>a+r.score,0)/total):0}</td></tr><tr><td>Bridge records</td><td>${records.filter(r=>r.assetType==="Bridge").length}</td></tr>`}
+function renderAssumptions(){const road=CONFIG.roadWeights, bridge=CONFIG.bridgeWeights;el("assumptionsTbl").innerHTML=`<tr><td>Road weights</td><td>${JSON.stringify(road)}</td></tr><tr><td>Bridge weights</td><td>${JSON.stringify(bridge)}</td></tr><tr><td>Maintainability rule</td><td>No = Referred; Yes with cost = Eligible</td></tr><tr><td>Source trail</td><td>See workbook APA_References and Decision_Assumptions sheets.</td></tr>`}
+function renderGeo(){const fc={type:"FeatureCollection",features:records.map((r,i)=>({type:"Feature",properties:{Asset_ID:r.assetId,Asset_Type:r.assetType,Admin_Area:r.admin,Intervention:r.intervention,Status:r.status,Cost_UGX:r.cost,Priority_Score:r.score},geometry:{type:"Point",coordinates:[32+i*.05,1+i*.03]}}))};el("geo").value=JSON.stringify(fc,null,2)}
+function rows(){return [["Rank","Asset_Type","Asset_ID","Admin_Area","Intervention","Score","Cost_UGX","Status"],...records.map(r=>[r.rank,r.assetType,r.assetId,r.admin,r.intervention,r.score,r.cost,r.status])]}
+function downloadCsv(){const csv=rows().map(r=>r.map(x=>`"${String(x).replaceAll('"','""')}"`).join(",")).join("\n");download("ducar_programme_export.csv",csv,"text/csv")}
+function downloadGeoJson(){download("ducar_programme_export.geojson",el("geo").value,"application/geo+json")}
+function download(name,text,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click()}
+function saveState(){localStorage.setItem("ducar-priority-studio",JSON.stringify({budget:el("budget").value,reserve:el("reserve").value,records}));}
+function loadState(){const s=JSON.parse(localStorage.getItem("ducar-priority-studio")||"null");if(!s)return;el("budget").value=s.budget;el("reserve").value=s.reserve;records=s.records||[];calc()}
+function setScenario(){el("budget").value=el("scenario").value;calc()}
+function showTab(id,btn){["programme","analytics","assumptions","gis"].forEach(x=>el(x).style.display=x===id?"block":"none");document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));btn.classList.add("active")}
+function loadSample(){records=[{assetType:"Road",assetId:"DR-001",admin:"Namutumba",intervention:"Grading",condition:2,criticality:4,traffic:2,climate:3,safety:3,equity:3,readiness:3,maint:"Yes",qty:18.5,rate:620000},{assetType:"Road",assetId:"DR-044",admin:"Koboko",intervention:"Rehabilitation referral",condition:5,criticality:5,traffic:2,climate:5,safety:5,equity:3,readiness:3,maint:"No",qty:31,rate:0},{assetType:"Bridge",assetId:"BR-022",admin:"Bukedea",intervention:"Approach and waterway repair",condition:4,criticality:5,traffic:3,climate:4,safety:4,equity:3,readiness:3,maint:"Yes",qty:1,rate:14500000},{assetType:"Road",assetId:"UR-014",admin:"Mbarara City",intervention:"Pothole patching",condition:3,criticality:5,traffic:5,climate:3,safety:5,equity:3,readiness:5,maint:"Yes",qty:2.8,rate:4500000}];calc()}
+loadSample();
+</script>
+</body>
+</html>

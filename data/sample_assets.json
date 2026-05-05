@@ -1,0 +1,34 @@
+[
+  {
+    "assetType": "Road",
+    "assetId": "DR-001",
+    "admin": "Namutumba",
+    "intervention": "Grading",
+    "condition": 2,
+    "criticality": 4,
+    "traffic": 2,
+    "climate": 3,
+    "safety": 3,
+    "equity": 3,
+    "readiness": 3,
+    "maintainable": "Yes",
+    "quantity": 18.5,
+    "unitRate": 620000
+  },
+  {
+    "assetType": "Bridge",
+    "assetId": "BR-022",
+    "admin": "Bukedea",
+    "intervention": "Approach and waterway repair",
+    "condition": 4,
+    "criticality": 5,
+    "traffic": 3,
+    "climate": 4,
+    "safety": 4,
+    "equity": 3,
+    "readiness": 3,
+    "maintainable": "Yes",
+    "quantity": 1,
+    "unitRate": 14500000
+  }
+]

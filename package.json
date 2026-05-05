@@ -1,0 +1,10 @@
+{
+  "name": "ducar-decision-support-app",
+  "version": "0.1.0",
+  "description": "Offline DUCAR maintenance prioritisation decision support app",
+  "type": "module",
+  "scripts": {
+    "test": "node tests/prioritisation.test.js"
+  },
+  "license": "MIT"
+}

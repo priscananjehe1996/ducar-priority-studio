@@ -1,0 +1,40 @@
+{
+  "appName": "DUCAR Priority Studio",
+  "version": "0.2.0",
+  "currency": "UGX",
+  "defaultBudget": 250000000,
+  "defaultReservePercent": 5,
+  "roadWeights": {
+    "condition": 25,
+    "criticalAccess": 20,
+    "trafficUsage": 15,
+    "climateDrainage": 15,
+    "safety": 10,
+    "equity": 10,
+    "readiness": 5
+  },
+  "bridgeWeights": {
+    "condition": 30,
+    "criticalAccess": 25,
+    "trafficUsage": 10,
+    "climateDrainage": 15,
+    "safety": 10,
+    "equity": 5,
+    "readiness": 5
+  },
+  "statusColors": {
+    "Selected": "#2f7d32",
+    "Deferred": "#a66f00",
+    "Referred": "#b42318",
+    "Check cost": "#475467"
+  },
+  "editableFields": [
+    "budget",
+    "reserve",
+    "weights",
+    "asset records",
+    "unit rates",
+    "sample data",
+    "APA references"
+  ]
+}
