@@ -50,6 +50,8 @@ def district_roads() -> gpd.GeoDataFrame:
     out["quality_flag"] = out["road_name"].map(lambda x: "Name missing" if not x else "OK")
     out["mapping_status"] = "existing-source"
     out["visual_intelligence_status"] = "candidate-for-field-validation"
+    out["ducar_analysis_scope"] = "Included"
+    out["exemption_clause"] = "Non-national road retained for DUCAR analysis subject to ownership and field validation."
     out["source_file"] = str(src)
     return out
 
@@ -70,7 +72,9 @@ def national_roads() -> gpd.GeoDataFrame:
     out["length_km"] = out.apply(lambda r: float(r.get("length_km") or 0), axis=1)
     out["quality_flag"] = "OK"
     out["mapping_status"] = "existing-source"
-    out["visual_intelligence_status"] = "reference-layer"
+    out["visual_intelligence_status"] = "reference-layer-national-exemption"
+    out["ducar_analysis_scope"] = "Reference only - excluded"
+    out["exemption_clause"] = "National road network is mapped for coordination, connectivity and double-counting checks, but excluded from DUCAR prioritisation and budget allocation unless formally delegated."
     out["source_file"] = str(src)
     return out
 
@@ -92,6 +96,14 @@ def osm_roads() -> gpd.GeoDataFrame:
     out["quality_flag"] = out.apply(lambda r: safe(r.get("data_quality_flag")) or "Verify", axis=1)
     out["mapping_status"] = "open-source-ingested"
     out["visual_intelligence_status"] = "candidate-for-name-surface-class-validation"
+    out["ducar_analysis_scope"] = out["road_class"].map(
+        lambda x: "Reference only - excluded" if x == "National Road" else "Included pending validation"
+    )
+    out["exemption_clause"] = out["ducar_analysis_scope"].map(
+        lambda x: "OSM road class indicates likely national road; keep as reference until authority ownership is confirmed."
+        if x.startswith("Reference")
+        else "Open-mapped non-national candidate retained for DUCAR analysis after validation."
+    )
     out["source_file"] = str(src)
     return out
 
@@ -113,6 +125,8 @@ def kcca_roads() -> gpd.GeoDataFrame:
     out["quality_flag"] = "OK"
     out["mapping_status"] = "existing-source"
     out["visual_intelligence_status"] = "urban-reference-layer"
+    out["ducar_analysis_scope"] = "Included pending urban mandate confirmation"
+    out["exemption_clause"] = "Urban road retained for DUCAR/KCCA coordination analysis, subject to mandate confirmation."
     out["source_file"] = str(src)
     return out
 
@@ -133,11 +147,15 @@ def main() -> None:
         "quality_flag",
         "mapping_status",
         "visual_intelligence_status",
+        "ducar_analysis_scope",
+        "exemption_clause",
         "source_file",
         "geometry",
     ]
     merged = gpd.GeoDataFrame(pd.concat([layer[cols] for layer in layers], ignore_index=True), geometry="geometry", crs="EPSG:4326")
     merged["length_km"] = merged["length_km"].fillna(0).astype(float).round(3)
+    ducar_scope = merged[~merged["ducar_analysis_scope"].str.startswith("Reference", na=False)]
+    exempt_scope = merged[merged["ducar_analysis_scope"].str.startswith("Reference", na=False)]
     merged.to_file(OUT, driver="GeoJSON")
 
     summary = {
@@ -145,10 +163,16 @@ def main() -> None:
         "output": str(OUT),
         "record_count": int(len(merged)),
         "total_length_km": round(float(merged["length_km"].sum()), 2),
+        "ducar_analysis_record_count": int(len(ducar_scope)),
+        "ducar_analysis_length_km": round(float(ducar_scope["length_km"].sum()), 2),
+        "reference_exempt_record_count": int(len(exempt_scope)),
+        "reference_exempt_length_km": round(float(exempt_scope["length_km"].sum()), 2),
         "by_road_system": merged.groupby("road_system").size().to_dict(),
+        "by_ducar_analysis_scope": merged.groupby("ducar_analysis_scope").size().to_dict(),
         "by_source": merged.groupby("road_source").size().to_dict(),
         "by_quality_flag": merged.groupby("quality_flag").size().to_dict(),
         "growth_logic": "Re-run source mapping scripts, then this merge script. New road features inherit source/provenance and are appended into one app road layer.",
+        "national_exemption_clause": "National roads remain visible in the unified map for reference, connectivity, and double-counting checks, but all DUCAR analysis focuses on non-national roads unless a formal delegation exists.",
     }
     SUMMARY.write_text(json.dumps(summary, indent=2), encoding="utf-8")
     print(json.dumps(summary, indent=2))

@@ -1,13 +1,23 @@
 {
-  "generated_at_utc": "2026-05-05T12:48:20.641255+00:00",
+  "generated_at_utc": "2026-05-05T12:58:18.261428+00:00",
   "output": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\data\\uganda_unified_roads_web.geojson",
   "record_count": 16260,
   "total_length_km": 93342.09,
+  "ducar_analysis_record_count": 13441,
+  "ducar_analysis_length_km": 67502.43,
+  "reference_exempt_record_count": 2819,
+  "reference_exempt_length_km": 25839.67,
   "by_road_system": {
     "DUCAR": 345,
     "National": 1014,
     "Open mapping": 14821,
     "Urban": 80
+  },
+  "by_ducar_analysis_scope": {
+    "Included": 345,
+    "Included pending urban mandate confirmation": 80,
+    "Included pending validation": 13016,
+    "Reference only - excluded": 2819
   },
   "by_source": {
     "DUCAR district roads": 345,
@@ -20,5 +30,6 @@
     "Name missing in OSM": 7420,
     "OK": 8694
   },
-  "growth_logic": "Re-run source mapping scripts, then this merge script. New road features inherit source/provenance and are appended into one app road layer."
+  "growth_logic": "Re-run source mapping scripts, then this merge script. New road features inherit source/provenance and are appended into one app road layer.",
+  "national_exemption_clause": "National roads remain visible in the unified map for reference, connectivity, and double-counting checks, but all DUCAR analysis focuses on non-national roads unless a formal delegation exists."
 }

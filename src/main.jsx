@@ -179,6 +179,9 @@ const OPEN_DATA_LOGIC = [
   "Local UNRA/DUCAR/KCCA shapefiles remain authoritative where they conflict with generic open mapping.",
 ];
 
+const DUCAR_EXEMPTION_TEXT =
+  "National roads are visible as a reference layer for connectivity and double-counting checks, but DUCAR analysis, prioritisation and budget allocation focus on non-national roads unless a formal delegation exists.";
+
 /* ─── Metric card ─── */
 function Metric({ icon: Icon, label, value, tone = "blue" }) {
   return (
@@ -344,8 +347,9 @@ function TrafficAnalyticsPanel({ programme, grouped }) {
       <section className="traffic-command-card">
         <p className="eyebrow">Traffic and economic engine</p>
         <strong>{trafficIndex}</strong>
-        <span>network pressure score from traffic, safety, surface and risk inputs</span>
+        <span>DUCAR non-national network pressure score from traffic, safety, surface and risk inputs</span>
         <div className="index-scale"><i style={{ left: `${trafficIndex}%` }} /></div>
+        <p className="exemption-text">{DUCAR_EXEMPTION_TEXT}</p>
       </section>
       <section className="signal-grid">
         <SignalTile label="Climate stress" value={`${climateIndex}%`} sublabel="screening placeholder" tone="cyan" />
@@ -783,18 +787,18 @@ function MapPanel({ programme }) {
     const map = mapInstance.current;
     if (!map || !roadData) return;
     if (unifiedRoadLayerRef.current) map.removeLayer(unifiedRoadLayerRef.current);
-    const colors = { DUCAR: "#f59e0b", National: "#2563eb", "Open mapping": "#059669", Urban: "#9333ea" };
+    const colors = { DUCAR: "#f59e0b", National: "#64748b", "Open mapping": "#059669", Urban: "#9333ea" };
     unifiedRoadLayerRef.current = L.geoJSON({ type: "FeatureCollection", features: filteredRoads }, {
       style: (feature) => ({
         color: colors[feature.properties.road_system] || "#64748b",
         weight: feature.properties.road_system === "National" ? 2.7 : 1.6,
-        opacity: feature.properties.quality_flag === "OK" ? 0.84 : 0.48,
-        dashArray: feature.properties.quality_flag === "OK" ? null : "5 4",
+        opacity: feature.properties.ducar_analysis_scope?.startsWith("Reference") ? 0.34 : feature.properties.quality_flag === "OK" ? 0.84 : 0.48,
+        dashArray: feature.properties.ducar_analysis_scope?.startsWith("Reference") ? "8 6" : feature.properties.quality_flag === "OK" ? null : "5 4",
       }),
       onEachFeature: (feature, layer) => {
         const p = feature.properties;
         layer.bindTooltip(
-          `<strong>${p.road_name || "Road"}</strong><br/>System: ${p.road_system}<br/>Class: ${p.road_class}<br/>Surface: ${p.surface}<br/>Region/District: ${p.region} / ${p.district}<br/>Length: ${Number(p.length_km || 0).toLocaleString()} km<br/>Mapping: ${p.visual_intelligence_status}<br/>Quality: ${p.quality_flag}`,
+          `<strong>${p.road_name || "Road"}</strong><br/>System: ${p.road_system}<br/>Class: ${p.road_class}<br/>Surface: ${p.surface}<br/>Region/District: ${p.region} / ${p.district}<br/>Length: ${Number(p.length_km || 0).toLocaleString()} km<br/>Scope: ${p.ducar_analysis_scope}<br/>Clause: ${p.exemption_clause}<br/>Quality: ${p.quality_flag}`,
           { sticky: true, className: "map-tooltip" }
         );
       },
@@ -888,6 +892,7 @@ function MapPanel({ programme }) {
         </div>
       </div>
       <div className="road-filter-bar">
+        <p className="scope-note">{DUCAR_EXEMPTION_TEXT}</p>
         <label><ListFilter size={16} /> System<select value={roadSystemFilter} onChange={(e) => setRoadSystemFilter(e.target.value)}>{roadOptions.systems.map((x) => <option key={x}>{x}</option>)}</select></label>
         <label>Class<select value={roadClassFilter} onChange={(e) => setRoadClassFilter(e.target.value)}>{roadOptions.classes.map((x) => <option key={x}>{x}</option>)}</select></label>
         <label>Surface<select value={surfaceFilter} onChange={(e) => setSurfaceFilter(e.target.value)}>{roadOptions.surfaces.map((x) => <option key={x}>{x}</option>)}</select></label>
@@ -907,11 +912,12 @@ function MapPanel({ programme }) {
         <span><i className="dot selected" /> Selected</span>
         <span><i className="dot deferred" /> Deferred</span>
         <span><i className="dot referred" /> Referred</span>
-        <span><i className="dot national-dot" /> National roads</span>
+        <span><i className="dot national-dot" /> National reference only</span>
         <span><i className="dot osm-dot" /> OSM major/named</span>
         <span><i className="dot summary-dot" /> All-road density</span>
         <span><i className="dot kcca-dot" /> KCCA</span>
         <span><i className="dot district-dot" /> District boundary</span>
+        <span><i className="dash-sample" /> Excluded/reference or validation needed</span>
       </div>
     </section>
   );
@@ -1025,7 +1031,7 @@ function App() {
     analytics: { ...activePage, title: "Live Allocation Analytics" },
     traffic: { ...activePage, title: "Traffic, Economic and Deterioration Analytics" },
     framework: { ...activePage, title: "Animated Framework and Tool Process Flow" },
-    gis: { ...activePage, title: "GIS Surface and National Road Layers" },
+    gis: { ...activePage, title: "GIS Surface with National Reference Exemption" },
     allocation: { ...activePage, title: "Budget Rationalisation by Region and Functional Class" },
     programme: { ...activePage, title: "Editable Prioritised Programme Table" },
   }[activePage.id];

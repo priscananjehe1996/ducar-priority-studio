@@ -26,6 +26,10 @@ The tool uses OSM `highway=*` tags as a planning-screen input, then maps them in
 
 These are assumptions for technical screening, not statutory road ownership determinations. Final classifications must be validated against gazetted road lists, field survey, responsible authority records, and the Uganda road asset management manuals.
 
+## National Road Exemption Clause
+
+The national road network remains visible in the GIS because it is essential for connectivity, corridor logic, handover checks, and avoiding double-counting. However, it is marked as `Reference only - excluded` in the unified road layer. DUCAR prioritisation, traffic/economic analysis, budget rationalisation, and allocation decisions focus on non-national roads that form part of the DUCAR network, unless a formal delegation or inter-agency financing arrangement explicitly brings a national road segment into scope.
+
 ## Why the Web App Does Not Load Every Geometry
 
 The full national all-road layer contains hundreds of thousands of features and is too large for browser delivery through GitHub Pages. The app therefore loads:
