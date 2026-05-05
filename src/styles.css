@@ -712,6 +712,12 @@ input[type="range"]::-webkit-slider-runnable-track {
   color: #93c5fd;
 }
 
+.layer-btn.active.national {
+  background: rgba(56, 189, 248, 0.14);
+  border-color: rgba(56, 189, 248, 0.44);
+  color: #7dd3fc;
+}
+
 .layer-btn.active.summary {
   background: rgba(52, 211, 153, 0.13);
   border-color: rgba(52, 211, 153, 0.42);
@@ -770,6 +776,7 @@ input[type="range"]::-webkit-slider-runnable-track {
 .dot.selected { background: var(--green); box-shadow: 0 0 8px var(--green); }
 .dot.deferred { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
 .dot.referred { background: var(--red); box-shadow: 0 0 8px var(--red); }
+.dot.national-dot { background: #38bdf8; box-shadow: 0 0 8px #38bdf8; }
 .dot.osm-dot { background: #60a5fa; box-shadow: 0 0 8px #60a5fa; }
 .dot.summary-dot { background: rgba(52, 211, 153, 0.55); border: 1px solid rgba(52, 211, 153, 0.8); }
 .dot.kcca-dot { background: #a855f7; box-shadow: 0 0 8px #a855f7; }

@@ -258,6 +258,7 @@ function MapPanel({ programme }) {
 
   const [showDistricts, setShowDistricts] = useState(true);
   const [showRoads, setShowRoads] = useState(true);
+  const [showNational, setShowNational] = useState(true);
   const [showOsmMajor, setShowOsmMajor] = useState(true);
   const [showRoadSummary, setShowRoadSummary] = useState(true);
   const [showKCCA, setShowKCCA] = useState(true);
@@ -340,6 +341,37 @@ function MapPanel({ programme }) {
             const p = feature.properties;
             layer.bindTooltip(
               `<strong>${p.DistName || "—"}</strong><br/>Class: ${p.RdClass || "—"}<br/>${(p.length_km || 0).toFixed(1)} km`,
+              { sticky: true, className: "map-tooltip" }
+            );
+          },
+        }).addTo(map);
+      }
+
+      // National road network FY25/26
+      const nationalRes = await fetch(`${BASE}data/uganda_national_roads_fy25_26.geojson`);
+      if (nationalRes.ok) {
+        const nationalData = await nationalRes.json();
+        const nationalColor = {
+          "Main National Road": "#38bdf8",
+          "Class A National Road": "#60a5fa",
+          "Class B National Road": "#818cf8",
+          "Class C National Road": "#a78bfa",
+        };
+        layersRef.current.national = L.geoJSON(nationalData, {
+          style: (feature) => {
+            const cls = feature.properties.road_class;
+            const sealed = feature.properties.surface === "Bituminous";
+            return {
+              color: nationalColor[cls] || "#93c5fd",
+              weight: cls === "Main National Road" ? 3.2 : cls === "Class A National Road" ? 2.6 : 2,
+              opacity: 0.86,
+              dashArray: sealed ? null : "6 4",
+            };
+          },
+          onEachFeature: (feature, layer) => {
+            const p = feature.properties;
+            layer.bindTooltip(
+              `<strong>${p.road_no || "National road"}: ${p.road_name || "Unnamed link"}</strong><br/>Class: ${p.road_class || "—"}<br/>Surface: ${p.surface || "—"}<br/>Region: ${p.maintenance_region || "—"} / ${p.maintenance_district || "—"}<br/>Length: ${Number(p.length_km || 0).toLocaleString()} km<br/>NDP IV: ${p.ndpiv_priority || "—"}`,
               { sticky: true, className: "map-tooltip" }
             );
           },
@@ -479,6 +511,7 @@ function MapPanel({ programme }) {
 
   useEffect(() => { toggleLayer("districts", showDistricts); }, [showDistricts, toggleLayer]);
   useEffect(() => { toggleLayer("roads", showRoads); }, [showRoads, toggleLayer]);
+  useEffect(() => { toggleLayer("national", showNational); }, [showNational, toggleLayer]);
   useEffect(() => { toggleLayer("osmMajor", showOsmMajor); }, [showOsmMajor, toggleLayer]);
   useEffect(() => { toggleLayer("roadSummary", showRoadSummary); }, [showRoadSummary, toggleLayer]);
   useEffect(() => { toggleLayer("kcca", showKCCA); }, [showKCCA, toggleLayer]);
@@ -505,6 +538,13 @@ function MapPanel({ programme }) {
             title="District road network"
           >
             {showRoads ? <Eye size={14} /> : <EyeOff size={14} />} Roads
+          </button>
+          <button
+            className={`layer-btn ${showNational ? "active national" : ""}`}
+            onClick={() => setShowNational(!showNational)}
+            title="National road network FY25/26"
+          >
+            {showNational ? <Eye size={14} /> : <EyeOff size={14} />} National
           </button>
           <button
             className={`layer-btn ${showOsmMajor ? "active osm" : ""}`}
@@ -548,6 +588,7 @@ function MapPanel({ programme }) {
         <span><i className="dot selected" /> Selected</span>
         <span><i className="dot deferred" /> Deferred</span>
         <span><i className="dot referred" /> Referred</span>
+        <span><i className="dot national-dot" /> National roads</span>
         <span><i className="dot osm-dot" /> OSM major/named</span>
         <span><i className="dot summary-dot" /> All-road density</span>
         <span><i className="dot kcca-dot" /> KCCA</span>
