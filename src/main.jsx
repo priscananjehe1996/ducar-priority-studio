@@ -76,50 +76,72 @@ function Metric({ icon: Icon, label, value, tone = "blue" }) {
 function MapPanel({ programme, geospatial }) {
   const bbox = geospatial?.bbox || { minLat: -1, maxLat: 4, minLon: 29, maxLon: 35 };
   const width = 760;
-  const height = 420;
+  const height = 480;
   const project = (lat, lon) => {
     const x = ((lon - bbox.minLon) / Math.max(0.001, bbox.maxLon - bbox.minLon)) * (width - 80) + 40;
     const y = height - (((lat - bbox.minLat) / Math.max(0.001, bbox.maxLat - bbox.minLat)) * (height - 80) + 40);
     return [x, y];
   };
+
+  // Group by region to draw abstract "road networks"
+  const regions = [...new Set(programme.map((p) => p.region))];
+
   return (
     <section className="panel map-panel">
       <div className="panel-title">
         <Map size={18} />
         <h2>Geospatial Risk Surface</h2>
       </div>
-      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="DUCAR geospatial risk map">
-        <rect x="0" y="0" width={width} height={height} rx="18" className="map-bg" />
-        {[...Array(8)].map((_, i) => (
-          <line key={`v${i}`} x1={40 + i * 94} x2={40 + i * 94} y1="35" y2="385" className="grid-line" />
-        ))}
-        {[...Array(5)].map((_, i) => (
-          <line key={`h${i}`} x1="35" x2="725" y1={55 + i * 75} y2={55 + i * 75} className="grid-line" />
-        ))}
-        {geospatial?.hotspots?.map((h) => {
-          const [x, y] = project(h.lat, h.lon);
-          return (
-            <g key={h.cluster}>
-              <circle cx={x} cy={y} r={24 + h.averageRisk * 24} className="hotspot" />
-              <text x={x} y={y + 4} className="hotspot-label">{h.cluster}</text>
-            </g>
-          );
-        })}
-        {programme.map((p) => {
-          const [x, y] = project(p.lat, p.lon);
-          return (
-            <g key={p.assetId}>
-              <circle cx={x} cy={y} r={p.assetType === "Bridge" ? 7 : 5} className={`asset ${p.status}`} />
-              <text x={x + 9} y={y - 7} className="asset-label">{p.assetId}</text>
-            </g>
-          );
-        })}
-      </svg>
-      <div className="legend">
-        <span><i className="dot selected" /> Selected</span>
-        <span><i className="dot deferred" /> Deferred</span>
-        <span><i className="dot referred" /> Referred</span>
-        <span><i className="halo" /> ML hotspot</span>
+      <div className="map-container">
+        <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="DUCAR geospatial risk map">
+          <rect x="0" y="0" width={width} height={height} className="map-bg" />
+          
+          {/* Grid lines */}
+          {[...Array(8)].map((_, i) => (
+            <line key={`v${i}`} x1={40 + i * 94} x2={40 + i * 94} y1="35" y2={height - 35} className="grid-line" />
+          ))}
+          {[...Array(6)].map((_, i) => (
+            <line key={`h${i}`} x1="35" x2={width - 35} y1={55 + i * 75} y2={55 + i * 75} className="grid-line" />
+          ))}
+
+          {/* Network Lines */}
+          {regions.map((region) => {
+            const pts = programme
+              .filter((p) => p.region === region)
+              .sort((a, b) => a.lat - b.lat)
+              .map((p) => project(p.lat, p.lon));
+            if (pts.length > 1) {
+              const d = `M ${pts.map(pt => pt.join(',')).join(' L ')}`;
+              return <path key={region} d={d} className="map-layer-roads" />;
+            }
+            return null;
+          })}
+
+          {geospatial?.hotspots?.map((h) => {
+            const [x, y] = project(h.lat, h.lon);
+            return (
+              <g key={h.cluster}>
+                <circle cx={x} cy={y} r={24 + h.averageRisk * 24} className="hotspot" />
+                <text x={x} y={y + 4} className="hotspot-label">{h.cluster}</text>
+              </g>
+            );
+          })}
+          {programme.map((p) => {
+            const [x, y] = project(p.lat, p.lon);
+            return (
+              <g key={p.assetId}>
+                <circle cx={x} cy={y} r={p.assetType === "Bridge" ? 7 : 5} className={`asset ${p.status}`} />
+                <text x={x + 9} y={y - 7} className="asset-label">{p.assetId}</text>
+              </g>
+            );
+          })}
+        </svg>
+        <div className="legend">
+          <span><i className="dot selected" /> Selected</span>
+          <span><i className="dot deferred" /> Deferred</span>
+          <span><i className="dot referred" /> Referred</span>
+          <span><i className="halo" /> ML hotspot</span>
+        </div>
       </div>
     </section>
   );
@@ -274,7 +296,13 @@ function App() {
                   <th>Functional Class</th>
                   <th>Intervention</th>
                   <th>Cost</th>
-                  <th>Priority</th>
+                  <th>Condition</th>
+                  <th>Criticality</th>
+                  <th>Climate</th>
+                  <th>Safety</th>
+                  <th>Traffic</th>
+                  <th>Equity</th>
+                  <th>Readiness</th>
                   <th>ML Risk</th>
                   <th>Status</th>
                   <th>Maintainable</th>
@@ -289,7 +317,48 @@ function App() {
                     <td>{p.functionalClass}</td>
                     <td>{p.intervention}</td>
                     <td>UGX {currency.format(p.cost)}</td>
-                    <td>{p.score}</td>
+                    <td>
+                      <div className="range-wrap">
+                        <input type="range" min="1" max="5" value={records.find((r) => r.assetId === p.assetId)?.condition || 1} onChange={(e) => updateRecord(p.assetId, "condition", Number(e.target.value))} />
+                        <span className="range-value">{records.find((r) => r.assetId === p.assetId)?.condition || 1}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="range-wrap">
+                        <input type="range" min="1" max="5" value={records.find((r) => r.assetId === p.assetId)?.criticality || 1} onChange={(e) => updateRecord(p.assetId, "criticality", Number(e.target.value))} />
+                        <span className="range-value">{records.find((r) => r.assetId === p.assetId)?.criticality || 1}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="range-wrap">
+                        <input type="range" min="1" max="5" value={records.find((r) => r.assetId === p.assetId)?.climate || 1} onChange={(e) => updateRecord(p.assetId, "climate", Number(e.target.value))} />
+                        <span className="range-value">{records.find((r) => r.assetId === p.assetId)?.climate || 1}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="range-wrap">
+                        <input type="range" min="1" max="5" value={records.find((r) => r.assetId === p.assetId)?.safety || 1} onChange={(e) => updateRecord(p.assetId, "safety", Number(e.target.value))} />
+                        <span className="range-value">{records.find((r) => r.assetId === p.assetId)?.safety || 1}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="range-wrap">
+                        <input type="range" min="1" max="5" value={records.find((r) => r.assetId === p.assetId)?.traffic || 1} onChange={(e) => updateRecord(p.assetId, "traffic", Number(e.target.value))} />
+                        <span className="range-value">{records.find((r) => r.assetId === p.assetId)?.traffic || 1}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="range-wrap">
+                        <input type="range" min="1" max="5" value={records.find((r) => r.assetId === p.assetId)?.equity || 1} onChange={(e) => updateRecord(p.assetId, "equity", Number(e.target.value))} />
+                        <span className="range-value">{records.find((r) => r.assetId === p.assetId)?.equity || 1}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="range-wrap">
+                        <input type="range" min="1" max="5" value={records.find((r) => r.assetId === p.assetId)?.readiness || 1} onChange={(e) => updateRecord(p.assetId, "readiness", Number(e.target.value))} />
+                        <span className="range-value">{records.find((r) => r.assetId === p.assetId)?.readiness || 1}</span>
+                      </div>
+                    </td>
                     <td><span className={`risk ${p.riskBand}`}>{Math.round((p.mlRisk || 0) * 100)}%</span></td>
                     <td><span className={`status ${p.status}`}>{p.status}</span></td>
                     <td>
