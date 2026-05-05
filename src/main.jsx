@@ -158,6 +158,146 @@ function Metric({ icon: Icon, label, value, tone = "blue" }) {
   );
 }
 
+function SignalTile({ label, value, sublabel, tone = "blue" }) {
+  return (
+    <article className={`signal-tile ${tone}`}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+      <em>{sublabel}</em>
+    </article>
+  );
+}
+
+function ProgrammeDonut({ programme }) {
+  const counts = ["Selected", "Deferred", "Referred"].map((status) => ({
+    status,
+    value: programme.filter((p) => p.status === status).length,
+    color: STATUS_COLORS[status],
+  }));
+  const total = Math.max(1, counts.reduce((sum, item) => sum + item.value, 0));
+  let offset = 25;
+  return (
+    <section className="viz-card">
+      <div className="viz-title">
+        <h3>Programme decision split</h3>
+        <span>{total} assets</span>
+      </div>
+      <div className="donut-wrap">
+        <svg viewBox="0 0 120 120" role="img" aria-label="Programme status split">
+          <circle cx="60" cy="60" r="42" className="donut-bg" />
+          {counts.map((item) => {
+            const length = (item.value / total) * 264;
+            const segment = (
+              <circle
+                key={item.status}
+                cx="60"
+                cy="60"
+                r="42"
+                className="donut-segment"
+                style={{ stroke: item.color, strokeDasharray: `${length} ${264 - length}`, strokeDashoffset: -offset }}
+              />
+            );
+            offset += length;
+            return segment;
+          })}
+          <text x="60" y="56" textAnchor="middle" className="donut-number">{counts[0].value}</text>
+          <text x="60" y="73" textAnchor="middle" className="donut-label">selected</text>
+        </svg>
+        <div className="donut-legend">
+          {counts.map((item) => (
+            <span key={item.status}><i style={{ background: item.color }} />{item.status}: {item.value}</span>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function AllocationBarChart({ grouped }) {
+  const top = grouped.slice(0, 7);
+  const max = Math.max(1, ...top.map((item) => item[1]));
+  return (
+    <section className="viz-card wide-viz">
+      <div className="viz-title">
+        <h3>Allocation lanes</h3>
+        <span>Top region / class groupings</span>
+      </div>
+      <div className="mini-bars">
+        {top.map(([label, value], index) => (
+          <div className="mini-bar" key={label}>
+            <span>{String(index + 1).padStart(2, "0")}</span>
+            <strong>{label}</strong>
+            <div><i style={{ width: `${(value / max) * 100}%` }} /></div>
+            <em>UGX {currency.format(value)}</em>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function RiskHeatmap({ programme }) {
+  const regions = [...new Set(programme.map((p) => p.region))].slice(0, 6);
+  const classes = [...new Set(programme.map((p) => p.functionalClass))].slice(0, 5);
+  return (
+    <section className="viz-card wide-viz">
+      <div className="viz-title">
+        <h3>Risk intensity matrix</h3>
+        <span>Region x functional class</span>
+      </div>
+      <div className="heatmap-grid" style={{ gridTemplateColumns: `110px repeat(${classes.length}, minmax(76px, 1fr))` }}>
+        <b />
+        {classes.map((item) => <b key={item}>{item}</b>)}
+        {regions.map((region) => (
+          <React.Fragment key={region}>
+            <b>{region}</b>
+            {classes.map((cls) => {
+              const items = programme.filter((p) => p.region === region && p.functionalClass === cls);
+              const avg = items.length ? items.reduce((sum, p) => sum + (p.mlRisk || 0), 0) / items.length : 0;
+              return (
+                <span
+                  key={`${region}-${cls}`}
+                  style={{ "--risk": avg }}
+                  title={`${region} / ${cls}: ${Math.round(avg * 100)}% risk`}
+                >
+                  {items.length ? `${Math.round(avg * 100)}%` : "—"}
+                </span>
+              );
+            })}
+          </React.Fragment>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function InfographicPanel({ analysis, grouped, programme }) {
+  const selected = analysis.summary?.selected || 0;
+  const highRisk = analysis.summary?.highRisk || 0;
+  const netBudget = analysis.netBudget || 0;
+  const selectedCost = analysis.summary?.selectedCost || 0;
+  const absorption = netBudget ? Math.round((selectedCost / netBudget) * 100) : 0;
+  const leadingLane = grouped[0]?.[0] || "Awaiting allocation";
+  return (
+    <section className="infographic-panel">
+      <div className="traffic-hero-card">
+        <p className="eyebrow">Allocation index</p>
+        <strong>{absorption}%</strong>
+        <span>of net budget committed to selected works</span>
+        <div className="index-scale">
+          <i style={{ left: `${Math.min(96, Math.max(4, absorption))}%` }} />
+        </div>
+      </div>
+      <div className="signal-grid">
+        <SignalTile label="Selected works" value={selected} sublabel="funded in current scenario" tone="green" />
+        <SignalTile label="High risk" value={highRisk} sublabel="assets requiring attention" tone="red" />
+        <SignalTile label="Leading lane" value={leadingLane.split("/")[0].trim()} sublabel={leadingLane.split("/")[1]?.trim() || "network class"} tone="cyan" />
+      </div>
+      <ProgrammeDonut programme={programme} />
+    </section>
+  );
+}
+
 function VerticalNav({ activeSection, onNavigate }) {
   return (
     <aside className="vertical-nav" aria-label="DUCAR workspace navigation">
@@ -759,6 +899,7 @@ function App() {
                 <Metric icon={ShieldAlert} label="High ML risk assets" value={analysis.summary?.highRisk || 0} tone="red" />
                 <Metric icon={Layers} label="Regions / classes" value={grouped.length} tone="gold" />
               </section>
+              <InfographicPanel analysis={analysis} grouped={grouped} programme={programme} />
               <section className="page-card-grid">
                 {overviewCards.map(({ id, label, icon: Icon }) => (
                   <a className="page-card" href={`#${id}`} key={id} onClick={() => navigateToSection(id)}>
@@ -791,12 +932,19 @@ function App() {
           )}
 
           {activeSection === "analytics" && (
-            <section className="metrics-grid">
-              <Metric icon={CircleDollarSign} label="Net budget" value={`UGX ${currency.format(analysis.netBudget || 0)}`} />
-              <Metric icon={Activity} label="Selected cost" value={`UGX ${currency.format(analysis.summary?.selectedCost || 0)}`} tone="green" />
-              <Metric icon={ShieldAlert} label="High ML risk assets" value={analysis.summary?.highRisk || 0} tone="red" />
-              <Metric icon={Layers} label="Regions / classes" value={grouped.length} tone="gold" />
-            </section>
+            <>
+              <section className="metrics-grid">
+                <Metric icon={CircleDollarSign} label="Net budget" value={`UGX ${currency.format(analysis.netBudget || 0)}`} />
+                <Metric icon={Activity} label="Selected cost" value={`UGX ${currency.format(analysis.summary?.selectedCost || 0)}`} tone="green" />
+                <Metric icon={ShieldAlert} label="High ML risk assets" value={analysis.summary?.highRisk || 0} tone="red" />
+                <Metric icon={Layers} label="Regions / classes" value={grouped.length} tone="gold" />
+              </section>
+              <div className="analytics-viz-grid">
+                <AllocationBarChart grouped={grouped} />
+                <RiskHeatmap programme={programme} />
+                <ProgrammeDonut programme={programme} />
+              </div>
+            </>
           )}
 
           {activeSection === "framework" && <ProcessFlow analysis={analysis} grouped={grouped} />}
