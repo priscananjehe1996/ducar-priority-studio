@@ -2,16 +2,26 @@ import React, { useEffect, useMemo, useRef, useState, useCallback } from "react"
 import { createRoot } from "react-dom/client";
 import {
   Activity,
+  Bot,
   Brain,
   CircleDollarSign,
+  ClipboardCheck,
+  Database,
   Eye,
   EyeOff,
+  FileSpreadsheet,
   GitBranch,
+  Gauge,
   Layers,
+  LayoutDashboard,
+  LineChart,
   MapIcon,
+  Network,
   RefreshCcw,
   Route,
   ShieldAlert,
+  SlidersHorizontal,
+  Target,
 } from "lucide-react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -73,6 +83,67 @@ const STATUS_COLORS = {
   Referred: "#ef4444",
 };
 
+const NAV_ITEMS = [
+  { id: "overview", label: "Overview", icon: LayoutDashboard },
+  { id: "controls", label: "Budget Inputs", icon: SlidersHorizontal },
+  { id: "analytics", label: "Analytics", icon: LineChart },
+  { id: "framework", label: "Framework Flow", icon: Network },
+  { id: "gis", label: "GIS Surface", icon: MapIcon },
+  { id: "allocation", label: "Allocation", icon: GitBranch },
+  { id: "programme", label: "Programme", icon: FileSpreadsheet },
+];
+
+const FLOW_STEPS = [
+  {
+    title: "Register DUCAR Assets",
+    tag: "Inventory",
+    detail: "Roads, bridges, districts, regions, road class, surface, location, and intervention need.",
+    icon: Database,
+  },
+  {
+    title: "Validate Evidence",
+    tag: "QA",
+    detail: "Check condition scores, maintainability, cost reasonableness, GIS coordinates, and readiness.",
+    icon: ClipboardCheck,
+  },
+  {
+    title: "Score Priority",
+    tag: "ML risk",
+    detail: "Blend condition, criticality, safety, climate exposure, traffic, equity, and readiness.",
+    icon: Brain,
+  },
+  {
+    title: "Rationalise Budget",
+    tag: "Fiscal gate",
+    detail: "Deduct reserve, compare total demand with available funds, and flag unaffordable items.",
+    icon: CircleDollarSign,
+  },
+  {
+    title: "Allocate by Class",
+    tag: "Network logic",
+    detail: "Sequence candidate works by functional class, region, district, bridge need, and strategic link value.",
+    icon: Route,
+  },
+  {
+    title: "Check GIS Equity",
+    tag: "Spatial balance",
+    detail: "Review hotspots, underserved districts, regional spread, KCCA links, and climate-exposed corridors.",
+    icon: MapIcon,
+  },
+  {
+    title: "Approve Programme",
+    tag: "Decision",
+    detail: "Separate selected, deferred, and referred assets with documented assumptions and reasons.",
+    icon: ShieldAlert,
+  },
+  {
+    title: "Export Workplan",
+    tag: "Outputs",
+    detail: "Produce editable tables, GeoJSON, dashboards, manuals, reports, and implementation packs.",
+    icon: Target,
+  },
+];
+
 /* ─── Metric card ─── */
 function Metric({ icon: Icon, label, value, tone = "blue" }) {
   return (
@@ -83,6 +154,96 @@ function Metric({ icon: Icon, label, value, tone = "blue" }) {
         <span>{label}</span>
       </div>
     </div>
+  );
+}
+
+function VerticalNav({ activeSection, onNavigate }) {
+  return (
+    <aside className="vertical-nav" aria-label="DUCAR workspace navigation">
+      <div className="nav-brand">
+        <span className="brand-mark"><Bot size={19} /></span>
+        <div>
+          <strong>DUCAR</strong>
+          <small>Priority Studio</small>
+        </div>
+      </div>
+      <nav>
+        {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            className={`nav-item ${activeSection === id ? "active" : ""}`}
+            onClick={() => onNavigate(id)}
+            title={label}
+          >
+            <Icon size={18} />
+            <span>{label}</span>
+          </button>
+        ))}
+      </nav>
+      <div className="nav-status">
+        <Gauge size={16} />
+        <span>Live allocation engine</span>
+      </div>
+    </aside>
+  );
+}
+
+function ProcessFlow({ analysis, grouped }) {
+  const [activeStep, setActiveStep] = useState(0);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setActiveStep((step) => (step + 1) % FLOW_STEPS.length);
+    }, 2200);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const selectedCost = analysis.summary?.selectedCost || 0;
+  const netBudget = analysis.netBudget || 0;
+  const selectedCount = analysis.summary?.selected || 0;
+  const leadingClass = grouped[0]?.[0] || "Awaiting allocation";
+
+  return (
+    <section className="panel wide flow-panel" id="framework">
+      <div className="panel-title">
+        <Network size={18} />
+        <h2>Animated Framework Schematic and Tool Process Flow</h2>
+      </div>
+
+      <div className="flow-summary">
+        <span><strong>Net budget</strong>UGX {currency.format(netBudget)}</span>
+        <span><strong>Allocated</strong>UGX {currency.format(selectedCost)}</span>
+        <span><strong>Selected works</strong>{selectedCount}</span>
+        <span><strong>Leading allocation lane</strong>{leadingClass}</span>
+      </div>
+
+      <div className="flow-canvas">
+        <svg className="flow-connectors" viewBox="0 0 1000 460" preserveAspectRatio="none" aria-hidden="true">
+          <path className="flow-track" d="M80 95 H350 H620 H905 V310 H635 H365 H95" />
+          <path className="flow-pulse" d="M80 95 H350 H620 H905 V310 H635 H365 H95" />
+        </svg>
+        <div className={`flow-bot stage-${activeStep}`} aria-hidden="true">
+          <Bot size={24} />
+          <span />
+        </div>
+        <div className="flow-grid">
+          {FLOW_STEPS.map(({ title, tag, detail, icon: Icon }, index) => (
+            <article
+              key={title}
+              className={`flow-node ${index === activeStep ? "active" : ""} ${index < activeStep ? "visited" : ""}`}
+            >
+              <div className="flow-node-head">
+                <i><Icon size={18} /></i>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+              </div>
+              <strong>{title}</strong>
+              <em>{tag}</em>
+              <p>{detail}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -265,7 +426,7 @@ function MapPanel({ programme }) {
   useEffect(() => { toggleLayer("assets", showAssets); }, [showAssets, toggleLayer]);
 
   return (
-    <section className="panel map-panel">
+    <section className="panel map-panel" id="gis">
       <div className="map-header">
         <div className="panel-title" style={{ borderBottom: "none", marginBottom: 0, paddingBottom: 0 }}>
           <Layers size={18} />
@@ -331,6 +492,7 @@ function App() {
   const [analysis, setAnalysis] = useState(() => localAnalysis(sample, 250000000, 5));
   const [apiMode, setApiMode] = useState("checking");
   const [filter, setFilter] = useState("All");
+  const [activeSection, setActiveSection] = useState("overview");
 
   async function runAnalysis(nextRecords = records) {
     try {
@@ -353,6 +515,21 @@ function App() {
     runAnalysis();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [budget, reservePercent]);
+
+  useEffect(() => {
+    const sections = NAV_ITEMS.map((item) => document.getElementById(item.id)).filter(Boolean);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible?.target?.id) setActiveSection(visible.target.id);
+      },
+      { rootMargin: "-20% 0px -65% 0px", threshold: [0.1, 0.25, 0.5] }
+    );
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
 
   const programme = analysis.programme || [];
   const shown = filter === "All" ? programme : programme.filter((p) => p.status === filter);
@@ -397,132 +574,141 @@ function App() {
     a.click();
   }
 
+  function navigateToSection(id) {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setActiveSection(id);
+  }
+
   return (
-    <div className="app">
-      <header className="hero">
-        <div>
-          <p className="eyebrow">DUCAR Priority Studio v0.4</p>
-          <h1>Dynamic ML and Geospatial Budget Allocation Tool</h1>
-          <p>
-            React + Leaflet/OSM interface with real DUCAR district road networks, KCCA urban roads,
-            ML risk scoring, geospatial clustering, and GIS-ready outputs.
-          </p>
-        </div>
-        <div className="hero-actions">
-          <span className="api-pill"><Brain size={16} /> {apiMode}</span>
-          <button onClick={() => runAnalysis()}><RefreshCcw size={16} /> Re-run ML</button>
-          <button className="secondary" onClick={exportGeoJson}><MapIcon size={16} /> Export GeoJSON</button>
-        </div>
-      </header>
-
-      <section className="control-strip">
-        <label>
-          Received Budget UGX
-          <input type="number" value={budget} onChange={(e) => setBudget(Number(e.target.value))} />
-        </label>
-        <label>
-          Emergency Reserve %
-          <input type="number" value={reservePercent} onChange={(e) => setReservePercent(Number(e.target.value))} />
-        </label>
-        <label>
-          Programme Filter
-          <select value={filter} onChange={(e) => setFilter(e.target.value)}>
-            {["All", "Selected", "Deferred", "Referred", "Check cost"].map((x) => <option key={x}>{x}</option>)}
-          </select>
-        </label>
-      </section>
-
-      <section className="metrics-grid">
-        <Metric icon={CircleDollarSign} label="Net budget" value={`UGX ${currency.format(analysis.netBudget || 0)}`} />
-        <Metric icon={Activity} label="Selected cost" value={`UGX ${currency.format(analysis.summary?.selectedCost || 0)}`} tone="green" />
-        <Metric icon={ShieldAlert} label="High ML risk assets" value={analysis.summary?.highRisk || 0} tone="red" />
-        <Metric icon={Layers} label="Regions / classes" value={grouped.length} tone="gold" />
-      </section>
-
-      <main className="dashboard-grid">
-        <MapPanel programme={programme} />
-
-        <section className="panel">
-          <div className="panel-title">
-            <GitBranch size={18} />
-            <h2>Budget Rationalisation by Region and Functional Class</h2>
+    <div className="shell">
+      <VerticalNav activeSection={activeSection} onNavigate={navigateToSection} />
+      <div className="app">
+        <header className="hero" id="overview">
+          <div>
+            <p className="eyebrow">DUCAR Priority Studio v0.5</p>
+            <h1>Dynamic ML and Geospatial Budget Allocation Tool</h1>
+            <p>
+              React + Leaflet/OSM interface with real DUCAR district road networks, KCCA urban roads,
+              ML risk scoring, geospatial clustering, and GIS-ready outputs.
+            </p>
           </div>
-          <div className="bars">
-            {grouped.map(([key, value]) => (
-              <div className="bar-row" key={key}>
-                <span>{key}</span>
-                <div><i style={{ width: `${Math.min(100, (value / Math.max(...grouped.map((g) => g[1]))) * 100)}%` }} /></div>
-                <strong>{currency.format(value)}</strong>
-              </div>
-            ))}
+          <div className="hero-actions">
+            <span className="api-pill"><Brain size={16} /> {apiMode}</span>
+            <button onClick={() => runAnalysis()}><RefreshCcw size={16} /> Re-run ML</button>
+            <button className="secondary" onClick={exportGeoJson}><MapIcon size={16} /> Export GeoJSON</button>
           </div>
+        </header>
+
+        <section className="control-strip" id="controls">
+          <label>
+            Received Budget UGX
+            <input type="number" value={budget} onChange={(e) => setBudget(Number(e.target.value))} />
+          </label>
+          <label>
+            Emergency Reserve %
+            <input type="number" value={reservePercent} onChange={(e) => setReservePercent(Number(e.target.value))} />
+          </label>
+          <label>
+            Programme Filter
+            <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+              {["All", "Selected", "Deferred", "Referred", "Check cost"].map((x) => <option key={x}>{x}</option>)}
+            </select>
+          </label>
         </section>
 
-        <section className="panel wide">
-          <div className="panel-title">
-            <Route size={18} />
-            <h2>Editable Programme Table</h2>
-          </div>
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Rank</th>
-                  <th>Asset</th>
-                  <th>Region / District</th>
-                  <th>Functional Class</th>
-                  <th>Intervention</th>
-                  <th>Cost</th>
-                  <th>Condition</th>
-                  <th>Criticality</th>
-                  <th>Climate</th>
-                  <th>Safety</th>
-                  <th>Traffic</th>
-                  <th>Equity</th>
-                  <th>Readiness</th>
-                  <th>ML Risk</th>
-                  <th>Status</th>
-                  <th>Maintainable</th>
-                </tr>
-              </thead>
-              <tbody>
-                {shown.map((p) => (
-                  <tr key={p.assetId}>
-                    <td>{p.rank}</td>
-                    <td><strong>{p.assetId}</strong><small>{p.assetType} / {p.surface}</small></td>
-                    <td>{p.region}<small>{p.admin}</small></td>
-                    <td>{p.functionalClass}</td>
-                    <td>{p.intervention}</td>
-                    <td>UGX {currency.format(p.cost)}</td>
-                    {["condition", "criticality", "climate", "safety", "traffic", "equity", "readiness"].map((field) => (
-                      <td key={field}>
-                        <div className="range-wrap">
-                          <input
-                            type="range"
-                            min="1"
-                            max="5"
-                            value={records.find((r) => r.assetId === p.assetId)?.[field] || 1}
-                            onChange={(e) => updateRecord(p.assetId, field, Number(e.target.value))}
-                          />
-                          <span className="range-value">{records.find((r) => r.assetId === p.assetId)?.[field] || 1}</span>
-                        </div>
-                      </td>
-                    ))}
-                    <td><span className={`risk ${p.riskBand}`}>{Math.round((p.mlRisk || 0) * 100)}%</span></td>
-                    <td><span className={`status ${p.status}`}>{p.status}</span></td>
-                    <td>
-                      <select value={records.find((r) => r.assetId === p.assetId)?.maintainable || "Yes"} onChange={(e) => updateRecord(p.assetId, "maintainable", e.target.value)}>
-                        <option>Yes</option>
-                        <option>No</option>
-                      </select>
-                    </td>
+        <section className="metrics-grid" id="analytics">
+          <Metric icon={CircleDollarSign} label="Net budget" value={`UGX ${currency.format(analysis.netBudget || 0)}`} />
+          <Metric icon={Activity} label="Selected cost" value={`UGX ${currency.format(analysis.summary?.selectedCost || 0)}`} tone="green" />
+          <Metric icon={ShieldAlert} label="High ML risk assets" value={analysis.summary?.highRisk || 0} tone="red" />
+          <Metric icon={Layers} label="Regions / classes" value={grouped.length} tone="gold" />
+        </section>
+
+        <main className="dashboard-grid">
+          <ProcessFlow analysis={analysis} grouped={grouped} />
+          <MapPanel programme={programme} />
+
+          <section className="panel" id="allocation">
+            <div className="panel-title">
+              <GitBranch size={18} />
+              <h2>Budget Rationalisation by Region and Functional Class</h2>
+            </div>
+            <div className="bars">
+              {grouped.map(([key, value]) => (
+                <div className="bar-row" key={key}>
+                  <span>{key}</span>
+                  <div><i style={{ width: `${Math.min(100, (value / Math.max(...grouped.map((g) => g[1]))) * 100)}%` }} /></div>
+                  <strong>{currency.format(value)}</strong>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="panel wide" id="programme">
+            <div className="panel-title">
+              <Route size={18} />
+              <h2>Editable Programme Table</h2>
+            </div>
+            <div className="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Asset</th>
+                    <th>Region / District</th>
+                    <th>Functional Class</th>
+                    <th>Intervention</th>
+                    <th>Cost</th>
+                    <th>Condition</th>
+                    <th>Criticality</th>
+                    <th>Climate</th>
+                    <th>Safety</th>
+                    <th>Traffic</th>
+                    <th>Equity</th>
+                    <th>Readiness</th>
+                    <th>ML Risk</th>
+                    <th>Status</th>
+                    <th>Maintainable</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </main>
+                </thead>
+                <tbody>
+                  {shown.map((p) => (
+                    <tr key={p.assetId}>
+                      <td>{p.rank}</td>
+                      <td><strong>{p.assetId}</strong><small>{p.assetType} / {p.surface}</small></td>
+                      <td>{p.region}<small>{p.admin}</small></td>
+                      <td>{p.functionalClass}</td>
+                      <td>{p.intervention}</td>
+                      <td>UGX {currency.format(p.cost)}</td>
+                      {["condition", "criticality", "climate", "safety", "traffic", "equity", "readiness"].map((field) => (
+                        <td key={field}>
+                          <div className="range-wrap">
+                            <input
+                              type="range"
+                              min="1"
+                              max="5"
+                              value={records.find((r) => r.assetId === p.assetId)?.[field] || 1}
+                              onChange={(e) => updateRecord(p.assetId, field, Number(e.target.value))}
+                            />
+                            <span className="range-value">{records.find((r) => r.assetId === p.assetId)?.[field] || 1}</span>
+                          </div>
+                        </td>
+                      ))}
+                      <td><span className={`risk ${p.riskBand}`}>{Math.round((p.mlRisk || 0) * 100)}%</span></td>
+                      <td><span className={`status ${p.status}`}>{p.status}</span></td>
+                      <td>
+                        <select value={records.find((r) => r.assetId === p.assetId)?.maintainable || "Yes"} onChange={(e) => updateRecord(p.assetId, "maintainable", e.target.value)}>
+                          <option>Yes</option>
+                          <option>No</option>
+                        </select>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </main>
+      </div>
     </div>
   );
 }
