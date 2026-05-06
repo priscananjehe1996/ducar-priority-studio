@@ -1022,7 +1022,7 @@ function TrafficAnalyticsPanel({ programme, grouped }) {
 
 function MediaRibbon() {
   const items = [
-    { label: "3D GIS intelligence", value: "CBD + DUCAR + reference roads", icon: MapIcon },
+    { label: "2D GIS intelligence", value: "CBD + DUCAR + reference roads", icon: MapIcon },
     { label: "Selection pane", value: "Full attributes on click", icon: ListFilter },
     { label: "Traffic analytics", value: "HDM-style parameter logic", icon: Truck },
     { label: "Budget flow", value: "Road, district, region and class", icon: GitBranch },
@@ -1480,43 +1480,30 @@ function MapScene3D({ programme }) {
       container: mapRef.current,
       center: [32.5, 1.3],
       zoom: 6.9,
-      pitch: 55,
-      bearing: -18,
+      pitch: 0,
+      bearing: 0,
       antialias: true,
       style: {
         version: 8,
         sources: {
-          imagery: {
+          darkBase: {
             type: "raster",
-            tiles: ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"],
+            tiles: [
+              "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+              "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+              "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+              "https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+            ],
             tileSize: 256,
-            attribution: "Esri World Imagery",
-          },
-          imageryLabels: {
-            type: "raster",
-            tiles: ["https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"],
-            tileSize: 256,
-            attribution: "Esri reference labels",
-          },
-          terrainSource: {
-            type: "raster-dem",
-            tiles: ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"],
-            tileSize: 256,
-            encoding: "terrarium",
-            attribution: "AWS Open Data Terrain Tiles"
+            attribution: "CARTO Dark Matter, OpenStreetMap contributors",
           }
         },
-        terrain: {
-          source: "terrainSource",
-          exaggeration: 3
-        },
         layers: [
-          { id: "imagery", type: "raster", source: "imagery", paint: { "raster-saturation": 0.12, "raster-contrast": 0.08 } },
-          { id: "imagery-labels", type: "raster", source: "imageryLabels", paint: { "raster-opacity": 0.92 } },
+          { id: "dark-base", type: "raster", source: "darkBase", paint: { "raster-opacity": 1, "raster-contrast": 0.08 } },
         ],
       },
     });
-    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
+    map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), "top-right");
     mapInstance.current = map;
     map.on("load", async () => {
       const manifest = await fetchUgandaLayersManifest();
@@ -1533,17 +1520,6 @@ function MapScene3D({ programme }) {
       map.addSource("roads", { type: "geojson", data: roadData });
       map.addSource("traffic-flows", { type: "geojson", data: flowData });
       map.addSource("network-nodes", { type: "geojson", data: nodeData });
-      map.addLayer({
-        id: "terrain-hillshade",
-        type: "hillshade",
-        source: "terrainSource",
-        paint: {
-          "hillshade-exaggeration": 0.32,
-          "hillshade-shadow-color": "#64748b",
-          "hillshade-highlight-color": "#ffffff",
-          "hillshade-accent-color": "#38bdf8",
-        },
-      });
       map.addLayer({
         id: "roads-all-halo",
         type: "line",
@@ -1669,7 +1645,7 @@ function MapScene3D({ programme }) {
       <div className="map-header">
         <div className="panel-title" style={{ borderBottom: "none", marginBottom: 0, paddingBottom: 0 }}>
           <Layers size={18} />
-          <h2>3D Uganda Road Intelligence Scene</h2>
+          <h2>2D Uganda Road Intelligence Map</h2>
         </div>
         <div className="layer-toggles">
           <button className="layer-btn active unified">Joined Road Network</button>
@@ -1695,11 +1671,11 @@ function MapScene3D({ programme }) {
       <div className="scene-shell">
         <div className="maplibre-container" ref={mapRef} />
         <div className="scene-hud">
-          <strong>3D joined road network</strong>
+          <strong>2D joined road network</strong>
           <span>{filteredRoads.length.toLocaleString()} dissolved visible routes</span>
           <span>{(nodes?.features?.length || 0).toLocaleString()} analysis nodes</span>
           <span>{(routeMatrix?.routes?.length || 0).toLocaleString()} OD route pairs</span>
-          <span>ESRI imagery + labels. Terrain 3x. Pitch 55 degrees.</span>
+          <span>Dark 2D basemap. Flat view. Terrain disabled.</span>
         </div>
         {selectedRoad && (
           <aside className="road-info-pane open" aria-live="polite">
