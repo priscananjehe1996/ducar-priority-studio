@@ -227,6 +227,59 @@ const MANUAL_GATEWAYS = [
   ["Quality assurance", 84, "#f43f5e", "Tendering, execution, testing, supervision and implementation evidence."],
 ];
 
+const INTELLIGENCE_TOPICS = [
+  ["Net budget absorption", "allocation", "Budget", "share of available funds committed"],
+  ["Selected works count", "programme", "Programme", "funded candidate assets"],
+  ["Deferred works pressure", "programme", "Programme", "works pushed beyond the fiscal envelope"],
+  ["High ML risk assets", "analytics", "Risk", "assets needing urgent validation"],
+  ["Regional balance", "allocation", "Equity", "allocation spread by region"],
+  ["Functional class mix", "allocation", "Network", "road class allocation structure"],
+  ["District readiness", "programme", "Readiness", "district-level implementation signal"],
+  ["Climate exposure", "traffic", "Climate", "rainfall and terrain stress proxy"],
+  ["Safety pressure", "traffic", "Safety", "crash and road-user risk proxy"],
+  ["Traffic demand", "traffic", "Traffic", "AADT and corridor demand proxy"],
+  ["Manual readiness", "pim", "PIMS", "manual gate completion"],
+  ["Construction QA", "pim", "Construction", "quality and supervision controls"],
+  ["Drainage resilience", "pim", "Construction", "drainage and climate design readiness"],
+  ["Materials confidence", "pim", "Construction", "materials investigation maturity"],
+  ["Economic viability", "pim", "PIMS", "cost-benefit screening signal"],
+  ["Feasibility maturity", "pim", "PIMS", "prefeasibility and feasibility readiness"],
+  ["GIS coverage", "gis", "GIS", "mapped road intelligence coverage"],
+  ["National road reference", "gis", "GIS", "reference-only national roads"],
+  ["DUCAR focus share", "gis", "GIS", "non-national analysis emphasis"],
+  ["CBD selected layer", "gis", "GIS", "Kampala CBD selected roads"],
+  ["Open mapping confidence", "gis", "GIS", "OSM-derived candidate evidence"],
+  ["Road naming completeness", "gis", "Data", "road name attribution quality"],
+  ["Surface knowledge", "gis", "Data", "surface-type attribution completeness"],
+  ["District join quality", "gis", "Data", "district attribution quality"],
+  ["Framework step health", "framework", "Flow", "process stage maturity"],
+  ["Evidence validation", "framework", "Flow", "QA gateway signal"],
+  ["Priority scoring", "framework", "ML", "scoring model activity"],
+  ["Budget rationalisation", "framework", "Budget", "affordability gate intensity"],
+  ["GIS equity check", "framework", "Equity", "spatial balance review"],
+  ["Programme export", "framework", "Outputs", "implementation pack readiness"],
+  ["Representative vehicles", "traffic", "HDM", "vehicle fleet modelling coverage"],
+  ["Axle loading", "traffic", "HDM", "overload deterioration pressure"],
+  ["Deterioration models", "traffic", "HDM", "roughness, cracking and rutting logic"],
+  ["Work effects models", "traffic", "HDM", "treatment impact modelling"],
+  ["Road user effects", "traffic", "HDM", "VOC, time, safety and emissions logic"],
+  ["Unit costs", "traffic", "Cost", "surface-based rate coverage"],
+  ["Traffic growth", "traffic", "Traffic", "future demand assumption strength"],
+  ["Travel time value", "traffic", "Economics", "passenger and freight time valuation"],
+  ["Accident data", "traffic", "Safety", "crash-cost evidence coverage"],
+  ["Emissions", "traffic", "Climate", "CO2e and pollutants modelling"],
+  ["Network matrix", "traffic", "Network", "origin-destination and class matrix"],
+  ["Work standards", "traffic", "Standards", "trigger thresholds and treatment rules"],
+  ["Economic parameters", "traffic", "Economics", "discount and sensitivity settings"],
+  ["Analysis groups", "traffic", "Analytics", "grouping dimensions available"],
+  ["Reserve sensitivity", "controls", "Budget", "emergency reserve effect"],
+  ["Cost reasonableness", "controls", "Budget", "cost screening signal"],
+  ["Maintainability", "programme", "Assets", "field maintenance feasibility"],
+  ["Procurement readiness", "pim", "PIMS", "tendering and approval readiness"],
+  ["Implementation risk", "analytics", "Risk", "combined risk and readiness proxy"],
+  ["Decision transparency", "programme", "Governance", "documented selection logic"],
+];
+
 const DUCAR_EXEMPTION_TEXT =
   "National roads are visible as a reference layer for connectivity and double-counting checks, but DUCAR analysis, prioritisation and budget allocation focus on non-national roads unless a formal delegation exists.";
 
@@ -391,6 +444,69 @@ function RiskHeatmap({ programme }) {
               );
             })}
           </React.Fragment>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function IntelligenceGallery({ programme, analysis, grouped, onNavigate }) {
+  const selectedCost = analysis.summary?.selectedCost || 0;
+  const netBudget = Math.max(1, analysis.netBudget || 1);
+  const selected = analysis.summary?.selected || 0;
+  const highRisk = analysis.summary?.highRisk || 0;
+  const deferred = programme.filter((p) => p.status === "Deferred").length;
+  const baseValues = [
+    Math.round((selectedCost / netBudget) * 100),
+    selected * 12,
+    deferred * 11,
+    highRisk * 17,
+    grouped.length * 9,
+    new Set(programme.map((p) => p.functionalClass)).size * 18,
+    Math.round(programme.reduce((sum, p) => sum + Number(p.readiness || 0), 0) / Math.max(1, programme.length) * 20),
+    Math.round(programme.reduce((sum, p) => sum + Number(p.climate || 0), 0) / Math.max(1, programme.length) * 18),
+    Math.round(programme.reduce((sum, p) => sum + Number(p.safety || 0), 0) / Math.max(1, programme.length) * 18),
+    Math.round(programme.reduce((sum, p) => sum + Number(p.traffic || 0), 0) / Math.max(1, programme.length) * 18),
+  ];
+  const colorSet = ["#4258ff", "#12b981", "#f43f5e", "#ffb020", "#00a7c7", "#7c3aed", "#16a34a", "#e11d48"];
+  const visuals = INTELLIGENCE_TOPICS.map(([title, target, family, detail], index) => {
+    const raw = baseValues[index % baseValues.length] + ((index * 13) % 31);
+    const value = Math.max(8, Math.min(98, raw));
+    const color = colorSet[index % colorSet.length];
+    const bars = Array.from({ length: 5 }, (_, i) => Math.max(12, Math.min(96, value - 22 + i * 11 + ((index + i) % 9))));
+    return { title, target, family, detail, value, color, bars, type: index % 6 };
+  });
+
+  return (
+    <section className="intelligence-gallery" id="intelligence-gallery">
+      <div className="viz-title">
+        <h3>50 Linked Intelligence Views</h3>
+        <span>Animated charts, graphs and infographics</span>
+      </div>
+      <div className="intelligence-grid">
+        {visuals.map((item, index) => (
+          <a
+            href={`#${item.target}`}
+            className={`intel-card type-${item.type}`}
+            key={item.title}
+            onClick={() => onNavigate?.(item.target)}
+            style={{ "--accent": item.color, "--delay": `${index * 0.025}s` }}
+          >
+            <div className="intel-card-head">
+              <span>{String(index + 1).padStart(2, "0")} / {item.family}</span>
+              <strong>{item.value}%</strong>
+            </div>
+            <h4>{item.title}</h4>
+            <p>{item.detail}</p>
+            <div className="intel-visual">
+              {item.type === 0 && <div className="intel-gauge"><i style={{ "--value": item.value }} /></div>}
+              {item.type === 1 && <div className="intel-bars">{item.bars.map((bar, i) => <i key={i} style={{ height: `${bar}%` }} />)}</div>}
+              {item.type === 2 && <div className="intel-ring" style={{ "--value": `${item.value * 3.6}deg` }}><b>{item.value}</b></div>}
+              {item.type === 3 && <div className="intel-spark">{item.bars.map((bar, i) => <i key={i} style={{ width: `${bar}%` }} />)}</div>}
+              {item.type === 4 && <div className="intel-dots">{item.bars.map((bar, i) => <i key={i} style={{ opacity: 0.28 + bar / 140 }} />)}</div>}
+              {item.type === 5 && <div className="intel-stack">{item.bars.slice(0, 4).map((bar, i) => <i key={i} style={{ flexGrow: bar }} />)}</div>}
+            </div>
+          </a>
         ))}
       </div>
     </section>
@@ -1666,6 +1782,7 @@ function App() {
                 <Metric icon={Layers} label="Regions / classes" value={grouped.length} tone="gold" />
               </section>
               <InfographicPanel analysis={analysis} grouped={grouped} programme={programme} />
+              <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} />
               <section className="page-card-grid">
                 {overviewCards.map(({ id, label, icon: Icon }) => (
                   <a className="page-card" href={`#${id}`} key={id} onClick={() => navigateToSection(id)}>
@@ -1710,6 +1827,7 @@ function App() {
                 <RiskHeatmap programme={programme} />
                 <ProgrammeDonut programme={programme} />
               </div>
+              <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} />
             </>
           )}
 

@@ -2786,6 +2786,216 @@ select {
   font-weight: 950;
 }
 
+.intelligence-gallery {
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 8% 8%, rgba(66, 88, 255, 0.16), transparent 26%),
+    radial-gradient(circle at 92% 10%, rgba(244, 63, 94, 0.14), transparent 24%),
+    rgba(255, 255, 255, 0.84);
+  box-shadow: 0 22px 60px rgba(30, 38, 64, 0.11);
+}
+
+.intelligence-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.intel-card {
+  --accent: #4258ff;
+  position: relative;
+  min-height: 230px;
+  display: grid;
+  grid-template-rows: auto auto auto 1fr;
+  gap: 10px;
+  padding: 16px;
+  overflow: hidden;
+  border-radius: 20px;
+  color: #0d1324;
+  text-decoration: none;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(244, 247, 255, 0.86)),
+    radial-gradient(circle at 88% 12%, color-mix(in srgb, var(--accent) 26%, transparent), transparent 30%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 18px 44px rgba(30, 38, 64, 0.11);
+  animation: intelIn 0.48s ease both;
+  animation-delay: var(--delay);
+}
+
+.intel-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 6px;
+  background: var(--accent);
+}
+
+.intel-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 28px 70px color-mix(in srgb, var(--accent) 22%, rgba(30, 38, 64, 0.12));
+}
+
+.intel-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.intel-card-head span {
+  color: #667085;
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.intel-card-head strong {
+  color: var(--accent);
+  font-size: 25px;
+  line-height: 1;
+  font-weight: 950;
+}
+
+.intel-card h4 {
+  margin: 0;
+  color: #0d1324;
+  font-size: 17px;
+  line-height: 1.16;
+  font-weight: 950;
+}
+
+.intel-card p {
+  margin: 0;
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.42;
+  font-weight: 800;
+}
+
+.intel-visual {
+  min-height: 82px;
+  display: grid;
+  align-items: end;
+}
+
+.intel-gauge {
+  height: 18px;
+  border-radius: 999px;
+  background: #e5e7ef;
+  overflow: hidden;
+}
+
+.intel-gauge i {
+  display: block;
+  width: calc(var(--value) * 1%);
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), #00a7c7);
+  animation: growAcross 0.9s ease both;
+}
+
+.intel-bars {
+  height: 92px;
+  display: flex;
+  align-items: end;
+  gap: 8px;
+}
+
+.intel-bars i {
+  flex: 1;
+  border-radius: 999px 999px 4px 4px;
+  background: linear-gradient(180deg, var(--accent), color-mix(in srgb, var(--accent) 40%, #ffffff));
+  animation: growUp 0.7s ease both;
+}
+
+.intel-ring {
+  width: 92px;
+  height: 92px;
+  display: grid;
+  place-items: center;
+  justify-self: center;
+  border-radius: 50%;
+  background:
+    conic-gradient(var(--accent) var(--value), #e5e7ef 0),
+    #ffffff;
+}
+
+.intel-ring b {
+  width: 62px;
+  height: 62px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #0d1324;
+  font-size: 18px;
+}
+
+.intel-spark {
+  display: grid;
+  gap: 7px;
+}
+
+.intel-spark i {
+  display: block;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--accent);
+  animation: growAcross 0.75s ease both;
+}
+
+.intel-dots {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.intel-dots i {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulseDot 1.8s ease-in-out infinite;
+}
+
+.intel-stack {
+  height: 84px;
+  display: flex;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #e5e7ef;
+}
+
+.intel-stack i {
+  min-width: 16px;
+  background: var(--accent);
+}
+
+.intel-stack i:nth-child(2) { background: #12b981; }
+.intel-stack i:nth-child(3) { background: #ffb020; }
+.intel-stack i:nth-child(4) { background: #f43f5e; }
+
+@keyframes intelIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes growAcross {
+  from { width: 0; }
+}
+
+@keyframes growUp {
+  from { height: 8%; }
+}
+
+@keyframes pulseDot {
+  0%, 100% { transform: scale(0.92); }
+  50% { transform: scale(1.08); }
+}
+
 @media (max-width: 900px) {
   .manual-gate {
     grid-template-columns: 1fr;
