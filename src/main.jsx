@@ -100,6 +100,76 @@ function localAnalysis(records, budget, reservePercent) {
   };
 }
 
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let cell = "";
+  let quoted = false;
+  for (let i = 0; i < text.length; i += 1) {
+    const ch = text[i];
+    const next = text[i + 1];
+    if (ch === '"' && quoted && next === '"') {
+      cell += '"';
+      i += 1;
+    } else if (ch === '"') {
+      quoted = !quoted;
+    } else if (ch === "," && !quoted) {
+      row.push(cell);
+      cell = "";
+    } else if ((ch === "\n" || ch === "\r") && !quoted) {
+      if (ch === "\r" && next === "\n") i += 1;
+      row.push(cell);
+      if (row.some((value) => String(value).trim())) rows.push(row);
+      row = [];
+      cell = "";
+    } else {
+      cell += ch;
+    }
+  }
+  row.push(cell);
+  if (row.some((value) => String(value).trim())) rows.push(row);
+  if (!rows.length) return [];
+  const headers = rows[0].map((header) => String(header || "").trim());
+  return rows.slice(1).map((values) => Object.fromEntries(headers.map((header, i) => [header, values[i] ?? ""])));
+}
+
+function normalizeImportedAsset(row, index) {
+  const get = (...names) => {
+    const entries = Object.entries(row);
+    for (const name of names) {
+      const found = entries.find(([key]) => key.toLowerCase().replace(/[^a-z0-9]/g, "") === name.toLowerCase().replace(/[^a-z0-9]/g, ""));
+      if (found && String(found[1]).trim() !== "") return found[1];
+    }
+    return "";
+  };
+  const num = (value, fallback) => {
+    const parsed = Number(String(value ?? "").replace(/,/g, "").trim());
+    return Number.isFinite(parsed) ? parsed : fallback;
+  };
+  const score = (value, fallback = 3) => Math.max(1, Math.min(5, Math.round(num(value, fallback))));
+  return {
+    assetType: String(get("assetType", "asset type", "type") || "Road"),
+    assetId: String(get("assetId", "asset id", "id", "road id", "road_uid") || `IMP-${String(index + 1).padStart(4, "0")}`),
+    admin: String(get("admin", "district", "municipality", "town council") || "Unassigned"),
+    region: String(get("region") || "Unassigned"),
+    functionalClass: String(get("functionalClass", "functional class", "road_class", "class") || "District Road"),
+    intervention: String(get("intervention", "work", "treatment", "activity") || "Routine maintenance"),
+    surface: String(get("surface", "surface type") || "Unknown"),
+    condition: score(get("condition", "condition score", "iri score"), 3),
+    criticality: score(get("criticality", "importance", "connectivity"), 3),
+    traffic: score(get("traffic", "aadt", "traffic score"), 2),
+    climate: score(get("climate", "climate risk", "flood risk"), 3),
+    safety: score(get("safety", "crash risk", "accident risk"), 3),
+    equity: score(get("equity", "poverty", "access"), 3),
+    readiness: score(get("readiness", "implementation readiness"), 3),
+    maintainable: String(get("maintainable", "maintenance feasible") || "Yes"),
+    quantity: num(get("quantity", "length_km", "length km", "km"), 1),
+    unitRate: num(get("unitRate", "unit rate", "cost per km", "rate"), 1000000),
+    lat: num(get("lat", "latitude", "y"), 0.35),
+    lon: num(get("lon", "lng", "long", "longitude", "x"), 32.58),
+  };
+}
+
 /* ─── Status colours ─── */
 const STATUS_COLORS = {
   Selected: "#10b981",
@@ -278,6 +348,21 @@ const INTELLIGENCE_TOPICS = [
   ["Procurement readiness", "pim", "PIMS", "tendering and approval readiness"],
   ["Implementation risk", "analytics", "Risk", "combined risk and readiness proxy"],
   ["Decision transparency", "programme", "Governance", "documented selection logic"],
+];
+
+const BUDGET_SCENARIOS = [
+  { name: "Baseline", budget: 250000000, reserve: 5, detail: "Current planning envelope with normal emergency reserve." },
+  { name: "Constrained", budget: 150000000, reserve: 8, detail: "Stress-test when releases are lower and reserve is higher." },
+  { name: "Expanded", budget: 420000000, reserve: 5, detail: "Accelerated implementation envelope for more selected works." },
+  { name: "Emergency works", budget: 300000000, reserve: 15, detail: "Higher reserve for climate, bridge and safety failures." },
+  { name: "Equity push", budget: 280000000, reserve: 6, detail: "Moderate expansion with district and access emphasis." },
+  { name: "Urban/CBD focus", budget: 360000000, reserve: 4, detail: "Higher allocation scenario for urban and city roads." },
+];
+
+const INGESTION_FIELDS = [
+  "assetType", "assetId", "admin", "region", "functionalClass", "intervention", "surface",
+  "condition", "criticality", "traffic", "climate", "safety", "equity", "readiness",
+  "maintainable", "quantity", "unitRate", "lat", "lon",
 ];
 
 const DUCAR_EXEMPTION_TEXT =
@@ -1632,6 +1717,9 @@ function App() {
   const [records, setRecords] = useState(sample);
   const [budget, setBudget] = useState(250000000);
   const [reservePercent, setReservePercent] = useState(5);
+  const [scenarioName, setScenarioName] = useState("Baseline");
+  const [ingestedRecords, setIngestedRecords] = useState([]);
+  const [ingestionMeta, setIngestionMeta] = useState({ file: "No file loaded", status: "Awaiting CSV or Excel workbook" });
   const [analysis, setAnalysis] = useState(() => localAnalysis(sample, 250000000, 5));
   const [apiMode, setApiMode] = useState("checking");
   const [filter, setFilter] = useState("All");
@@ -1693,6 +1781,45 @@ function App() {
     const next = records.map((r) => (r.assetId === assetId ? { ...r, [field]: value } : r));
     setRecords(next);
     runAnalysis(next);
+  }
+
+  function applyScenario(scenario) {
+    setScenarioName(scenario.name);
+    setBudget(scenario.budget);
+    setReservePercent(scenario.reserve);
+  }
+
+  async function ingestFile(file) {
+    if (!file) return;
+    setIngestionMeta({ file: file.name, status: "Reading file..." });
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase();
+      let rows = [];
+      if (ext === "csv") {
+        rows = parseCsv(await file.text());
+      } else if (["xlsx", "xls"].includes(ext)) {
+        const XLSX = await import("xlsx");
+        const workbook = XLSX.read(await file.arrayBuffer(), { type: "array" });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+      } else {
+        throw new Error("Unsupported file type. Use CSV, XLSX or XLS.");
+      }
+      const normalized = rows.map((row, index) => normalizeImportedAsset(row, index));
+      setIngestedRecords(normalized);
+      setIngestionMeta({ file: file.name, status: `${normalized.length.toLocaleString()} records ready for review` });
+    } catch (error) {
+      setIngestedRecords([]);
+      setIngestionMeta({ file: file.name, status: error.message || "Unable to read file" });
+    }
+  }
+
+  function commitIngestion(mode) {
+    if (!ingestedRecords.length) return;
+    const next = mode === "replace" ? ingestedRecords : [...records, ...ingestedRecords];
+    setRecords(next);
+    runAnalysis(next);
+    setIngestionMeta({ ...ingestionMeta, status: `${mode === "replace" ? "Replaced" : "Appended"} system dataset with ${ingestedRecords.length.toLocaleString()} imported records` });
   }
 
   function exportGeoJson() {
@@ -1796,22 +1923,71 @@ function App() {
           )}
 
           {activeSection === "controls" && (
-            <section className="control-strip">
-              <label>
-                Received Budget UGX
-                <input type="number" value={budget} onChange={(e) => setBudget(Number(e.target.value))} />
-              </label>
-              <label>
-                Emergency Reserve %
-                <input type="number" value={reservePercent} onChange={(e) => setReservePercent(Number(e.target.value))} />
-              </label>
-              <label>
-                Programme Filter
-                <select value={filter} onChange={(e) => setFilter(e.target.value)}>
-                  {["All", "Selected", "Deferred", "Referred", "Check cost"].map((x) => <option key={x}>{x}</option>)}
-                </select>
-              </label>
-            </section>
+            <>
+              <section className="scenario-command-panel">
+                <div>
+                  <p className="eyebrow">Active scenario</p>
+                  <h2>{scenarioName}</h2>
+                  <span>UGX {currency.format(budget)} gross envelope / {reservePercent}% reserve / UGX {currency.format(analysis.netBudget || 0)} net budget</span>
+                </div>
+                <button onClick={() => runAnalysis()}><RefreshCcw size={16} /> Run Scenario</button>
+              </section>
+              <section className="control-strip">
+                <label>
+                  Received Budget UGX
+                  <input type="number" value={budget} onChange={(e) => { setScenarioName("Custom"); setBudget(Number(e.target.value)); }} />
+                </label>
+                <label>
+                  Emergency Reserve %
+                  <input type="number" value={reservePercent} onChange={(e) => { setScenarioName("Custom"); setReservePercent(Number(e.target.value)); }} />
+                </label>
+                <label>
+                  Programme Filter
+                  <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+                    {["All", "Selected", "Deferred", "Referred", "Check cost"].map((x) => <option key={x}>{x}</option>)}
+                  </select>
+                </label>
+                <label>
+                  Imported Dataset Size
+                  <input type="text" value={`${records.length.toLocaleString()} active assets`} readOnly />
+                </label>
+              </section>
+              <section className="scenario-grid">
+                {BUDGET_SCENARIOS.map((scenario) => (
+                  <button key={scenario.name} className={`scenario-card ${scenarioName === scenario.name ? "active" : ""}`} onClick={() => applyScenario(scenario)}>
+                    <strong>{scenario.name}</strong>
+                    <span>UGX {currency.format(scenario.budget)} / {scenario.reserve}% reserve</span>
+                    <em>{scenario.detail}</em>
+                  </button>
+                ))}
+              </section>
+              <section className="ingestion-engine">
+                <div className="viz-title">
+                  <h3>CSV / Excel Ingestion Engine</h3>
+                  <span>Upload, map, preview, append or replace assets</span>
+                </div>
+                <div className="ingestion-dropzone">
+                  <input type="file" accept=".csv,.xlsx,.xls" onChange={(e) => ingestFile(e.target.files?.[0])} />
+                  <div>
+                    <strong>{ingestionMeta.file}</strong>
+                    <span>{ingestionMeta.status}</span>
+                    <small>Recognised fields: {INGESTION_FIELDS.join(", ")}</small>
+                  </div>
+                  <button className="secondary" onClick={() => commitIngestion("append")} disabled={!ingestedRecords.length}>Append</button>
+                  <button onClick={() => commitIngestion("replace")} disabled={!ingestedRecords.length}>Replace</button>
+                </div>
+                <div className="ingestion-preview">
+                  {(ingestedRecords.length ? ingestedRecords.slice(0, 8) : records.slice(0, 4)).map((row) => (
+                    <article key={row.assetId}>
+                      <strong>{row.assetId}</strong>
+                      <span>{row.admin} / {row.region}</span>
+                      <em>{row.functionalClass} - {row.intervention}</em>
+                      <b>UGX {currency.format(Number(row.quantity || 0) * Number(row.unitRate || 0))}</b>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            </>
           )}
 
           {activeSection === "analytics" && (

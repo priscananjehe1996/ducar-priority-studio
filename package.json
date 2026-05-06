@@ -17,7 +17,8 @@
     "maplibre-gl": "^5.24.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "vite": "^7.1.11"
+    "vite": "^7.1.11",
+    "xlsx": "^0.18.5"
   },
   "license": "MIT"
 }
