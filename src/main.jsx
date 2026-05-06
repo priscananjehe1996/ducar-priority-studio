@@ -33,7 +33,7 @@ import "leaflet/dist/leaflet.css";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import sample from "../data/sample_assets.json";
-import { policyGates, prioritise, sourceReferences, summarise } from "./prioritisation.js";
+import { prioritise, sourceReferences, summarise } from "./prioritisation.js";
 import "./styles.css";
 
 const BASE = import.meta.env.BASE_URL || "/ducar-priority-studio/";
@@ -479,7 +479,7 @@ const INTELLIGENCE_TOPICS = [
   ["Climate exposure", "traffic", "Climate", "rainfall and terrain stress proxy"],
   ["Safety pressure", "traffic", "Safety", "crash and road-user risk proxy"],
   ["Traffic demand", "traffic", "Traffic", "AADT and corridor demand proxy"],
-  ["Manual readiness", "pim", "PIMS", "manual gate completion"],
+  ["Appraisal readiness", "pim", "PIMS", "gate completion"],
   ["Construction QA", "pim", "Construction", "quality and supervision controls"],
   ["Drainage resilience", "pim", "Construction", "drainage and climate design readiness"],
   ["Materials confidence", "pim", "Construction", "materials investigation maturity"],
@@ -1545,6 +1545,18 @@ function PimEnginePanel({ programme, analysis }) {
     { id: "feasibility", label: "Technical Feasibility", pass: programme.filter(p => p.climate < 4 && p.condition > 2).length, total: totalCount, icon: Database, desc: "Engineering readiness, climate resilience screening" },
     { id: "evidence", label: "Evidence Completeness", pass: programme.filter(p => p.evidenceScore >= 80).length, total: totalCount, icon: FileSpreadsheet, desc: "Asset register, survey, cost, coordinates and monitoring fields are populated" },
   ];
+  const pimsStages = [
+    ["Concept", "Define the road problem, affected users, DUCAR ownership, and expected service-level change.", Target],
+    ["Prefeasibility", "Screen demand, condition, cost range, safeguards, climate exposure, and implementation capacity.", Database],
+    ["Appraisal", "Compare economic value, readiness, risk, affordability, and district/regional equity.", LineChart],
+    ["Approval", "Package selected works with funding, procurement, monitoring, and reporting controls.", ClipboardCheck],
+  ];
+  const decisionPrinciples = [
+    ["Need", "Poor access, failed drainage, weak connectivity, high traffic demand, or strong social service dependence."],
+    ["Value", "Lifecycle benefit, user-cost savings, maintainability, and affordability inside the available budget."],
+    ["Readiness", "Survey quality, design maturity, safeguards, procurement route, and deliverability within the programme year."],
+    ["Equity", "Balanced regional, district, urban, and community access outcomes after excluding national-road costs."],
+  ];
 
   return (
     <div className="traffic-page-grid">
@@ -1556,8 +1568,8 @@ function PimEnginePanel({ programme, analysis }) {
       </section>
 
       <section className="signal-grid">
-        <SignalTile label="Manual readiness" value={`${manualReadiness}%`} sublabel="PIM + construction controls" tone="cyan" />
-        <SignalTile label="Evidence readiness" value={`${averageEvidence}%`} sublabel="source-aware data completeness" tone="green" />
+        <SignalTile label="Appraisal readiness" value={`${manualReadiness}%`} sublabel="gate completion" tone="cyan" />
+        <SignalTile label="Data completeness" value={`${averageEvidence}%`} sublabel="candidate record quality" tone="green" />
         <SignalTile label="Monthly monitoring" value={monthlyMonitoring} sublabel="high-trigger assets" tone="red" />
         {checks.slice(1).map(chk => (
           <SignalTile key={chk.id} label={chk.label} value={`${Math.round((chk.pass / chk.total) * 100)}%`} sublabel="clearance rate" tone={chk.pass / chk.total > 0.7 ? "green" : "red"} />
@@ -1566,14 +1578,17 @@ function PimEnginePanel({ programme, analysis }) {
 
       <section className="viz-card wide-viz">
         <div className="viz-title">
-          <h3>Source-Based Tool Logic</h3>
-          <span>Operational gates now applied inside the prioritisation model</span>
+          <h3>PIMS Appraisal Stages</h3>
+          <span>Decision sequence used before budget allocation</span>
         </div>
         <div className="policy-gate-grid">
-          {policyGates.map((gate) => (
-            <article key={gate.id}>
-              <strong>{gate.label}</strong>
-              <p>{sourceReferences[gate.sourceIndex]}</p>
+          {pimsStages.map(([label, detail, Icon]) => (
+            <article key={label}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                <strong>{label}</strong>
+                <Icon size={18} color="#2563eb" />
+              </div>
+              <p>{detail}</p>
             </article>
           ))}
         </div>
@@ -1581,15 +1596,15 @@ function PimEnginePanel({ programme, analysis }) {
 
       <section className="manual-chart-card">
         <div className="viz-title">
-          <h3>Manual-Based Decision Gates</h3>
-          <span>PIM appraisal + road construction readiness</span>
+          <h3>Investment Decision Principles</h3>
+          <span>Rules applied to each candidate road</span>
         </div>
         <div className="manual-radar">
-          {MANUAL_GATEWAYS.map(([label, value, color, detail]) => (
+          {decisionPrinciples.map(([label, detail], index) => (
             <div key={label} className="manual-gate">
               <span>{label}</span>
-              <div><i style={{ width: `${value}%`, background: color }} /></div>
-              <strong>{value}%</strong>
+              <div><i style={{ width: `${[92, 86, 81, 88][index]}%`, background: ["#2563eb", "#10b981", "#f59e0b", "#ec4899"][index] }} /></div>
+              <strong>{[92, 86, 81, 88][index]}%</strong>
               <p>{detail}</p>
             </div>
           ))}
@@ -1618,6 +1633,7 @@ function PimEnginePanel({ programme, analysis }) {
         </div>
       </section>
 
+      {false && (
       <section className="viz-card" style={{ gridColumn: "1 / -1" }}>
         <div className="viz-title">
           <h3>HDM-4 Input Data Summary Tables</h3>
@@ -1735,6 +1751,7 @@ function PimEnginePanel({ programme, analysis }) {
           ));
         })()}
       </section>
+      )}
     </div>
   );
 }
@@ -2462,7 +2479,7 @@ function App() {
           {activeSection === "pim" && (
             <>
               <PimEnginePanel programme={programme} analysis={analysis} />
-              <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} section="pim" limit={8} compact title="PIMS and Manual Intelligence" />
+              <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} section="pim" limit={8} compact title="PIMS Decision Indicators" />
             </>
           )}
           {activeSection === "framework" && (
