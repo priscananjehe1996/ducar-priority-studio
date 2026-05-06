@@ -866,7 +866,7 @@ function MapScene3D({ programme }) {
     map.on("load", async () => {
       const manifest = await fetchUgandaLayersManifest();
       const [roadData, nodeData, flowData, matrixData] = await Promise.all([
-        fetch(manifestDataUrl(manifest, "network_edges_geojson", "uganda_network_edges_web.geojson")).then((r) => r.json()),
+        fetch(manifestDataUrl(manifest, "cartographic_roads_geojson", "uganda_clean_road_routes_web.geojson")).then((r) => r.json()),
         fetch(manifestDataUrl(manifest, "network_nodes_geojson", "uganda_network_nodes_web.geojson")).then((r) => r.json()),
         fetch(manifestDataUrl(manifest, "traffic_flows_geojson", "uganda_traffic_flows_web.geojson")).then((r) => r.json()),
         fetch(manifestDataUrl(manifest, "route_matrix_json", "uganda_route_matrix.json")).then((r) => r.json()),
@@ -1017,7 +1017,7 @@ function MapScene3D({ programme }) {
       ? Math.round(features.reduce((sum, f) => sum + Number(f.properties?.traffic_flow_index || 0), 0) / features.length)
       : 0;
     return [
-      { label: "Network edges", value: filteredRoads.length.toLocaleString(), tone: "blue" },
+      { label: "Clean routes", value: filteredRoads.length.toLocaleString(), tone: "blue" },
       { label: "DUCAR focus", value: ducar.toLocaleString(), tone: "green" },
       { label: "National reference", value: national.toLocaleString(), tone: "dark" },
       { label: "Mean flow index", value: `${avgFlow}%`, tone: "red" },
@@ -1043,7 +1043,7 @@ function MapScene3D({ programme }) {
         <label>Class<select value={roadClassFilter} onChange={(e) => setRoadClassFilter(e.target.value)}>{roadOptions.classes.map((x) => <option key={x}>{x}</option>)}</select></label>
         <label>Surface<select value={surfaceFilter} onChange={(e) => setSurfaceFilter(e.target.value)}>{roadOptions.surfaces.map((x) => <option key={x}>{x}</option>)}</select></label>
         <label>Sort<select value={roadSort} onChange={(e) => setRoadSort(e.target.value)}>{["length_km", "road_name", "road_class", "region", "district", "quality_flag"].map((x) => <option key={x}>{x}</option>)}</select></label>
-        <strong>{filteredRoads.length.toLocaleString()} network edges</strong>
+        <strong>{filteredRoads.length.toLocaleString()} clean routes</strong>
       </div>
       <div className="map-stat-strip">
         {mapStats.map((item) => (
@@ -1057,7 +1057,7 @@ function MapScene3D({ programme }) {
         <div className="maplibre-container" ref={mapRef} />
         <div className="scene-hud">
           <strong>3D joined road network</strong>
-          <span>{filteredRoads.length.toLocaleString()} deduplicated visible edges</span>
+          <span>{filteredRoads.length.toLocaleString()} dissolved visible routes</span>
           <span>{(nodes?.features?.length || 0).toLocaleString()} snapped network nodes</span>
           <span>{(routeMatrix?.routes?.length || 0).toLocaleString()} OD route pairs</span>
           <span>ESRI imagery + labels. Terrain 3x. Pitch 55 degrees.</span>

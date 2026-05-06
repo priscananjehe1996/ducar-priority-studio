@@ -1,20 +1,21 @@
 {
-  "generated_at_utc": "2026-05-06T08:49:35.117782+00:00",
+  "generated_at_utc": "2026-05-06T13:28:30.331817+00:00",
   "source": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\data\\uganda_unified_roads_web_2026-05-05.geojson",
-  "edge_count": 38054,
+  "edge_count": 37352,
+  "cartographic_route_count": 5604,
   "node_count": 44972,
   "source_record_count": 16319,
   "candidate_segment_count": 38221,
-  "deduplicated_segment_count": 38054,
-  "duplicate_reduction_count": 167,
-  "total_length_km": 4855766.27,
+  "deduplicated_segment_count": 37352,
+  "duplicate_reduction_count": 869,
+  "total_length_km": 92253.85,
   "by_network_category": {
-    "City Roads": 3011,
-    "Community Access Roads": 838,
-    "District Roads": 33130,
-    "KCCA": 10,
-    "National Roads": 1065
+    "City Roads": 2257,
+    "Community Access Roads": 592,
+    "District Roads": 1735,
+    "KCCA": 7,
+    "National Roads": 1013
   },
   "route_matrix_pairs": 132,
-  "method": "Endpoint snapping at 4 decimal degrees, duplicate endpoint/midpoint keys, source-priority retention, node degree calculation, district centroid route matrix."
+  "method": "Endpoint snapping at 4 decimal degrees, geometry-based length recalculation, route-key dissolve by category/system/district/name/surface, light topology-preserving simplification, node degree calculation, district centroid route matrix."
 }

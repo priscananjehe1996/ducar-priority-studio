@@ -1,4 +1,5 @@
 {
+  "cartographic_roads_geojson": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\data\\uganda_clean_road_routes_web.geojson",
   "national_roads_geojson": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\data\\uganda_national_roads_fy25_26_2026-05-05.geojson",
   "national_roads_summary": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\data\\uganda_national_roads_summary_2026-05-05.json",
   "network_analysis_summary": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\data\\uganda_network_analysis_summary.json",
@@ -12,5 +13,5 @@
   "traffic_flows_geojson": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\data\\uganda_traffic_flows_web.geojson",
   "unified_roads_geojson": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\data\\uganda_unified_roads_web_2026-05-05.geojson",
   "unified_roads_summary": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\data\\uganda_unified_roads_summary_2026-05-05.json",
-  "updated_at_utc": "2026-05-06T08:49:35.125990+00:00"
+  "updated_at_utc": "2026-05-06T13:28:30.338858+00:00"
 }

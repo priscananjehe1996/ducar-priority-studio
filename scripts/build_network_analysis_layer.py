@@ -16,7 +16,7 @@ from pathlib import Path
 import geopandas as gpd
 import pandas as pd
 from shapely.geometry import LineString, MultiLineString, Point
-from shapely.ops import transform
+from shapely.ops import linemerge, transform, unary_union
 
 from uganda_layers_manifest import update_manifest
 
@@ -28,6 +28,7 @@ if not SOURCE.exists():
     SOURCE = PUBLIC / "uganda_unified_roads_web.geojson"
 
 EDGES_OUT = PUBLIC / "uganda_network_edges_web.geojson"
+CARTO_OUT = PUBLIC / "uganda_clean_road_routes_web.geojson"
 NODES_OUT = PUBLIC / "uganda_network_nodes_web.geojson"
 FLOWS_OUT = PUBLIC / "uganda_traffic_flows_web.geojson"
 MATRIX_OUT = PUBLIC / "uganda_route_matrix.json"
@@ -110,6 +111,70 @@ def flow_index(row):
     return int(min(100, round(base + length_bump)))
 
 
+def clean_text(value, fallback="Unassigned"):
+    text = str(value or "").strip()
+    return text if text and text.lower() not in {"nan", "none", "null"} else fallback
+
+
+def display_route_key(row):
+    name = clean_text(row.get("road_name"), "Unnamed road")
+    if name.lower() in {"unnamed road", "road", "unknown"}:
+        name = f"{clean_text(row.get('road_source'))}-{clean_text(row.get('road_class'))}"
+    return "|".join(
+        [
+            clean_text(row.get("network_category")),
+            clean_text(row.get("road_system")),
+            clean_text(row.get("district")),
+            name.lower(),
+            clean_text(row.get("surface")),
+        ]
+    )
+
+
+def merge_group_geometries(geoms):
+    unioned = unary_union(list(geoms))
+    if isinstance(unioned, LineString):
+        return unioned
+    return linemerge(unioned)
+
+
+def build_cartographic_routes(edges):
+    route_rows = []
+    working = edges.copy()
+    working["route_key"] = working.apply(display_route_key, axis=1)
+    for index, (route_key, group) in enumerate(working.groupby("route_key", dropna=False), start=1):
+        first = group.iloc[0]
+        geom = merge_group_geometries(group.geometry)
+        route_rows.append(
+            {
+                "route_id": f"R{index:05d}",
+                "route_key": route_key,
+                "road_name": clean_text(first.get("road_name"), "Unnamed road"),
+                "road_system": clean_text(first.get("road_system")),
+                "road_source": clean_text(first.get("road_source")),
+                "road_class": clean_text(first.get("road_class")),
+                "network_category": clean_text(first.get("network_category")),
+                "surface": clean_text(first.get("surface")),
+                "district": clean_text(first.get("district")),
+                "region": clean_text(first.get("region")),
+                "segment_count": int(len(group)),
+                "length_km": round(float(group["length_km"].sum()), 3),
+                "traffic_flow_index": int(round(float(group["traffic_flow_index"].mean()))),
+                "ducar_analysis_scope": clean_text(first.get("ducar_analysis_scope")),
+                "geometry": geom,
+            }
+        )
+    routes = gpd.GeoDataFrame(route_rows, geometry="geometry", crs=edges.crs)
+    routes = routes[routes.geometry.notna() & ~routes.geometry.is_empty].copy()
+    routes["geometry"] = routes.geometry.simplify(0.00012, preserve_topology=True)
+    routes_m = routes.to_crs(epsg=32636)
+    routes["length_km"] = (routes_m.length / 1000).round(3)
+    routes = routes[routes["length_km"] >= 0.03].copy()
+    routes = routes.sort_values(["network_category", "district", "road_name"]).reset_index(drop=True)
+    routes["route_id"] = [f"R{i:05d}" for i in range(1, len(routes) + 1)]
+    return routes
+
+
 def main() -> None:
     PUBLIC.mkdir(parents=True, exist_ok=True)
     DATA.mkdir(parents=True, exist_ok=True)
@@ -176,8 +241,13 @@ def main() -> None:
         )
 
     edges = gpd.GeoDataFrame(rows, geometry="geometry", crs="EPSG:4326")
+    edges_m = edges.to_crs(epsg=32636)
+    edges["length_km"] = (edges_m.length / 1000).round(3)
+    edges = edges[edges["length_km"] >= 0.01].copy()
     edges["traffic_flow_index"] = edges.apply(flow_index, axis=1)
     edges.to_file(EDGES_OUT, driver="GeoJSON")
+    cartographic_routes = build_cartographic_routes(edges)
+    cartographic_routes.to_file(CARTO_OUT, driver="GeoJSON")
 
     node_rows = []
     for coord, nid in node_ids.items():
@@ -192,13 +262,13 @@ def main() -> None:
     nodes = gpd.GeoDataFrame(node_rows, geometry="geometry", crs="EPSG:4326")
     nodes.to_file(NODES_OUT, driver="GeoJSON")
 
-    flows = edges.sort_values("traffic_flow_index", ascending=False).head(900).copy()
+    flows = cartographic_routes.sort_values(["traffic_flow_index", "length_km"], ascending=False).head(900).copy()
     flows.to_file(FLOWS_OUT, driver="GeoJSON")
 
-    district_edges = edges[edges["district"].notna() & (edges["district"].astype(str) != "Unassigned")].copy()
+    district_edges = cartographic_routes[cartographic_routes["district"].notna() & (cartographic_routes["district"].astype(str) != "Unassigned")].copy()
     district_summary = (
         district_edges.groupby("district")
-        .agg(length_km=("length_km", "sum"), flow=("traffic_flow_index", "mean"), records=("edge_id", "count"))
+        .agg(length_km=("length_km", "sum"), flow=("traffic_flow_index", "mean"), records=("route_id", "count"))
         .sort_values("length_km", ascending=False)
         .head(12)
         .reset_index()
@@ -229,15 +299,16 @@ def main() -> None:
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "source": str(SOURCE),
         "edge_count": int(len(edges)),
+        "cartographic_route_count": int(len(cartographic_routes)),
         "node_count": int(len(nodes)),
         "source_record_count": int(len(gdf)),
         "candidate_segment_count": int(candidate_segments),
         "deduplicated_segment_count": int(len(edges)),
         "duplicate_reduction_count": int(candidate_segments - len(edges)),
-        "total_length_km": round(float(edges["length_km"].sum()), 2),
-        "by_network_category": edges.groupby("network_category").size().to_dict(),
+        "total_length_km": round(float(cartographic_routes["length_km"].sum()), 2),
+        "by_network_category": cartographic_routes.groupby("network_category").size().to_dict(),
         "route_matrix_pairs": len(matrix),
-        "method": "Endpoint snapping at 4 decimal degrees, duplicate endpoint/midpoint keys, source-priority retention, node degree calculation, district centroid route matrix.",
+        "method": "Endpoint snapping at 4 decimal degrees, geometry-based length recalculation, route-key dissolve by category/system/district/name/surface, light topology-preserving simplification, node degree calculation, district centroid route matrix.",
     }
     matrix_payload = {"summary": summary, "districts": district_summary.to_dict("records"), "routes": matrix}
     MATRIX_OUT.write_text(json.dumps(matrix_payload, indent=2), encoding="utf-8")
@@ -248,6 +319,7 @@ def main() -> None:
         ROOT,
         {
             "network_edges_geojson": str(EDGES_OUT),
+            "cartographic_roads_geojson": str(CARTO_OUT),
             "network_nodes_geojson": str(NODES_OUT),
             "traffic_flows_geojson": str(FLOWS_OUT),
             "route_matrix_json": str(MATRIX_OUT),
