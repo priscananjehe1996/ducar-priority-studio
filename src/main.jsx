@@ -31,7 +31,7 @@ import "leaflet/dist/leaflet.css";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import sample from "../data/sample_assets.json";
-import { prioritise, summarise } from "./prioritisation.js";
+import { policyGates, prioritise, sourceReferences, summarise } from "./prioritisation.js";
 import "./styles.css";
 
 const BASE = import.meta.env.BASE_URL || "/ducar-priority-studio/";
@@ -69,7 +69,8 @@ function localAnalysis(records, budget, reservePercent) {
           Number(item.climate) * 0.2 +
           Number(item.safety) * 0.18 +
           (item.maintainable === "No" ? 1.2 : 0) -
-          Number(item.readiness) * 0.06) /
+          Number(item.readiness) * 0.06 -
+          Number(item.evidenceScore || 0) * 0.002) /
           5
       )
     );
@@ -269,6 +270,8 @@ const OPEN_DATA_LOGIC = [
   "World Bank HDM-4 road user cost logic informs vehicle resource costs, travel time, emissions, and accident-cost placeholders.",
   "WorldClim and NASA POWER-style climate fields are reserved for rainfall, temperature, and climate-stress joins.",
   "Local UNRA/DUCAR/KCCA shapefiles remain authoritative where they conflict with generic open mapping.",
+  "DUCAR TOR source evidence controls condition survey procedures, performance indicators, RAM framework gates, and monitoring frequency logic.",
+  "Budget monitoring evidence separates financial absorption, physical progress, output delivery, and variance flags before final workplan export.",
 ];
 
 const MANUAL_SOURCES = [
@@ -288,6 +291,54 @@ const MANUAL_SOURCES = [
     apa: "Ministry of Works and Transport. (2018). Road design and construction manual: Volume V, low volume sealed roads. The Republic of Uganda.",
     controls: ["Road investigations", "Geometry assessment", "Drainage and climate resilience", "Materials and pavement design", "Construction quality control"],
   },
+  {
+    title: "Integrated Transport Infrastructure Services Annual Budget Monitoring Report FY 2023/24",
+    agency: "Ministry of Works and Transport",
+    year: "2024",
+    href: `${BASE}docs/Integrated Transport Infrastructure Services Annual Budget Monitoring report FY 2023-24.pdf`,
+    apa: "Ministry of Works and Transport. (2024). Integrated transport infrastructure services annual budget monitoring report FY 2023/24. The Republic of Uganda.",
+    controls: ["Budget release tracking", "Absorption variance", "Physical progress", "Output monitoring", "Corrective action reporting"],
+  },
+  {
+    title: "TOR for Monitoring Road Performance Indicators for DUCAR",
+    agency: "Ministry of Works and Transport",
+    year: "2026",
+    href: `${BASE}docs/TOR__for_Consultancy_Services_for_Guidelines for Monitoring Road Performance Indicators_DUCAR.docx`,
+    apa: "Ministry of Works and Transport. (2026). Terms of reference for consultancy services for guidelines for monitoring road performance indicators for DUCAR.",
+    controls: ["Performance indicators", "Routine maintenance reporting", "Service-level indicators", "Output verification", "District reporting templates"],
+  },
+  {
+    title: "TOR for DUCAR Road Condition Monitoring Guidelines",
+    agency: "Ministry of Works and Transport",
+    year: "2026",
+    href: `${BASE}docs/TOR__for_Consultancy_Services_for_Road_Condition_Monitoring_Guidelines_DUCAR.docx`,
+    apa: "Ministry of Works and Transport. (2026). Terms of reference for consultancy services for road condition monitoring guidelines for DUCAR.",
+    controls: ["Inventory surveys", "Condition inspections", "Equipment guidance", "Quality assurance", "Network update cycle"],
+  },
+  {
+    title: "TOR for DUCAR Road Asset Management Framework",
+    agency: "Ministry of Works and Transport",
+    year: "2026",
+    href: `${BASE}docs/TOR__for_Consultancy_Services_for_RAM_DUCAR part 1_framework.docx`,
+    apa: "Ministry of Works and Transport. (2026). Terms of reference for consultancy services for road asset management framework for DUCAR.",
+    controls: ["RAM policy framework", "Needs analysis", "Investment planning", "GIS-enabled asset register", "Annual workplan linkage"],
+  },
+  {
+    title: "TOR for DUCAR Road Asset Management Services",
+    agency: "Ministry of Works and Transport",
+    year: "2026",
+    href: `${BASE}docs/TOR__for_Consultancy_Services_for_RAM_DUCAR.docx`,
+    apa: "Ministry of Works and Transport. (2026). Terms of reference for consultancy services for road asset management for DUCAR.",
+    controls: ["Institutional RAM setup", "Data quality management", "Asset inventory", "Lifecycle planning", "Performance reporting"],
+  },
+  {
+    title: "DUCAR Source Digest",
+    agency: "Compiled source evidence",
+    year: "2026",
+    href: `${BASE}data/DUCAR_source_digest.json`,
+    apa: "Compiled DUCAR source digest. (2026). Extracted source notes for DUCAR framework, monitoring, construction, budget, and RAM logic.",
+    controls: ["Traceable assumptions", "Keyword evidence", "Source paragraphs", "Decision-rule provenance", "Implementation backlog"],
+  },
 ];
 
 const MANUAL_GATEWAYS = [
@@ -295,6 +346,17 @@ const MANUAL_GATEWAYS = [
   ["Feasibility", 66, "#12b981", "Technical, financial, economic, risk and distribution analysis readiness."],
   ["Construction readiness", 72, "#ffb020", "Investigations, geometry, drainage, materials, pavement and surfacing controls."],
   ["Quality assurance", 84, "#f43f5e", "Tendering, execution, testing, supervision and implementation evidence."],
+  ["Condition monitoring", 76, "#0891b2", "Inventory, condition inspection, equipment guidance, QMP checks and network update cycle."],
+  ["Budget monitoring", 69, "#7c3aed", "Budget release, absorption, physical progress, output delivery and variance response."],
+];
+
+const FRAMEWORK_EVIDENCE_LOGIC = [
+  ["Inventory and GIS register", "Every road candidate requires a named asset, class, district/region, geometry or coordinate evidence, surface type and maintainability flag before prioritisation.", 4],
+  ["Condition and performance indicators", "Condition, traffic, safety, climate exposure, equity and readiness are scored as performance indicators that feed the monitoring tier and score.", 3],
+  ["PIMS appraisal screen", "Concept, feasibility, financial/economic, risk and final investment decision controls influence eligibility and readiness.", 0],
+  ["Construction readiness", "Geometry, drainage, materials, pavement, low-volume sealed road standards and construction QA affect intervention readiness.", 1],
+  ["Budget monitoring", "Released budget, reserve, selected cost, deferred cost, absorption and variance are tracked as budget-monitoring controls.", 2],
+  ["RAM investment planning", "The RAM framework links condition data, lifecycle need, GIS, work standards, budget scenario analysis and annual workplan export.", 5],
 ];
 
 const INTELLIGENCE_TOPICS = [
@@ -1139,6 +1201,9 @@ function ProcessFlow({ analysis, grouped }) {
   const netBudget = analysis.netBudget || 0;
   const selectedCount = analysis.summary?.selected || 0;
   const leadingClass = grouped[0]?.[0] || "Awaiting allocation";
+  const avgEvidence = analysis.summary?.total
+    ? Math.round((analysis.summary.evidenceTotal || 0) / analysis.summary.total)
+    : 0;
 
   return (
     <section className="panel wide flow-panel" id="framework">
@@ -1152,6 +1217,7 @@ function ProcessFlow({ analysis, grouped }) {
         <span><strong>Allocated</strong>UGX {currency.format(selectedCost)}</span>
         <span><strong>Selected works</strong>{selectedCount}</span>
         <span><strong>Leading allocation lane</strong>{leadingClass}</span>
+        <span><strong>Evidence readiness</strong>{avgEvidence}%</span>
       </div>
 
       <div className="flow-canvas">
@@ -1181,6 +1247,17 @@ function ProcessFlow({ analysis, grouped }) {
           ))}
         </div>
       </div>
+
+      <div className="framework-logic-grid">
+        {FRAMEWORK_EVIDENCE_LOGIC.map(([label, detail, sourceIndex], index) => (
+          <article key={label} className={index === activeStep % FRAMEWORK_EVIDENCE_LOGIC.length ? "active" : ""}>
+            <span>{String(index + 1).padStart(2, "0")}</span>
+            <strong>{label}</strong>
+            <p>{detail}</p>
+            <em>{sourceReferences[sourceIndex]}</em>
+          </article>
+        ))}
+      </div>
     </section>
   );
 }
@@ -1192,12 +1269,15 @@ function PimEnginePanel({ programme, analysis }) {
   const manualReadiness = Math.round(
     MANUAL_GATEWAYS.reduce((sum, item) => sum + item[1], 0) / MANUAL_GATEWAYS.length
   );
+  const averageEvidence = Math.round(programme.reduce((sum, p) => sum + Number(p.evidenceScore || 0), 0) / totalCount);
+  const monthlyMonitoring = programme.filter(p => p.monitoringTier === "Monthly").length;
 
   const checks = [
     { id: "strategic", label: "Strategic Fit & NDP IV", pass: selectedCount, total: totalCount, icon: Target, desc: "Alignment with National Development Plan priorities and DUCAR mandate" },
     { id: "economic", label: "Economic & Financial", pass: programme.filter(p => p.mlRisk < 0.65).length, total: totalCount, icon: LineChart, desc: "Cost-benefit thresholds, EIRR, and NPV viability" },
     { id: "legal", label: "Legal & Regulatory", pass: programme.filter(p => p.readiness >= 3).length, total: totalCount, icon: ShieldAlert, desc: "NEMA clearance, land acquisition, PPDA compliance" },
     { id: "feasibility", label: "Technical Feasibility", pass: programme.filter(p => p.climate < 4 && p.condition > 2).length, total: totalCount, icon: Database, desc: "Engineering readiness, climate resilience screening" },
+    { id: "evidence", label: "Evidence Completeness", pass: programme.filter(p => p.evidenceScore >= 80).length, total: totalCount, icon: FileSpreadsheet, desc: "Asset register, survey, cost, coordinates and monitoring fields are populated" },
   ];
 
   return (
@@ -1211,6 +1291,8 @@ function PimEnginePanel({ programme, analysis }) {
 
       <section className="signal-grid">
         <SignalTile label="Manual readiness" value={`${manualReadiness}%`} sublabel="PIM + construction controls" tone="cyan" />
+        <SignalTile label="Evidence readiness" value={`${averageEvidence}%`} sublabel="source-aware data completeness" tone="green" />
+        <SignalTile label="Monthly monitoring" value={monthlyMonitoring} sublabel="high-trigger assets" tone="red" />
         {checks.slice(1).map(chk => (
           <SignalTile key={chk.id} label={chk.label} value={`${Math.round((chk.pass / chk.total) * 100)}%`} sublabel="clearance rate" tone={chk.pass / chk.total > 0.7 ? "green" : "red"} />
         ))}
@@ -1228,10 +1310,25 @@ function PimEnginePanel({ programme, analysis }) {
                 <strong>{source.title}</strong>
                 <span>{source.agency} / {source.year}</span>
               </div>
-              <a href={source.href} target="_blank" rel="noreferrer">Open PDF</a>
+              <a href={source.href} target="_blank" rel="noreferrer">Open source</a>
               <ul>
                 {source.controls.map((control) => <li key={control}>{control}</li>)}
               </ul>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="viz-card wide-viz">
+        <div className="viz-title">
+          <h3>Source-Based Tool Logic</h3>
+          <span>Operational gates now applied inside the prioritisation model</span>
+        </div>
+        <div className="policy-gate-grid">
+          {policyGates.map((gate) => (
+            <article key={gate.id}>
+              <strong>{gate.label}</strong>
+              <p>{sourceReferences[gate.sourceIndex]}</p>
             </article>
           ))}
         </div>
@@ -2196,6 +2293,8 @@ function App() {
                     <th>Traffic</th>
                     <th>Equity</th>
                     <th>Readiness</th>
+                    <th>Evidence</th>
+                    <th>Monitoring</th>
                     <th>ML Risk</th>
                     <th>Status</th>
                     <th>Maintainable</th>
@@ -2224,6 +2323,8 @@ function App() {
                           </div>
                         </td>
                       ))}
+                      <td><span className="evidence-pill">{p.evidenceScore || 0}%</span></td>
+                      <td><span className={`monitoring-pill ${String(p.monitoringTier || "").toLowerCase()}`}>{p.monitoringTier || "Unassigned"}</span></td>
                       <td><span className={`risk ${p.riskBand}`}>{Math.round((p.mlRisk || 0) * 100)}%</span></td>
                       <td><span className={`status ${p.status}`}>{p.status}</span></td>
                       <td>

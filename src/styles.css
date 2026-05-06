@@ -2188,6 +2188,115 @@ td .range-value {
   animation: growAcross 0.85s ease both;
 }
 
+.framework-logic-grid,
+.policy-gate-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.framework-logic-grid article,
+.policy-gate-grid article {
+  min-height: 190px;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  padding: 16px;
+  border-radius: 18px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(244, 247, 255, 0.88)),
+    radial-gradient(circle at 90% 8%, rgba(66, 88, 255, 0.16), transparent 30%);
+  border: 1px solid rgba(255, 255, 255, 0.84);
+  box-shadow: 0 16px 38px rgba(30, 38, 64, 0.1);
+}
+
+.framework-logic-grid article.active {
+  color: #ffffff;
+  background:
+    radial-gradient(circle at 90% 8%, rgba(255, 255, 255, 0.2), transparent 28%),
+    linear-gradient(145deg, #0d1324, #4258ff);
+}
+
+.framework-logic-grid span {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #eef2ff;
+  color: #4258ff;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.framework-logic-grid article.active span {
+  color: #0d1324;
+  background: #ffffff;
+}
+
+.framework-logic-grid strong,
+.policy-gate-grid strong {
+  color: inherit;
+  font-size: 16px;
+  font-weight: 950;
+}
+
+.framework-logic-grid p,
+.policy-gate-grid p {
+  margin: 0;
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 850;
+}
+
+.framework-logic-grid article.active p,
+.framework-logic-grid article.active em {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.framework-logic-grid em {
+  color: #4258ff;
+  font-size: 11px;
+  font-style: normal;
+  line-height: 1.35;
+  font-weight: 850;
+}
+
+.evidence-pill,
+.monitoring-pill {
+  display: inline-flex;
+  min-width: 76px;
+  justify-content: center;
+  padding: 7px 9px;
+  border-radius: 999px;
+  color: #0d1324;
+  background: #eef2ff;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.evidence-pill {
+  color: #065f46;
+  background: #d1fae5;
+}
+
+.monitoring-pill.monthly {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+.monitoring-pill.quarterly {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.monitoring-pill.semi-annual {
+  color: #1d4ed8;
+  background: #dbeafe;
+}
+
 @media (max-width: 1200px) {
   .shell {
     grid-template-columns: 78px minmax(0, 1fr);
