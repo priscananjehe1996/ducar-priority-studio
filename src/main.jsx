@@ -524,8 +524,8 @@ function MapScene3D({ programme }) {
       container: mapRef.current,
       center: [32.5, 1.3],
       zoom: 6.9,
-      pitch: 62,
-      bearing: -20,
+      pitch: 55,
+      bearing: -18,
       antialias: true,
       style: {
         version: 8,
@@ -675,7 +675,7 @@ function MapScene3D({ programme }) {
         <div className="scene-hud">
           <strong>3D road scene</strong>
           <span>{filteredRoads.length.toLocaleString()} visible road records</span>
-          <span>Imagery with labels. Terrain 3x, high-quality terrain on.</span>
+          <span>ESRI imagery + labels. Terrain 3x. Pitch 55 degrees.</span>
           <span>Click any road for attributes.</span>
         </div>
         {selectedRoad && (
@@ -1050,16 +1050,19 @@ function MapPanel({ programme }) {
       attributionControl: false,
     });
 
-    // Light OSM-derived tile layer
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-      maxZoom: 18,
-      subdomains: "abcd",
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+      maxZoom: 19,
+    }).addTo(map);
+
+    L.tileLayer("https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}", {
+      maxZoom: 19,
+      opacity: 0.92,
     }).addTo(map);
 
     L.control.zoom({ position: "topright" }).addTo(map);
     L.control
       .attribution({ position: "bottomright", prefix: false })
-      .addAttribution('&copy; <a href="https://www.openstreetmap.org/">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>')
+      .addAttribution("Esri World Imagery and reference labels")
       .addTo(map);
 
     mapInstance.current = map;
@@ -1346,7 +1349,7 @@ function MapPanel({ programme }) {
       <div className="map-header">
         <div className="panel-title" style={{ borderBottom: "none", marginBottom: 0, paddingBottom: 0 }}>
           <Layers size={18} />
-          <h2>Geospatial Risk Surface — OpenStreetMap</h2>
+          <h2>Geospatial Risk Surface — ESRI Imagery + Labels</h2>
         </div>
         <div className="layer-toggles">
           <button
