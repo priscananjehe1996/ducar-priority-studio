@@ -387,26 +387,26 @@ const ROAD_CATEGORY_COLORS = [
   "match",
   ROAD_CATEGORY_EXPRESSION,
   "National Roads", "#111827",
-  "District Roads", "#93c5fd",
-  "KCCA", "#c4b5fd",
-  "City Roads", "#fda4af",
-  "Community Access Roads", "#86efac",
-  "Town Council Roads", "#fde68a",
-  "Municipal Roads", "#67e8f9",
-  "#bfdbfe",
+  "District Roads", "#2563eb",
+  "KCCA", "#7c3aed",
+  "City Roads", "#e11d48",
+  "Community Access Roads", "#16a34a",
+  "Town Council Roads", "#d97706",
+  "Municipal Roads", "#0891b2",
+  "#64748b",
 ];
 
 const ROAD_CATEGORY_WIDTHS = [
   "match",
   ROAD_CATEGORY_EXPRESSION,
-  "National Roads", 5.8,
-  "District Roads", 1.9,
-  "KCCA", 2.7,
-  "City Roads", 2.5,
-  "Community Access Roads", 1.2,
-  "Town Council Roads", 1.6,
-  "Municipal Roads", 2.1,
-  1.8,
+  "National Roads", 7.2,
+  "District Roads", 2.6,
+  "KCCA", 3.8,
+  "City Roads", 3.4,
+  "Community Access Roads", 1.7,
+  "Town Council Roads", 2.2,
+  "Municipal Roads", 2.8,
+  2,
 ];
 
 /* ─── Metric card ─── */
@@ -834,9 +834,9 @@ function MapScene3D({ programme }) {
         filter: ["!=", ["get", "road_system"], "National"],
         paint: {
           "line-color": "#ffffff",
-          "line-width": ["+", ROAD_CATEGORY_WIDTHS, 2.4],
-          "line-opacity": 0.38,
-          "line-blur": 0.85,
+          "line-width": ["+", ROAD_CATEGORY_WIDTHS, 2.8],
+          "line-opacity": ["case", ["==", ["get", "network_category"], "National Roads"], 0.9, 0.58],
+          "line-blur": 0.55,
         },
       });
       map.addLayer({
@@ -846,7 +846,7 @@ function MapScene3D({ programme }) {
         paint: {
           "line-color": ROAD_CATEGORY_COLORS,
           "line-width": ROAD_CATEGORY_WIDTHS,
-          "line-opacity": ["case", ["==", ["get", "road_system"], "National"], 0.98, 0.58],
+          "line-opacity": ["case", ["==", ["get", "network_category"], "National Roads"], 1, 0.82],
         },
       });
       map.addLayer({
@@ -875,7 +875,7 @@ function MapScene3D({ programme }) {
         type: "line",
         source: "roads",
         filter: ["==", ["get", "road_system"], "National"],
-        paint: { "line-color": "#fbbf24", "line-width": 1.4, "line-opacity": 0.95, "line-dasharray": [1.4, 0.9] },
+        paint: { "line-color": "#fbbf24", "line-width": 2.1, "line-opacity": 1, "line-dasharray": [1.4, 0.9] },
       });
       map.addLayer({
         id: "network-junctions",
@@ -947,6 +947,20 @@ function MapScene3D({ programme }) {
     const routes = routeMatrix?.routes || [];
     return routes.slice().sort((a, b) => (b.traffic_flow_index || 0) - (a.traffic_flow_index || 0)).slice(0, 8);
   }, [routeMatrix]);
+  const mapStats = useMemo(() => {
+    const features = roads?.features || [];
+    const national = features.filter((f) => f.properties?.network_category === "National Roads").length;
+    const ducar = Math.max(0, features.length - national);
+    const avgFlow = features.length
+      ? Math.round(features.reduce((sum, f) => sum + Number(f.properties?.traffic_flow_index || 0), 0) / features.length)
+      : 0;
+    return [
+      { label: "Network edges", value: filteredRoads.length.toLocaleString(), tone: "blue" },
+      { label: "DUCAR focus", value: ducar.toLocaleString(), tone: "green" },
+      { label: "National reference", value: national.toLocaleString(), tone: "dark" },
+      { label: "Mean flow index", value: `${avgFlow}%`, tone: "red" },
+    ];
+  }, [roads, filteredRoads.length]);
 
   return (
     <section className="panel map-panel map3d-panel" id="gis">
@@ -968,6 +982,14 @@ function MapScene3D({ programme }) {
         <label>Surface<select value={surfaceFilter} onChange={(e) => setSurfaceFilter(e.target.value)}>{roadOptions.surfaces.map((x) => <option key={x}>{x}</option>)}</select></label>
         <label>Sort<select value={roadSort} onChange={(e) => setRoadSort(e.target.value)}>{["length_km", "road_name", "road_class", "region", "district", "quality_flag"].map((x) => <option key={x}>{x}</option>)}</select></label>
         <strong>{filteredRoads.length.toLocaleString()} network edges</strong>
+      </div>
+      <div className="map-stat-strip">
+        {mapStats.map((item) => (
+          <article key={item.label} className={`map-stat ${item.tone}`}>
+            <span>{item.label}</span>
+            <strong>{item.value}</strong>
+          </article>
+        ))}
       </div>
       <div className="scene-shell">
         <div className="maplibre-container" ref={mapRef} />
