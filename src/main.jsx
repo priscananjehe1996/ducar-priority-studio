@@ -1555,6 +1555,17 @@ function App() {
     <div className="shell">
       <VerticalNav activeSection={activeSection} onNavigate={navigateToSection} />
       <div className="app">
+        <div className="workspace-topbar">
+          <div>
+            <span>DUCAR Priority Studio</span>
+            <strong>{pageMeta.title}</strong>
+          </div>
+          <div className="topbar-actions">
+            <span><Database size={15} /> {records.length} assets</span>
+            <span><Gauge size={15} /> {apiMode}</span>
+            <button className="icon-action" onClick={() => runAnalysis()} aria-label="Re-run analysis"><RefreshCcw size={16} /></button>
+          </div>
+        </div>
         <PageChrome page={pageMeta} onBack={() => navigateToSection("overview")}>
           {activeSection === "overview" && (
             <>
