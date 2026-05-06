@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import {
   Activity,
   ArrowLeft,
+  BookOpen,
   Bot,
   Brain,
   CircleDollarSign,
@@ -13,6 +14,7 @@ import {
   FileSpreadsheet,
   GitBranch,
   Gauge,
+  Globe2,
   ListFilter,
   Layers,
   LayoutDashboard,
@@ -186,6 +188,8 @@ const NAV_ITEMS = [
   { id: "traffic", label: "Traffic Analytics", icon: Truck },
   { id: "framework", label: "Framework Flow", icon: Network },
   { id: "gis", label: "GIS Surface", icon: MapIcon },
+  { id: "manuals", label: "Manuals & Evidence", icon: BookOpen },
+  { id: "case-studies", label: "Global Cases", icon: Globe2 },
   { id: "allocation", label: "Allocation", icon: GitBranch },
   { id: "programme", label: "Programme", icon: FileSpreadsheet },
 ];
@@ -357,6 +361,111 @@ const FRAMEWORK_EVIDENCE_LOGIC = [
   ["Construction readiness", "Geometry, drainage, materials, pavement, low-volume sealed road standards and construction QA affect intervention readiness.", 1],
   ["Budget monitoring", "Released budget, reserve, selected cost, deferred cost, absorption and variance are tracked as budget-monitoring controls.", 2],
   ["RAM investment planning", "The RAM framework links condition data, lifecycle need, GIS, work standards, budget scenario analysis and annual workplan export.", 5],
+];
+
+const MANUAL_LOGIC_WEIGHTS = [
+  ["Asset management", "Adds governance, lifecycle planning, RAMS, asset valuation and annual workplan linkage to the score narrative.", 18],
+  ["Road condition", "Raises evidence confidence for condition, IRI, rutting, visual inspection and deterioration trigger rules.", 16],
+  ["Traffic and axle loading", "Strengthens traffic demand, equivalent axle loading, representative vehicles and speed-flow assumptions.", 14],
+  ["GIS and referencing", "Controls route identity, linear referencing, district joins, GIS QA and network matrix analysis.", 13],
+  ["Bridge and structures", "Adds BMS inventory, culvert/bridge condition, structural criticality and inspection templates.", 12],
+  ["Quality management", "Raises QMP gate weighting for data validation, collection procedures and acceptance checks.", 11],
+  ["Construction and supervision", "Feeds readiness, BOQ, work standards, supervision, payment and contract evidence controls.", 9],
+  ["Environment and safeguards", "Supports climate, safety, social and environmental risk screening.", 5],
+  ["Training and systems", "Supports implementation readiness, user training and system administration capacity.", 2],
+];
+
+const GLOBAL_CASE_STUDIES = [
+  {
+    region: "Europe",
+    place: "Madrid Region, Spain",
+    source: "PIARC Road Asset Management Manual",
+    url: "https://road-asset.piarc.org/en/management-asset-management-implementation/case-studies",
+    lesson: "Use staged implementation, clear asset registers and decision-support tooling before chasing advanced optimisation.",
+    ducarUse: "DUCAR should prioritise stable route IDs, district ownership and evidence completeness before advanced ML scoring.",
+    metrics: ["Asset register", "Implementation maturity", "Tool adoption"],
+    score: 88,
+  },
+  {
+    region: "Asia",
+    place: "Assam, India",
+    source: "PIARC Road Asset Management Manual",
+    url: "https://road-asset.piarc.org/en/management-asset-management-implementation/case-studies",
+    lesson: "RAMS rollout needs institutional learning, data ownership, training and progressive use of the system by road agencies.",
+    ducarUse: "Add district-level data quality roles and training indicators to the DUCAR implementation plan.",
+    metrics: ["Training", "Data ownership", "RAMS rollout"],
+    score: 82,
+  },
+  {
+    region: "North America",
+    place: "United States FHWA case studies",
+    source: "Federal Highway Administration Asset Management",
+    url: "https://www.fhwa.dot.gov/asset/",
+    lesson: "Risk, lifecycle planning, financial planning and communication are separate asset-management capabilities that need explicit measures.",
+    ducarUse: "Keep separate DUCAR views for risk, LCCA/economic logic, affordability and public reporting.",
+    metrics: ["Risk", "Lifecycle planning", "Financial planning"],
+    score: 91,
+  },
+  {
+    region: "Oceania",
+    place: "Australia and New Zealand",
+    source: "Austroads Guide to Asset Management",
+    url: "https://austroads.gov.au/infrastructure/asset-management/guide-to-asset-management",
+    lesson: "Whole-of-organisation asset management should cover service levels, information systems, financial management, pavements, structures and improvement.",
+    ducarUse: "Treat DUCAR as a service-level and lifecycle management system, not only a road list or annual budget sheet.",
+    metrics: ["ISO 55000", "Service levels", "Asset information"],
+    score: 90,
+  },
+  {
+    region: "Africa",
+    place: "Sub-Saharan Africa road funds/agencies",
+    source: "African Development Bank Road Asset Management Toolkit",
+    url: "https://www.afdb.org/en/documents/road-asset-management-study-accelerating-road-sector-reforms-part-ii-road-asset-management-toolkit",
+    lesson: "Funding sources, management systems and procedures must be aligned because road condition is directly tied to transport cost and economic competitiveness.",
+    ducarUse: "Make every allocation scenario show funding gap, implementation capacity, and condition impact.",
+    metrics: ["Funding alignment", "Institutional maturity", "Road condition"],
+    score: 86,
+  },
+  {
+    region: "Africa",
+    place: "South Africa SANRAL",
+    source: "SANRAL integrated and annual reports",
+    url: "https://www.nra.co.za/publications/integrated-report",
+    lesson: "Asset valuation, reporting discipline and long-term investment metrics can make road agencies more transparent and bankable.",
+    ducarUse: "Add asset value, depreciation/condition and budget-monitoring statistics to DUCAR reporting.",
+    metrics: ["Asset value", "Investment reporting", "Auditability"],
+    score: 84,
+  },
+  {
+    region: "Latin America",
+    place: "Municipal/sub-national roads",
+    source: "World Bank local government performance-based road maintenance study",
+    url: "https://documents1.worldbank.org/curated/en/413451468336612648/pdf/689620ESW0P102002012000Final0Report.pdf",
+    lesson: "Performance-based road maintenance can preserve access and create local contracting capacity when standards, monitoring and payments are clear.",
+    ducarUse: "Use service-level indicators and payment/verification gates for force account and contracted DUCAR works.",
+    metrics: ["PBC standards", "Local capacity", "Maintenance continuity"],
+    score: 87,
+  },
+  {
+    region: "Global PBC comparison",
+    place: "Argentina, Botswana, Lao PDR, Liberia, New Zealand, Florida",
+    source: "World Bank performance-based contracts review",
+    url: "https://blogs.worldbank.org/en/transport/performance-based-contracts-promoting-quality-road-maintenance-and-economic-efficiency",
+    lesson: "PBCs can improve budget forecasting and outcome consistency, but require data, capacity, flexible procurement and long-term budget commitment.",
+    ducarUse: "Do not recommend PBCs blindly; first check data completeness, district capacity and measurable service levels.",
+    metrics: ["Budget forecasting", "Outcome consistency", "Contract risk"],
+    score: 89,
+  },
+  {
+    region: "Africa local roads",
+    place: "Uganda, Zambia, Sierra Leone, Western Cape",
+    source: "GOV.UK/ReCAP effective road asset management baseline",
+    url: "https://www.gov.uk/research-for-development-outputs/economic-growth-through-effective-road-asset-management-consolidated-baseline-study-report",
+    lesson: "Rural road asset management performance depends on institutional, financing, technical and operational prerequisites.",
+    ducarUse: "DUCAR readiness scoring should include institutional capacity and financing reliability, not condition alone.",
+    metrics: ["Institutional capacity", "Financing", "Operations"],
+    score: 85,
+  },
 ];
 
 const INTELLIGENCE_TOPICS = [
@@ -755,6 +864,157 @@ function MediaRibbon() {
         </article>
       ))}
     </section>
+  );
+}
+
+function useManualsCatalog() {
+  const [catalog, setCatalog] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${BASE}data/manuals_catalog.json`, { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled) setCatalog(data);
+      })
+      .catch(() => {
+        if (!cancelled) setCatalog(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  return catalog;
+}
+
+function ManualsEvidencePanel({ analysis }) {
+  const catalog = useManualsCatalog();
+  const summary = catalog?.summary || {};
+  const topicCards = catalog?.topic_cards || [];
+  const roles = Object.entries(catalog?.by_evidence_role || {});
+  const topFolders = Object.entries(catalog?.by_folder || {}).slice(0, 10);
+  const selectedManuals = catalog?.logic_records?.slice(0, 24) || [];
+  const evidenceAverage = analysis.summary?.total
+    ? Math.round((analysis.summary.evidenceTotal || 0) / analysis.summary.total)
+    : 0;
+
+  return (
+    <div className="manuals-page-grid">
+      <section className="traffic-command-card manual-hero">
+        <p className="eyebrow">Manual repository intelligence</p>
+        <strong>{(summary.all_files || 0).toLocaleString()}</strong>
+        <span>files indexed from Uganda National Road Network Repository / 0. Manuals</span>
+        <div className="index-scale"><i style={{ left: `${Math.min(100, evidenceAverage)}%` }} /></div>
+      </section>
+      <section className="metrics-grid">
+        <Metric icon={BookOpen} label="Logic-ready records" value={(summary.logic_records || 0).toLocaleString()} tone="green" />
+        <Metric icon={Database} label="Manual folders" value={summary.folders || 0} tone="gold" />
+        <Metric icon={FileSpreadsheet} label="File extensions" value={summary.extensions || 0} tone="red" />
+        <Metric icon={ClipboardCheck} label="Evidence readiness" value={`${evidenceAverage}%`} tone="cyan" />
+      </section>
+      <section className="viz-card wide-viz">
+        <div className="viz-title">
+          <h3>Manual Topics Now Feeding Tool Logic</h3>
+          <span>Repository evidence translated into scoring, monitoring and QA assumptions</span>
+        </div>
+        <div className="manual-topic-grid">
+          {(topicCards.length ? topicCards : MANUAL_LOGIC_WEIGHTS.map(([topic, decision_use, score]) => ({ topic, decision_use, logic_records: score, all_files: score }))).map((item, index) => (
+            <article key={item.topic} style={{ "--accent": ["#4258ff", "#12b981", "#f43f5e", "#ffb020", "#00a7c7"][index % 5] }}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <strong>{item.topic}</strong>
+              <p>{item.decision_use}</p>
+              <div><i style={{ width: `${Math.min(100, (Number(item.logic_records || 0) / Math.max(1, Number(item.all_files || 1))) * 100)}%` }} /></div>
+              <em>{Number(item.logic_records || 0).toLocaleString()} logic records / {Number(item.all_files || 0).toLocaleString()} files</em>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="viz-card">
+        <div className="viz-title">
+          <h3>Evidence Roles</h3>
+          <span>All files are counted; document-like records drive logic</span>
+        </div>
+        <div className="evidence-role-list">
+          {roles.map(([role, count]) => (
+            <p key={role}><strong>{Number(count).toLocaleString()}</strong><span>{role}</span></p>
+          ))}
+        </div>
+      </section>
+      <section className="viz-card">
+        <div className="viz-title">
+          <h3>Top Repository Folders</h3>
+          <span>Folder-level statistics</span>
+        </div>
+        <div className="evidence-role-list">
+          {topFolders.map(([folder, count]) => (
+            <p key={folder}><strong>{Number(count).toLocaleString()}</strong><span>{folder}</span></p>
+          ))}
+        </div>
+      </section>
+      <section className="viz-card wide-viz">
+        <div className="viz-title">
+          <h3>Sample Indexed Manuals and Templates</h3>
+          <span>Representative logic-ready records from the full catalogue</span>
+        </div>
+        <div className="manual-record-table">
+          {selectedManuals.map((item) => (
+            <article key={item.relative_path}>
+              <strong>{item.name}</strong>
+              <span>{item.topic} / {item.evidence_role}</span>
+              <em>{item.relative_path}</em>
+            </article>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function GlobalCaseStudyPanel() {
+  const regionCounts = GLOBAL_CASE_STUDIES.reduce((acc, item) => {
+    acc[item.region] = (acc[item.region] || 0) + 1;
+    return acc;
+  }, {});
+  const averageScore = Math.round(GLOBAL_CASE_STUDIES.reduce((sum, item) => sum + item.score, 0) / GLOBAL_CASE_STUDIES.length);
+  return (
+    <div className="case-study-page">
+      <section className="case-study-hero">
+        <div>
+          <p className="eyebrow">Global case study review</p>
+          <h2>International road asset management lessons translated into DUCAR rules</h2>
+          <span>Combines online official resources from PIARC, FHWA, Austroads, World Bank, AfDB, SANRAL and ReCAP/GOV.UK.</span>
+        </div>
+        <strong>{averageScore}%</strong>
+      </section>
+      <section className="metrics-grid">
+        <Metric icon={Globe2} label="Case study records" value={GLOBAL_CASE_STUDIES.length} />
+        <Metric icon={MapIcon} label="Regions covered" value={Object.keys(regionCounts).length} tone="green" />
+        <Metric icon={ClipboardCheck} label="Transferability index" value={`${averageScore}%`} tone="gold" />
+        <Metric icon={BookOpen} label="Official source links" value={new Set(GLOBAL_CASE_STUDIES.map((x) => x.url)).size} tone="red" />
+      </section>
+      <section className="global-case-grid">
+        {GLOBAL_CASE_STUDIES.map((item, index) => (
+          <article key={`${item.region}-${item.place}`} style={{ "--accent": ["#4258ff", "#12b981", "#f43f5e", "#ffb020", "#00a7c7", "#7c3aed"][index % 6] }}>
+            <div className="case-card-head">
+              <span>{item.region}</span>
+              <strong>{item.score}%</strong>
+            </div>
+            <h3>{item.place}</h3>
+            <p>{item.lesson}</p>
+            <div className="case-metric-row">
+              {item.metrics.map((metric) => <i key={metric}>{metric}</i>)}
+            </div>
+            <em>{item.ducarUse}</em>
+            <a href={item.url} target="_blank" rel="noreferrer">{item.source}</a>
+          </article>
+        ))}
+      </section>
+      <section className="manual-reference-note">
+        <strong>APA-style online source assumptions</strong>
+        {GLOBAL_CASE_STUDIES.map((item) => (
+          <p key={`${item.place}-${item.source}`}>{item.source}. ({item.region}). {item.place}: {item.lesson} Retrieved May 6, 2026, from {item.url}</p>
+        ))}
+      </section>
+    </div>
   );
 }
 
@@ -2075,6 +2335,8 @@ function App() {
     traffic: { ...activePage, title: "Traffic, Economic and Deterioration Analytics" },
     framework: { ...activePage, title: "Animated Framework and Tool Process Flow" },
     gis: { ...activePage, title: "GIS Surface with National Reference Exemption" },
+    manuals: { ...activePage, title: "Manuals Repository Evidence and Statistics" },
+    "case-studies": { ...activePage, title: "Global Case Study Review" },
     allocation: { ...activePage, title: "Budget Rationalisation by Region and Functional Class" },
     programme: { ...activePage, title: "Editable Prioritised Programme Table" },
   }[activePage.id];
@@ -2243,6 +2505,18 @@ function App() {
             <>
               <MapScene3D programme={programme} />
               <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} section="gis" limit={8} compact title="GIS and Network Intelligence" />
+            </>
+          )}
+          {activeSection === "manuals" && (
+            <>
+              <ManualsEvidencePanel analysis={analysis} />
+              <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} section="pim" limit={8} compact title="Manual Evidence Intelligence" />
+            </>
+          )}
+          {activeSection === "case-studies" && (
+            <>
+              <GlobalCaseStudyPanel />
+              <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} section="framework" limit={6} compact title="Case Study Transfer Intelligence" />
             </>
           )}
 

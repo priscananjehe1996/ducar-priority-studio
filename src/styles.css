@@ -2297,6 +2297,239 @@ td .range-value {
   background: #dbeafe;
 }
 
+.manuals-page-grid,
+.case-study-page {
+  display: grid;
+  gap: 18px;
+}
+
+.manual-hero {
+  min-height: 230px;
+}
+
+.manual-topic-grid,
+.global-case-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 14px;
+}
+
+.manual-topic-grid article,
+.global-case-grid article {
+  --accent: #4258ff;
+  min-height: 250px;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  padding: 18px;
+  border-radius: 20px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(244, 247, 255, 0.9)),
+    radial-gradient(circle at 88% 10%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 30%);
+  border: 1px solid rgba(255, 255, 255, 0.86);
+  box-shadow: 0 18px 42px rgba(30, 38, 64, 0.1);
+}
+
+.manual-topic-grid article span {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: #ffffff;
+  background: var(--accent);
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.manual-topic-grid strong,
+.global-case-grid h3 {
+  margin: 0;
+  color: #0d1324;
+  font-size: 18px;
+  line-height: 1.15;
+  font-weight: 950;
+}
+
+.manual-topic-grid p,
+.global-case-grid p,
+.global-case-grid em {
+  margin: 0;
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 850;
+  font-style: normal;
+}
+
+.manual-topic-grid div {
+  height: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e5e7ef;
+}
+
+.manual-topic-grid i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+}
+
+.manual-topic-grid em {
+  color: #0d1324;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 950;
+}
+
+.evidence-role-list {
+  display: grid;
+  gap: 10px;
+}
+
+.evidence-role-list p {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #f4f7fc;
+}
+
+.evidence-role-list strong {
+  color: #4258ff;
+  font-size: 20px;
+  font-weight: 950;
+}
+
+.evidence-role-list span {
+  color: #0d1324;
+  font-size: 12px;
+  font-weight: 900;
+  text-align: right;
+}
+
+.manual-record-table {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px;
+}
+
+.manual-record-table article {
+  min-height: 128px;
+  display: grid;
+  gap: 7px;
+  padding: 14px;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid rgba(18, 24, 38, 0.08);
+}
+
+.manual-record-table strong {
+  color: #0d1324;
+  font-size: 13px;
+  line-height: 1.25;
+  font-weight: 950;
+}
+
+.manual-record-table span,
+.manual-record-table em {
+  color: #667085;
+  font-size: 11px;
+  line-height: 1.35;
+  font-style: normal;
+  font-weight: 850;
+}
+
+.case-study-hero {
+  min-height: 260px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 22px;
+  padding: 30px;
+  border-radius: 24px;
+  color: #ffffff;
+  background:
+    radial-gradient(circle at 86% 10%, rgba(255, 255, 255, 0.22), transparent 26%),
+    linear-gradient(135deg, #0d1324, #4258ff 58%, #00a7c7);
+  box-shadow: 18px 20px 52px rgba(28, 39, 78, 0.14);
+}
+
+.case-study-hero h2 {
+  max-width: 820px;
+  margin: 0;
+  font-size: clamp(30px, 4vw, 58px);
+  line-height: 1;
+  font-weight: 950;
+}
+
+.case-study-hero span {
+  display: block;
+  max-width: 760px;
+  margin-top: 12px;
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 850;
+}
+
+.case-study-hero > strong {
+  min-width: 150px;
+  height: 150px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #0d1324;
+  background: #ffffff;
+  font-size: 40px;
+  font-weight: 950;
+}
+
+.case-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.case-card-head span,
+.case-card-head strong {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 14%, #ffffff);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.case-metric-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.case-metric-row i {
+  padding: 6px 8px;
+  border-radius: 999px;
+  color: #0d1324;
+  background: #eef2ff;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.global-case-grid a {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 950;
+  text-decoration: none;
+}
+
 @media (max-width: 1200px) {
   .shell {
     grid-template-columns: 78px minmax(0, 1fr);
