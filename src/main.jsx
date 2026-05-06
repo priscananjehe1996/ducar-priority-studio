@@ -530,11 +530,17 @@ function MapScene3D({ programme }) {
       style: {
         version: 8,
         sources: {
-          carto: {
+          imagery: {
             type: "raster",
-            tiles: ["https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png", "https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png", "https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png"],
+            tiles: ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"],
             tileSize: 256,
-            attribution: "© OpenStreetMap © CARTO",
+            attribution: "Esri World Imagery",
+          },
+          imageryLabels: {
+            type: "raster",
+            tiles: ["https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"],
+            tileSize: 256,
+            attribution: "Esri reference labels",
           },
           terrainSource: {
             type: "raster-dem",
@@ -546,7 +552,10 @@ function MapScene3D({ programme }) {
           source: "terrainSource",
           exaggeration: 3
         },
-        layers: [{ id: "carto", type: "raster", source: "carto" }],
+        layers: [
+          { id: "imagery", type: "raster", source: "imagery", paint: { "raster-saturation": 0.12, "raster-contrast": 0.08 } },
+          { id: "imagery-labels", type: "raster", source: "imageryLabels", paint: { "raster-opacity": 0.92 } },
+        ],
       },
     });
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
@@ -666,7 +675,8 @@ function MapScene3D({ programme }) {
         <div className="scene-hud">
           <strong>3D road scene</strong>
           <span>{filteredRoads.length.toLocaleString()} visible road records</span>
-          <span>Terrain exaggerated 3x. Click any road for attributes.</span>
+          <span>Imagery with labels. Terrain 3x, high-quality terrain on.</span>
+          <span>Click any road for attributes.</span>
         </div>
         {selectedRoad && (
           <aside className="road-info-pane open" aria-live="polite">
