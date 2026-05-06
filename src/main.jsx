@@ -201,6 +201,32 @@ const OPEN_DATA_LOGIC = [
   "Local UNRA/DUCAR/KCCA shapefiles remain authoritative where they conflict with generic open mapping.",
 ];
 
+const MANUAL_SOURCES = [
+  {
+    title: "Public Investment Manual for Project Preparation and Appraisal",
+    agency: "Ministry of Finance, Planning and Economic Development",
+    year: "2017",
+    href: `${BASE}docs/Public-Investment-Manual-for-Project-Preparation-and-Appraisal.pdf`,
+    apa: "Ministry of Finance, Planning and Economic Development. (2017). Public investment manual for project preparation and appraisal. The Republic of Uganda.",
+    controls: ["Project identification", "Pre-feasibility and feasibility", "Financial and economic analysis", "Risk and distribution analysis", "Final investment decision"],
+  },
+  {
+    title: "Road Design and Construction Manual, Volume V: Low Volume Sealed Roads",
+    agency: "Ministry of Works and Transport",
+    year: "2018",
+    href: `${BASE}docs/CONSTRUCTION-MANUAL-.pdf`,
+    apa: "Ministry of Works and Transport. (2018). Road design and construction manual: Volume V, low volume sealed roads. The Republic of Uganda.",
+    controls: ["Road investigations", "Geometry assessment", "Drainage and climate resilience", "Materials and pavement design", "Construction quality control"],
+  },
+];
+
+const MANUAL_GATEWAYS = [
+  ["Concept profile", 78, "#4258ff", "Project profile, logical framework and option framing before budget admission."],
+  ["Feasibility", 66, "#12b981", "Technical, financial, economic, risk and distribution analysis readiness."],
+  ["Construction readiness", 72, "#ffb020", "Investigations, geometry, drainage, materials, pavement and surfacing controls."],
+  ["Quality assurance", 84, "#f43f5e", "Tendering, execution, testing, supervision and implementation evidence."],
+];
+
 const DUCAR_EXEMPTION_TEXT =
   "National roads are visible as a reference layer for connectivity and double-counting checks, but DUCAR analysis, prioritisation and budget allocation focus on non-national roads unless a formal delegation exists.";
 
@@ -849,6 +875,9 @@ function PimEnginePanel({ programme, analysis }) {
   const selectedCount = programme.filter(p => p.status === "Selected").length;
   const totalCount = Math.max(1, programme.length);
   const passRate = Math.round((selectedCount / totalCount) * 100);
+  const manualReadiness = Math.round(
+    MANUAL_GATEWAYS.reduce((sum, item) => sum + item[1], 0) / MANUAL_GATEWAYS.length
+  );
 
   const checks = [
     { id: "strategic", label: "Strategic Fit & NDP IV", pass: selectedCount, total: totalCount, icon: Target, desc: "Alignment with National Development Plan priorities and DUCAR mandate" },
@@ -867,9 +896,48 @@ function PimEnginePanel({ programme, analysis }) {
       </section>
 
       <section className="signal-grid">
+        <SignalTile label="Manual readiness" value={`${manualReadiness}%`} sublabel="PIM + construction controls" tone="cyan" />
         {checks.slice(1).map(chk => (
           <SignalTile key={chk.id} label={chk.label} value={`${Math.round((chk.pass / chk.total) * 100)}%`} sublabel="clearance rate" tone={chk.pass / chk.total > 0.7 ? "green" : "red"} />
         ))}
+      </section>
+
+      <section className="manual-evidence-panel">
+        <div className="viz-title">
+          <h3>Manual Evidence Library</h3>
+          <span>Editable sources embedded in the app</span>
+        </div>
+        <div className="manual-source-grid">
+          {MANUAL_SOURCES.map((source) => (
+            <article key={source.title}>
+              <div>
+                <strong>{source.title}</strong>
+                <span>{source.agency} / {source.year}</span>
+              </div>
+              <a href={source.href} target="_blank" rel="noreferrer">Open PDF</a>
+              <ul>
+                {source.controls.map((control) => <li key={control}>{control}</li>)}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="manual-chart-card">
+        <div className="viz-title">
+          <h3>Manual-Based Decision Gates</h3>
+          <span>PIM appraisal + road construction readiness</span>
+        </div>
+        <div className="manual-radar">
+          {MANUAL_GATEWAYS.map(([label, value, color, detail]) => (
+            <div key={label} className="manual-gate">
+              <span>{label}</span>
+              <div><i style={{ width: `${value}%`, background: color }} /></div>
+              <strong>{value}%</strong>
+              <p>{detail}</p>
+            </div>
+          ))}
+        </div>
       </section>
 
       <section className="viz-card wide-viz">
@@ -895,6 +963,11 @@ function PimEnginePanel({ programme, analysis }) {
       </section>
 
       {/* ── HDM-4 Input Data Summary Tables ── */}
+      <section className="manual-reference-note">
+        <strong>APA source assumptions</strong>
+        {MANUAL_SOURCES.map((source) => <p key={source.apa}>{source.apa}</p>)}
+      </section>
+
       <section className="viz-card" style={{ gridColumn: "1 / -1" }}>
         <div className="viz-title">
           <h3>HDM-4 Input Data Summary Tables</h3>
