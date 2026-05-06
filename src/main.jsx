@@ -1939,6 +1939,9 @@ function App() {
 
   async function runAnalysis(nextRecords = records) {
     try {
+      if (window.location.hostname.endsWith("github.io")) {
+        throw new Error("Static GitHub Pages deployment uses browser analysis");
+      }
       const res = await fetch("/api/analyse", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
