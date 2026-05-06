@@ -535,7 +535,7 @@ function RiskHeatmap({ programme }) {
   );
 }
 
-function IntelligenceGallery({ programme, analysis, grouped, onNavigate }) {
+function IntelligenceGallery({ programme, analysis, grouped, onNavigate, section = "all", limit = 50, compact = false, title }) {
   const selectedCost = analysis.summary?.selectedCost || 0;
   const netBudget = Math.max(1, analysis.netBudget || 1);
   const selected = analysis.summary?.selected || 0;
@@ -559,17 +559,18 @@ function IntelligenceGallery({ programme, analysis, grouped, onNavigate }) {
     const value = Math.max(8, Math.min(98, raw));
     const color = colorSet[index % colorSet.length];
     const bars = Array.from({ length: 5 }, (_, i) => Math.max(12, Math.min(96, value - 22 + i * 11 + ((index + i) % 9))));
-    return { title, target, family, detail, value, color, bars, type: index % 6 };
+    return { title, target, family, detail, value, color, bars, type: index % 6, globalIndex: index };
   });
+  const scopedVisuals = (section === "all" ? visuals : visuals.filter((item) => item.target === section)).slice(0, limit);
 
   return (
-    <section className="intelligence-gallery" id="intelligence-gallery">
+    <section className={`intelligence-gallery ${compact ? "compact" : ""}`} id={`intelligence-gallery-${section}`}>
       <div className="viz-title">
-        <h3>50 Linked Intelligence Views</h3>
-        <span>Animated charts, graphs and infographics</span>
+        <h3>{title || (section === "all" ? "50 Linked Intelligence Views" : "Linked Intelligence Views")}</h3>
+        <span>{scopedVisuals.length} animated charts, graphs and infographics linked to this page</span>
       </div>
       <div className="intelligence-grid">
-        {visuals.map((item, index) => (
+        {scopedVisuals.map((item, index) => (
           <a
             href={`#${item.target}`}
             className={`intel-card type-${item.type}`}
@@ -578,7 +579,7 @@ function IntelligenceGallery({ programme, analysis, grouped, onNavigate }) {
             style={{ "--accent": item.color, "--delay": `${index * 0.025}s` }}
           >
             <div className="intel-card-head">
-              <span>{String(index + 1).padStart(2, "0")} / {item.family}</span>
+              <span>{String(item.globalIndex + 1).padStart(2, "0")} / {item.family}</span>
               <strong>{item.value}%</strong>
             </div>
             <h4>{item.title}</h4>
@@ -699,12 +700,15 @@ function MapScene3D({ programme }) {
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const [roads, setRoads] = useState(null);
+  const [flows, setFlows] = useState(null);
   const [roadSystemFilter, setRoadSystemFilter] = useState("All");
   const [roadClassFilter, setRoadClassFilter] = useState("All");
   const [surfaceFilter, setSurfaceFilter] = useState("All");
   const [roadSort, setRoadSort] = useState("length_km");
-  const [showSummary, setShowSummary] = useState(true);
-  const [showAssets, setShowAssets] = useState(true);
+  const [nodes, setNodes] = useState(null);
+  const [routeMatrix, setRouteMatrix] = useState(null);
+  const [showNodes, setShowNodes] = useState(true);
+  const [showFlows, setShowFlows] = useState(true);
   const [selectedRoad, setSelectedRoad] = useState(null);
 
   const roadOptions = useMemo(() => {
@@ -725,6 +729,14 @@ function MapScene3D({ programme }) {
         return typeof av === "number" && typeof bv === "number" ? bv - av : String(av || "").localeCompare(String(bv || ""));
       });
   }, [roads, roadSystemFilter, roadClassFilter, surfaceFilter, roadSort]);
+
+  const filteredFlows = useMemo(() => {
+    const features = flows?.features || [];
+    return features
+      .filter((f) => roadSystemFilter === "All" || f.properties?.road_system === roadSystemFilter)
+      .filter((f) => roadClassFilter === "All" || f.properties?.road_class === roadClassFilter)
+      .filter((f) => surfaceFilter === "All" || f.properties?.surface === surfaceFilter);
+  }, [flows, roadSystemFilter, roadClassFilter, surfaceFilter]);
 
   const programmeGeoJson = useMemo(() => ({
     type: "FeatureCollection",
@@ -771,8 +783,10 @@ function MapScene3D({ programme }) {
           },
           terrainSource: {
             type: "raster-dem",
-            url: "https://demotiles.maplibre.org/terrain-tiles/tiles.json",
-            tileSize: 256
+            tiles: ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"],
+            tileSize: 256,
+            encoding: "terrarium",
+            attribution: "AWS Open Data Terrain Tiles"
           }
         },
         terrain: {
@@ -789,12 +803,19 @@ function MapScene3D({ programme }) {
     mapInstance.current = map;
     map.on("load", async () => {
       const manifest = await fetchUgandaLayersManifest();
-      const [roadData, summaryData] = await Promise.all([
-        fetch(manifestDataUrl(manifest, "unified_roads_geojson", "uganda_unified_roads_web.geojson")).then((r) => r.json()),
-        fetch(manifestDataUrl(manifest, "roads_district_summary_geojson", "uganda_roads_district_summary.geojson")).then((r) => r.json()),
+      const [roadData, nodeData, flowData, matrixData] = await Promise.all([
+        fetch(manifestDataUrl(manifest, "network_edges_geojson", "uganda_network_edges_web.geojson")).then((r) => r.json()),
+        fetch(manifestDataUrl(manifest, "network_nodes_geojson", "uganda_network_nodes_web.geojson")).then((r) => r.json()),
+        fetch(manifestDataUrl(manifest, "traffic_flows_geojson", "uganda_traffic_flows_web.geojson")).then((r) => r.json()),
+        fetch(manifestDataUrl(manifest, "route_matrix_json", "uganda_route_matrix.json")).then((r) => r.json()),
       ]);
       setRoads(roadData);
+      setFlows(flowData);
+      setNodes(nodeData);
+      setRouteMatrix(matrixData);
       map.addSource("roads", { type: "geojson", data: roadData });
+      map.addSource("traffic-flows", { type: "geojson", data: flowData });
+      map.addSource("network-nodes", { type: "geojson", data: nodeData });
       map.addLayer({
         id: "terrain-hillshade",
         type: "hillshade",
@@ -829,11 +850,45 @@ function MapScene3D({ programme }) {
         },
       });
       map.addLayer({
+        id: "traffic-flow-casing",
+        type: "line",
+        source: "traffic-flows",
+        paint: {
+          "line-color": "#ffffff",
+          "line-width": ["interpolate", ["linear"], ["get", "traffic_flow_index"], 30, 2.8, 60, 6, 100, 10],
+          "line-opacity": 0.5,
+          "line-blur": 0.35,
+        },
+      });
+      map.addLayer({
+        id: "traffic-flow",
+        type: "line",
+        source: "traffic-flows",
+        paint: {
+          "line-color": ["interpolate", ["linear"], ["get", "traffic_flow_index"], 30, "#22c55e", 55, "#06b6d4", 75, "#f59e0b", 100, "#ef4444"],
+          "line-width": ["interpolate", ["linear"], ["get", "traffic_flow_index"], 30, 1.4, 60, 3.6, 100, 7.2],
+          "line-opacity": 0.76,
+        },
+      });
+      map.addLayer({
         id: "national-dash-overlay",
         type: "line",
         source: "roads",
         filter: ["==", ["get", "road_system"], "National"],
         paint: { "line-color": "#fbbf24", "line-width": 1.4, "line-opacity": 0.95, "line-dasharray": [1.4, 0.9] },
+      });
+      map.addLayer({
+        id: "network-junctions",
+        type: "circle",
+        source: "network-nodes",
+        filter: [">", ["get", "degree"], 2],
+        paint: {
+          "circle-radius": ["interpolate", ["linear"], ["get", "degree"], 3, 2.5, 8, 5.5, 18, 9],
+          "circle-color": "#4258ff",
+          "circle-opacity": 0.8,
+          "circle-stroke-color": "#ffffff",
+          "circle-stroke-width": 1.5,
+        },
       });
 
       map.addSource("selected-road", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
@@ -850,7 +905,7 @@ function MapScene3D({ programme }) {
         paint: { "line-color": "#0f172a", "line-width": 8, "line-opacity": 1 },
       });
 
-      for (const layerId of ["roads-all"]) {
+      for (const layerId of ["roads-all", "traffic-flow"]) {
         map.on("click", layerId, (e) => selectRoadFeature(map, e));
         map.on("mouseenter", layerId, () => { map.getCanvas().style.cursor = "pointer"; });
         map.on("mouseleave", layerId, () => { map.getCanvas().style.cursor = ""; });
@@ -877,7 +932,21 @@ function MapScene3D({ programme }) {
     const map = mapInstance.current;
     if (!map?.isStyleLoaded() || !map.getSource("roads")) return;
     map.getSource("roads").setData({ type: "FeatureCollection", features: filteredRoads });
-  }, [filteredRoads]);
+    if (map.getSource("traffic-flows")) map.getSource("traffic-flows").setData({ type: "FeatureCollection", features: filteredFlows });
+  }, [filteredRoads, filteredFlows]);
+
+  useEffect(() => {
+    const map = mapInstance.current;
+    if (!map?.isStyleLoaded()) return;
+    if (map.getLayer("traffic-flow")) map.setLayoutProperty("traffic-flow", "visibility", showFlows ? "visible" : "none");
+    if (map.getLayer("traffic-flow-casing")) map.setLayoutProperty("traffic-flow-casing", "visibility", showFlows ? "visible" : "none");
+    if (map.getLayer("network-junctions")) map.setLayoutProperty("network-junctions", "visibility", showNodes ? "visible" : "none");
+  }, [showFlows, showNodes]);
+
+  const matrixRoutes = useMemo(() => {
+    const routes = routeMatrix?.routes || [];
+    return routes.slice().sort((a, b) => (b.traffic_flow_index || 0) - (a.traffic_flow_index || 0)).slice(0, 8);
+  }, [routeMatrix]);
 
   return (
     <section className="panel map-panel map3d-panel" id="gis">
@@ -887,7 +956,9 @@ function MapScene3D({ programme }) {
           <h2>3D Uganda Road Intelligence Scene</h2>
         </div>
         <div className="layer-toggles">
-          <button className="layer-btn active unified">3D Unified Roads</button>
+          <button className="layer-btn active unified">Joined Road Network</button>
+          <button className={`layer-btn ${showFlows ? "active" : ""}`} onClick={() => setShowFlows((value) => !value)}>Traffic Flow</button>
+          <button className={`layer-btn ${showNodes ? "active" : ""}`} onClick={() => setShowNodes((value) => !value)}>Nodes</button>
         </div>
       </div>
       <div className="road-filter-bar">
@@ -896,13 +967,15 @@ function MapScene3D({ programme }) {
         <label>Class<select value={roadClassFilter} onChange={(e) => setRoadClassFilter(e.target.value)}>{roadOptions.classes.map((x) => <option key={x}>{x}</option>)}</select></label>
         <label>Surface<select value={surfaceFilter} onChange={(e) => setSurfaceFilter(e.target.value)}>{roadOptions.surfaces.map((x) => <option key={x}>{x}</option>)}</select></label>
         <label>Sort<select value={roadSort} onChange={(e) => setRoadSort(e.target.value)}>{["length_km", "road_name", "road_class", "region", "district", "quality_flag"].map((x) => <option key={x}>{x}</option>)}</select></label>
-        <strong>{filteredRoads.length.toLocaleString()} roads</strong>
+        <strong>{filteredRoads.length.toLocaleString()} network edges</strong>
       </div>
       <div className="scene-shell">
         <div className="maplibre-container" ref={mapRef} />
         <div className="scene-hud">
-          <strong>3D road scene</strong>
-          <span>{filteredRoads.length.toLocaleString()} visible road records</span>
+          <strong>3D joined road network</strong>
+          <span>{filteredRoads.length.toLocaleString()} deduplicated visible edges</span>
+          <span>{(nodes?.features?.length || 0).toLocaleString()} snapped network nodes</span>
+          <span>{(routeMatrix?.routes?.length || 0).toLocaleString()} OD route pairs</span>
           <span>ESRI imagery + labels. Terrain 3x. Pitch 55 degrees.</span>
           <span>Click any road for attributes.</span>
         </div>
@@ -948,7 +1021,25 @@ function MapScene3D({ programme }) {
           <span><i className="line-swatch community-roads-line" /> Community Access Roads</span>
           <span><i className="line-swatch town-roads-line" /> Town Council Roads</span>
           <span><i className="line-swatch municipal-roads-line" /> Municipal Roads</span>
+          <span><i className="line-swatch traffic-flow-line" /> Traffic Flow Index</span>
+          <span><i className="node-swatch" /> Joined Junction Node</span>
           <span><i className="line-swatch selected-road-line" /> Selected Road</span>
+        </div>
+      </div>
+      <div className="route-matrix-panel">
+        <div className="viz-title">
+          <h3>Route Matrix and Spatial Flow</h3>
+          <span>Top district-to-district OD pairs after endpoint joining and node analysis</span>
+        </div>
+        <div className="route-matrix-grid">
+          {matrixRoutes.map((route) => (
+            <article key={`${route.origin}-${route.destination}`}>
+              <strong>{route.origin} to {route.destination}</strong>
+              <span>{route.network_impedance_km} km network impedance</span>
+              <i><b style={{ width: `${route.traffic_flow_index}%` }} /></i>
+              <em>Flow {route.traffic_flow_index}% / straight {route.straight_distance_km} km</em>
+            </article>
+          ))}
         </div>
       </div>
     </section>
@@ -1909,7 +2000,7 @@ function App() {
                 <Metric icon={Layers} label="Regions / classes" value={grouped.length} tone="gold" />
               </section>
               <InfographicPanel analysis={analysis} grouped={grouped} programme={programme} />
-              <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} />
+              <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} section="all" limit={8} compact title="Featured Intelligence Views" />
               <section className="page-card-grid">
                 {overviewCards.map(({ id, label, icon: Icon }) => (
                   <a className="page-card" href={`#${id}`} key={id} onClick={() => navigateToSection(id)}>
@@ -1987,6 +2078,7 @@ function App() {
                   ))}
                 </div>
               </section>
+              <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} section="controls" limit={6} compact title="Input and Scenario Intelligence" />
             </>
           )}
 
@@ -2003,46 +2095,70 @@ function App() {
                 <RiskHeatmap programme={programme} />
                 <ProgrammeDonut programme={programme} />
               </div>
-              <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} />
+              <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} section="all" limit={50} title="All 50 Linked Intelligence Views" />
             </>
           )}
 
-          {activeSection === "pim" && <PimEnginePanel programme={programme} analysis={analysis} />}
-          {activeSection === "framework" && <ProcessFlow analysis={analysis} grouped={grouped} />}
-          {activeSection === "traffic" && <TrafficAnalyticsPanel programme={programme} grouped={grouped} />}
-          {activeSection === "gis" && <MapScene3D programme={programme} />}
+          {activeSection === "pim" && (
+            <>
+              <PimEnginePanel programme={programme} analysis={analysis} />
+              <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} section="pim" limit={8} compact title="PIMS and Manual Intelligence" />
+            </>
+          )}
+          {activeSection === "framework" && (
+            <>
+              <ProcessFlow analysis={analysis} grouped={grouped} />
+              <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} section="framework" limit={6} compact title="Framework Flow Intelligence" />
+            </>
+          )}
+          {activeSection === "traffic" && (
+            <>
+              <TrafficAnalyticsPanel programme={programme} grouped={grouped} />
+              <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} section="traffic" limit={10} compact title="Traffic and Economic Intelligence" />
+            </>
+          )}
+          {activeSection === "gis" && (
+            <>
+              <MapScene3D programme={programme} />
+              <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} section="gis" limit={8} compact title="GIS and Network Intelligence" />
+            </>
+          )}
 
           {activeSection === "allocation" && (
-            <section className="panel">
-              <div className="panel-title">
-                <GitBranch size={18} />
-                <h2>Budget Rationalisation by Region and Functional Class</h2>
-              </div>
-              <div className="bars">
-                {grouped.map(([key, value]) => (
-                  <div className="bar-row" key={key}>
-                    <span>{key}</span>
-                    <div><i style={{ width: `${Math.min(100, (value / Math.max(...grouped.map((g) => g[1]))) * 100)}%` }} /></div>
-                    <strong>{currency.format(value)}</strong>
-                  </div>
-                ))}
-              </div>
-            </section>
+            <>
+              <section className="panel">
+                <div className="panel-title">
+                  <GitBranch size={18} />
+                  <h2>Budget Rationalisation by Region and Functional Class</h2>
+                </div>
+                <div className="bars">
+                  {grouped.map(([key, value]) => (
+                    <div className="bar-row" key={key}>
+                      <span>{key}</span>
+                      <div><i style={{ width: `${Math.min(100, (value / Math.max(...grouped.map((g) => g[1]))) * 100)}%` }} /></div>
+                      <strong>{currency.format(value)}</strong>
+                    </div>
+                  ))}
+                </div>
+              </section>
+              <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} section="allocation" limit={6} compact title="Allocation Intelligence Views" />
+            </>
           )}
 
           {activeSection === "programme" && (
-            <section className="panel wide">
-              <div className="panel-title">
-                <Route size={18} />
-                <h2>Editable Programme Table</h2>
-              </div>
-              <div className="table-toolbar">
-                <label>Sort attribute<select value={programmeSortField} onChange={(e) => setProgrammeSortField(e.target.value)}>{programmeAttributes.map((x) => <option key={x}>{x}</option>)}</select></label>
-                <label>Direction<select value={programmeSortDirection} onChange={(e) => setProgrammeSortDirection(e.target.value)}><option value="asc">Ascending</option><option value="desc">Descending</option></select></label>
-                <strong>{shown.length} displayed records</strong>
-              </div>
-              <div className="table-wrap">
-                <table>
+            <>
+              <section className="panel wide">
+                <div className="panel-title">
+                  <Route size={18} />
+                  <h2>Editable Programme Table</h2>
+                </div>
+                <div className="table-toolbar">
+                  <label>Sort attribute<select value={programmeSortField} onChange={(e) => setProgrammeSortField(e.target.value)}>{programmeAttributes.map((x) => <option key={x}>{x}</option>)}</select></label>
+                  <label>Direction<select value={programmeSortDirection} onChange={(e) => setProgrammeSortDirection(e.target.value)}><option value="asc">Ascending</option><option value="desc">Descending</option></select></label>
+                  <strong>{shown.length} displayed records</strong>
+                </div>
+                <div className="table-wrap">
+                  <table>
                 <thead>
                   <tr>
                     <th>Rank</th>
@@ -2099,7 +2215,9 @@ function App() {
                 </tbody>
                 </table>
               </div>
-            </section>
+              </section>
+              <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} section="programme" limit={6} compact title="Programme Table Intelligence" />
+            </>
           )}
         </PageChrome>
       </div>

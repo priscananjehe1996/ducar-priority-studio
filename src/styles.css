@@ -1620,6 +1620,21 @@ input[type="range"]::-webkit-slider-runnable-track {
 .community-roads-line { border-color: #86efac; border-top-width: 3px; }
 .town-roads-line { border-color: #fde68a; border-top-width: 4px; }
 .municipal-roads-line { border-color: #67e8f9; border-top-width: 4px; }
+.traffic-flow-line {
+  border-image: linear-gradient(90deg, #22c55e, #06b6d4, #f59e0b, #ef4444) 1;
+  border-top-width: 5px;
+  box-shadow: none;
+}
+
+.node-swatch {
+  width: 13px;
+  height: 13px;
+  display: inline-block;
+  border-radius: 50%;
+  background: #4258ff;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1px rgba(66, 88, 255, 0.45);
+}
 
 /* ─── Leaflet overrides ─── */
 .leaflet-container {
@@ -2009,6 +2024,64 @@ td .range-value {
   font-size: 12px;
   font-weight: 700;
   color: #35506b;
+}
+
+.route-matrix-panel {
+  margin: 0 20px 22px;
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(239, 246, 255, 0.92)),
+    radial-gradient(circle at 86% 8%, rgba(66, 88, 255, 0.2), transparent 26%);
+  box-shadow: 0 16px 42px rgba(30, 38, 64, 0.11);
+}
+
+.route-matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.route-matrix-grid article {
+  min-height: 132px;
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid rgba(18, 24, 38, 0.08);
+}
+
+.route-matrix-grid strong {
+  color: #0d1324;
+  font-size: 14px;
+  line-height: 1.2;
+  font-weight: 950;
+}
+
+.route-matrix-grid span,
+.route-matrix-grid em {
+  color: #667085;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 850;
+}
+
+.route-matrix-grid i {
+  height: 9px;
+  display: block;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e5e7ef;
+}
+
+.route-matrix-grid b {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #22c55e, #06b6d4, #f59e0b, #ef4444);
+  animation: growAcross 0.85s ease both;
 }
 
 @media (max-width: 1200px) {
@@ -2799,10 +2872,19 @@ select {
   box-shadow: 0 22px 60px rgba(30, 38, 64, 0.11);
 }
 
+.intelligence-gallery.compact {
+  padding: 18px;
+  border-radius: 18px;
+}
+
 .intelligence-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 14px;
+}
+
+.intelligence-gallery.compact .intelligence-grid {
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
 }
 
 .intel-card {
@@ -2824,6 +2906,35 @@ select {
   box-shadow: 0 18px 44px rgba(30, 38, 64, 0.11);
   animation: intelIn 0.48s ease both;
   animation-delay: var(--delay);
+}
+
+.intelligence-gallery.compact .intel-card {
+  min-height: 190px;
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.intelligence-gallery.compact .intel-card p {
+  font-size: 11px;
+}
+
+.intelligence-gallery.compact .intel-visual {
+  min-height: 62px;
+}
+
+.intelligence-gallery.compact .intel-bars {
+  height: 66px;
+}
+
+.intelligence-gallery.compact .intel-ring {
+  width: 68px;
+  height: 68px;
+}
+
+.intelligence-gallery.compact .intel-ring b {
+  width: 46px;
+  height: 46px;
+  font-size: 14px;
 }
 
 .intel-card::before {

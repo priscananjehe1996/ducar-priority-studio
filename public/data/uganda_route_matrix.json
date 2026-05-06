@@ -1,0 +1,1022 @@
+{
+  "summary": {
+    "generated_at_utc": "2026-05-06T08:49:35.117782+00:00",
+    "source": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\data\\uganda_unified_roads_web_2026-05-05.geojson",
+    "edge_count": 38054,
+    "node_count": 44972,
+    "source_record_count": 16319,
+    "candidate_segment_count": 38221,
+    "deduplicated_segment_count": 38054,
+    "duplicate_reduction_count": 167,
+    "total_length_km": 4855766.27,
+    "by_network_category": {
+      "City Roads": 3011,
+      "Community Access Roads": 838,
+      "District Roads": 33130,
+      "KCCA": 10,
+      "National Roads": 1065
+    },
+    "route_matrix_pairs": 132,
+    "method": "Endpoint snapping at 4 decimal degrees, duplicate endpoint/midpoint keys, source-priority retention, node degree calculation, district centroid route matrix."
+  },
+  "districts": [
+    {
+      "district": "Kabong",
+      "length_km": 255455.87200000003,
+      "flow": 72.0,
+      "records": 448
+    },
+    {
+      "district": "Kabale",
+      "length_km": 214009.25199999998,
+      "flow": 71.74008810572687,
+      "records": 681
+    },
+    {
+      "district": "TORORO",
+      "length_km": 180864.512,
+      "flow": 71.58104738154613,
+      "records": 401
+    },
+    {
+      "district": "KIBAALE",
+      "length_km": 152309.712,
+      "flow": 71.88833746898263,
+      "records": 403
+    },
+    {
+      "district": "Ntungamo",
+      "length_km": 127775.452,
+      "flow": 68.63432835820896,
+      "records": 402
+    },
+    {
+      "district": "KIRUHURA",
+      "length_km": 121039.776,
+      "flow": 72.0,
+      "records": 286
+    },
+    {
+      "district": "SEMBABULE",
+      "length_km": 120288.89899999999,
+      "flow": 71.79434447300771,
+      "records": 389
+    },
+    {
+      "district": "Kamuli",
+      "length_km": 108451.36399999999,
+      "flow": 69.72477064220183,
+      "records": 327
+    },
+    {
+      "district": "OYAM",
+      "length_km": 100055.7,
+      "flow": 71.53308823529412,
+      "records": 272
+    },
+    {
+      "district": "BUYENDE",
+      "length_km": 95736.432,
+      "flow": 72.0,
+      "records": 264
+    },
+    {
+      "district": "KYENJOJO",
+      "length_km": 87506.95199999999,
+      "flow": 72.0,
+      "records": 262
+    },
+    {
+      "district": "MUKONO",
+      "length_km": 84350.023,
+      "flow": 71.78645833333333,
+      "records": 384
+    }
+  ],
+  "routes": [
+    {
+      "origin": "Kabong",
+      "destination": "Kabale",
+      "straight_distance_km": 690.8,
+      "network_impedance_km": 925.6,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kabong",
+      "destination": "TORORO",
+      "straight_distance_km": 315.1,
+      "network_impedance_km": 422.3,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kabong",
+      "destination": "KIBAALE",
+      "straight_distance_km": 436.4,
+      "network_impedance_km": 584.8,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kabong",
+      "destination": "Ntungamo",
+      "straight_distance_km": 652.6,
+      "network_impedance_km": 874.5,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kabong",
+      "destination": "KIRUHURA",
+      "straight_distance_km": 545.2,
+      "network_impedance_km": 730.6,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kabong",
+      "destination": "SEMBABULE",
+      "straight_distance_km": 501.3,
+      "network_impedance_km": 671.7,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kabong",
+      "destination": "Kamuli",
+      "straight_distance_km": 314.0,
+      "network_impedance_km": 420.8,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kabong",
+      "destination": "OYAM",
+      "straight_distance_km": 214.2,
+      "network_impedance_km": 287.0,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kabong",
+      "destination": "BUYENDE",
+      "straight_distance_km": 281.2,
+      "network_impedance_km": 376.8,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kabong",
+      "destination": "KYENJOJO",
+      "straight_distance_km": 497.0,
+      "network_impedance_km": 666.0,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kabong",
+      "destination": "MUKONO",
+      "straight_distance_km": 378.0,
+      "network_impedance_km": 506.5,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kabale",
+      "destination": "Kabong",
+      "straight_distance_km": 690.8,
+      "network_impedance_km": 925.6,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kabale",
+      "destination": "TORORO",
+      "straight_distance_km": 504.0,
+      "network_impedance_km": 675.4,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kabale",
+      "destination": "KIBAALE",
+      "straight_distance_km": 263.3,
+      "network_impedance_km": 352.8,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kabale",
+      "destination": "Ntungamo",
+      "straight_distance_km": 40.2,
+      "network_impedance_km": 53.8,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kabale",
+      "destination": "KIRUHURA",
+      "straight_distance_km": 145.7,
+      "network_impedance_km": 195.3,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kabale",
+      "destination": "SEMBABULE",
+      "straight_distance_km": 194.7,
+      "network_impedance_km": 260.9,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kabale",
+      "destination": "Kamuli",
+      "straight_distance_km": 418.6,
+      "network_impedance_km": 560.9,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kabale",
+      "destination": "OYAM",
+      "straight_distance_km": 482.4,
+      "network_impedance_km": 646.4,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kabale",
+      "destination": "BUYENDE",
+      "straight_distance_km": 441.2,
+      "network_impedance_km": 591.2,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kabale",
+      "destination": "KYENJOJO",
+      "straight_distance_km": 210.8,
+      "network_impedance_km": 282.4,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kabale",
+      "destination": "MUKONO",
+      "straight_distance_km": 359.0,
+      "network_impedance_km": 481.0,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "TORORO",
+      "destination": "Kabong",
+      "straight_distance_km": 315.1,
+      "network_impedance_km": 422.3,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "TORORO",
+      "destination": "Kabale",
+      "straight_distance_km": 504.0,
+      "network_impedance_km": 675.4,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "TORORO",
+      "destination": "KIBAALE",
+      "straight_distance_km": 332.4,
+      "network_impedance_km": 445.4,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "TORORO",
+      "destination": "Ntungamo",
+      "straight_distance_km": 464.2,
+      "network_impedance_km": 622.0,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "TORORO",
+      "destination": "KIRUHURA",
+      "straight_distance_km": 373.3,
+      "network_impedance_km": 500.2,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "TORORO",
+      "destination": "SEMBABULE",
+      "straight_distance_km": 318.1,
+      "network_impedance_km": 426.2,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "TORORO",
+      "destination": "Kamuli",
+      "straight_distance_km": 107.2,
+      "network_impedance_km": 143.7,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "TORORO",
+      "destination": "OYAM",
+      "straight_distance_km": 254.2,
+      "network_impedance_km": 340.7,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "TORORO",
+      "destination": "BUYENDE",
+      "straight_distance_km": 112.6,
+      "network_impedance_km": 150.9,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "TORORO",
+      "destination": "KYENJOJO",
+      "straight_distance_km": 382.7,
+      "network_impedance_km": 512.8,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "TORORO",
+      "destination": "MUKONO",
+      "straight_distance_km": 147.9,
+      "network_impedance_km": 198.2,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KIBAALE",
+      "destination": "Kabong",
+      "straight_distance_km": 436.4,
+      "network_impedance_km": 584.8,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KIBAALE",
+      "destination": "Kabale",
+      "straight_distance_km": 263.3,
+      "network_impedance_km": 352.8,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KIBAALE",
+      "destination": "TORORO",
+      "straight_distance_km": 332.4,
+      "network_impedance_km": 445.4,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KIBAALE",
+      "destination": "Ntungamo",
+      "straight_distance_km": 229.2,
+      "network_impedance_km": 307.1,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KIBAALE",
+      "destination": "KIRUHURA",
+      "straight_distance_km": 127.4,
+      "network_impedance_km": 170.7,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KIBAALE",
+      "destination": "SEMBABULE",
+      "straight_distance_km": 113.7,
+      "network_impedance_km": 152.4,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KIBAALE",
+      "destination": "Kamuli",
+      "straight_distance_km": 225.8,
+      "network_impedance_km": 302.6,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KIBAALE",
+      "destination": "OYAM",
+      "straight_distance_km": 223.3,
+      "network_impedance_km": 299.2,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KIBAALE",
+      "destination": "BUYENDE",
+      "straight_distance_km": 232.2,
+      "network_impedance_km": 311.2,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KIBAALE",
+      "destination": "KYENJOJO",
+      "straight_distance_km": 61.2,
+      "network_impedance_km": 82.0,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KIBAALE",
+      "destination": "MUKONO",
+      "straight_distance_km": 198.2,
+      "network_impedance_km": 265.5,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Ntungamo",
+      "destination": "Kabong",
+      "straight_distance_km": 652.6,
+      "network_impedance_km": 874.5,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Ntungamo",
+      "destination": "Kabale",
+      "straight_distance_km": 40.2,
+      "network_impedance_km": 53.8,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Ntungamo",
+      "destination": "TORORO",
+      "straight_distance_km": 464.2,
+      "network_impedance_km": 622.0,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Ntungamo",
+      "destination": "KIBAALE",
+      "straight_distance_km": 229.2,
+      "network_impedance_km": 307.1,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Ntungamo",
+      "destination": "KIRUHURA",
+      "straight_distance_km": 107.5,
+      "network_impedance_km": 144.0,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Ntungamo",
+      "destination": "SEMBABULE",
+      "straight_distance_km": 154.8,
+      "network_impedance_km": 207.5,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Ntungamo",
+      "destination": "Kamuli",
+      "straight_distance_km": 378.4,
+      "network_impedance_km": 507.1,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Ntungamo",
+      "destination": "OYAM",
+      "straight_distance_km": 445.6,
+      "network_impedance_km": 597.1,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Ntungamo",
+      "destination": "BUYENDE",
+      "straight_distance_km": 401.1,
+      "network_impedance_km": 537.5,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Ntungamo",
+      "destination": "KYENJOJO",
+      "straight_distance_km": 180.4,
+      "network_impedance_km": 241.7,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Ntungamo",
+      "destination": "MUKONO",
+      "straight_distance_km": 318.9,
+      "network_impedance_km": 427.3,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KIRUHURA",
+      "destination": "Kabong",
+      "straight_distance_km": 545.2,
+      "network_impedance_km": 730.6,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KIRUHURA",
+      "destination": "Kabale",
+      "straight_distance_km": 145.7,
+      "network_impedance_km": 195.3,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KIRUHURA",
+      "destination": "TORORO",
+      "straight_distance_km": 373.3,
+      "network_impedance_km": 500.2,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KIRUHURA",
+      "destination": "KIBAALE",
+      "straight_distance_km": 127.4,
+      "network_impedance_km": 170.7,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KIRUHURA",
+      "destination": "Ntungamo",
+      "straight_distance_km": 107.5,
+      "network_impedance_km": 144.0,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KIRUHURA",
+      "destination": "SEMBABULE",
+      "straight_distance_km": 55.2,
+      "network_impedance_km": 74.0,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KIRUHURA",
+      "destination": "Kamuli",
+      "straight_distance_km": 279.6,
+      "network_impedance_km": 374.6,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KIRUHURA",
+      "destination": "OYAM",
+      "straight_distance_km": 338.4,
+      "network_impedance_km": 453.5,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KIRUHURA",
+      "destination": "BUYENDE",
+      "straight_distance_km": 299.3,
+      "network_impedance_km": 401.1,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KIRUHURA",
+      "destination": "KYENJOJO",
+      "straight_distance_km": 93.4,
+      "network_impedance_km": 125.1,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KIRUHURA",
+      "destination": "MUKONO",
+      "straight_distance_km": 225.4,
+      "network_impedance_km": 302.0,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "SEMBABULE",
+      "destination": "Kabong",
+      "straight_distance_km": 501.3,
+      "network_impedance_km": 671.7,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "SEMBABULE",
+      "destination": "Kabale",
+      "straight_distance_km": 194.7,
+      "network_impedance_km": 260.9,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "SEMBABULE",
+      "destination": "TORORO",
+      "straight_distance_km": 318.1,
+      "network_impedance_km": 426.2,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "SEMBABULE",
+      "destination": "KIBAALE",
+      "straight_distance_km": 113.7,
+      "network_impedance_km": 152.4,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "SEMBABULE",
+      "destination": "Ntungamo",
+      "straight_distance_km": 154.8,
+      "network_impedance_km": 207.5,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "SEMBABULE",
+      "destination": "KIRUHURA",
+      "straight_distance_km": 55.2,
+      "network_impedance_km": 74.0,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "SEMBABULE",
+      "destination": "Kamuli",
+      "straight_distance_km": 225.6,
+      "network_impedance_km": 302.3,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "SEMBABULE",
+      "destination": "OYAM",
+      "straight_distance_km": 300.4,
+      "network_impedance_km": 402.5,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "SEMBABULE",
+      "destination": "BUYENDE",
+      "straight_distance_km": 246.7,
+      "network_impedance_km": 330.6,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "SEMBABULE",
+      "destination": "KYENJOJO",
+      "straight_distance_km": 108.6,
+      "network_impedance_km": 145.5,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "SEMBABULE",
+      "destination": "MUKONO",
+      "straight_distance_km": 170.2,
+      "network_impedance_km": 228.1,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kamuli",
+      "destination": "Kabong",
+      "straight_distance_km": 314.0,
+      "network_impedance_km": 420.8,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kamuli",
+      "destination": "Kabale",
+      "straight_distance_km": 418.6,
+      "network_impedance_km": 560.9,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kamuli",
+      "destination": "TORORO",
+      "straight_distance_km": 107.2,
+      "network_impedance_km": 143.7,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kamuli",
+      "destination": "KIBAALE",
+      "straight_distance_km": 225.8,
+      "network_impedance_km": 302.6,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kamuli",
+      "destination": "Ntungamo",
+      "straight_distance_km": 378.4,
+      "network_impedance_km": 507.1,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kamuli",
+      "destination": "KIRUHURA",
+      "straight_distance_km": 279.6,
+      "network_impedance_km": 374.6,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kamuli",
+      "destination": "SEMBABULE",
+      "straight_distance_km": 225.6,
+      "network_impedance_km": 302.3,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kamuli",
+      "destination": "OYAM",
+      "straight_distance_km": 180.7,
+      "network_impedance_km": 242.1,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kamuli",
+      "destination": "BUYENDE",
+      "straight_distance_km": 33.4,
+      "network_impedance_km": 44.7,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kamuli",
+      "destination": "KYENJOJO",
+      "straight_distance_km": 278.0,
+      "network_impedance_km": 372.6,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "Kamuli",
+      "destination": "MUKONO",
+      "straight_distance_km": 66.1,
+      "network_impedance_km": 88.5,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "OYAM",
+      "destination": "Kabong",
+      "straight_distance_km": 214.2,
+      "network_impedance_km": 287.0,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "OYAM",
+      "destination": "Kabale",
+      "straight_distance_km": 482.4,
+      "network_impedance_km": 646.4,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "OYAM",
+      "destination": "TORORO",
+      "straight_distance_km": 254.2,
+      "network_impedance_km": 340.7,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "OYAM",
+      "destination": "KIBAALE",
+      "straight_distance_km": 223.3,
+      "network_impedance_km": 299.2,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "OYAM",
+      "destination": "Ntungamo",
+      "straight_distance_km": 445.6,
+      "network_impedance_km": 597.1,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "OYAM",
+      "destination": "KIRUHURA",
+      "straight_distance_km": 338.4,
+      "network_impedance_km": 453.5,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "OYAM",
+      "destination": "SEMBABULE",
+      "straight_distance_km": 300.4,
+      "network_impedance_km": 402.5,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "OYAM",
+      "destination": "Kamuli",
+      "straight_distance_km": 180.7,
+      "network_impedance_km": 242.1,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "OYAM",
+      "destination": "BUYENDE",
+      "straight_distance_km": 153.2,
+      "network_impedance_km": 205.2,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "OYAM",
+      "destination": "KYENJOJO",
+      "straight_distance_km": 283.4,
+      "network_impedance_km": 379.7,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "OYAM",
+      "destination": "MUKONO",
+      "straight_distance_km": 223.5,
+      "network_impedance_km": 299.6,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "BUYENDE",
+      "destination": "Kabong",
+      "straight_distance_km": 281.2,
+      "network_impedance_km": 376.8,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "BUYENDE",
+      "destination": "Kabale",
+      "straight_distance_km": 441.2,
+      "network_impedance_km": 591.2,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "BUYENDE",
+      "destination": "TORORO",
+      "straight_distance_km": 112.6,
+      "network_impedance_km": 150.9,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "BUYENDE",
+      "destination": "KIBAALE",
+      "straight_distance_km": 232.2,
+      "network_impedance_km": 311.2,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "BUYENDE",
+      "destination": "Ntungamo",
+      "straight_distance_km": 401.1,
+      "network_impedance_km": 537.5,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "BUYENDE",
+      "destination": "KIRUHURA",
+      "straight_distance_km": 299.3,
+      "network_impedance_km": 401.1,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "BUYENDE",
+      "destination": "SEMBABULE",
+      "straight_distance_km": 246.7,
+      "network_impedance_km": 330.6,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "BUYENDE",
+      "destination": "Kamuli",
+      "straight_distance_km": 33.4,
+      "network_impedance_km": 44.7,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "BUYENDE",
+      "destination": "OYAM",
+      "straight_distance_km": 153.2,
+      "network_impedance_km": 205.2,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "BUYENDE",
+      "destination": "KYENJOJO",
+      "straight_distance_km": 288.1,
+      "network_impedance_km": 386.0,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "BUYENDE",
+      "destination": "MUKONO",
+      "straight_distance_km": 97.2,
+      "network_impedance_km": 130.3,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KYENJOJO",
+      "destination": "Kabong",
+      "straight_distance_km": 497.0,
+      "network_impedance_km": 666.0,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KYENJOJO",
+      "destination": "Kabale",
+      "straight_distance_km": 210.8,
+      "network_impedance_km": 282.4,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KYENJOJO",
+      "destination": "TORORO",
+      "straight_distance_km": 382.7,
+      "network_impedance_km": 512.8,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KYENJOJO",
+      "destination": "KIBAALE",
+      "straight_distance_km": 61.2,
+      "network_impedance_km": 82.0,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KYENJOJO",
+      "destination": "Ntungamo",
+      "straight_distance_km": 180.4,
+      "network_impedance_km": 241.7,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KYENJOJO",
+      "destination": "KIRUHURA",
+      "straight_distance_km": 93.4,
+      "network_impedance_km": 125.1,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KYENJOJO",
+      "destination": "SEMBABULE",
+      "straight_distance_km": 108.6,
+      "network_impedance_km": 145.5,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KYENJOJO",
+      "destination": "Kamuli",
+      "straight_distance_km": 278.0,
+      "network_impedance_km": 372.6,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KYENJOJO",
+      "destination": "OYAM",
+      "straight_distance_km": 283.4,
+      "network_impedance_km": 379.7,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KYENJOJO",
+      "destination": "BUYENDE",
+      "straight_distance_km": 288.1,
+      "network_impedance_km": 386.0,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "KYENJOJO",
+      "destination": "MUKONO",
+      "straight_distance_km": 241.0,
+      "network_impedance_km": 322.9,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "MUKONO",
+      "destination": "Kabong",
+      "straight_distance_km": 378.0,
+      "network_impedance_km": 506.5,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "MUKONO",
+      "destination": "Kabale",
+      "straight_distance_km": 359.0,
+      "network_impedance_km": 481.0,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "MUKONO",
+      "destination": "TORORO",
+      "straight_distance_km": 147.9,
+      "network_impedance_km": 198.2,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "MUKONO",
+      "destination": "KIBAALE",
+      "straight_distance_km": 198.2,
+      "network_impedance_km": 265.5,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "MUKONO",
+      "destination": "Ntungamo",
+      "straight_distance_km": 318.9,
+      "network_impedance_km": 427.3,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "MUKONO",
+      "destination": "KIRUHURA",
+      "straight_distance_km": 225.4,
+      "network_impedance_km": 302.0,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "MUKONO",
+      "destination": "SEMBABULE",
+      "straight_distance_km": 170.2,
+      "network_impedance_km": 228.1,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "MUKONO",
+      "destination": "Kamuli",
+      "straight_distance_km": 66.1,
+      "network_impedance_km": 88.5,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "MUKONO",
+      "destination": "OYAM",
+      "straight_distance_km": 223.5,
+      "network_impedance_km": 299.6,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "MUKONO",
+      "destination": "BUYENDE",
+      "straight_distance_km": 97.2,
+      "network_impedance_km": 130.3,
+      "traffic_flow_index": 100
+    },
+    {
+      "origin": "MUKONO",
+      "destination": "KYENJOJO",
+      "straight_distance_km": 241.0,
+      "network_impedance_km": 322.9,
+      "traffic_flow_index": 100
+    }
+  ]
+}
