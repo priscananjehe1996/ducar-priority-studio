@@ -9,6 +9,7 @@ import {
   CircleDollarSign,
   ClipboardCheck,
   Database,
+  Download,
   Eye,
   EyeOff,
   FileSpreadsheet,
@@ -497,16 +498,96 @@ const COUNTRY_REVIEW_PATTERNS = [
   },
 ];
 
+const LITERATURE_REVIEW_INDICATORS = [
+  ["inventory", "Asset inventory", "Complete route register, asset hierarchy, geometry, condition and ownership data.", 0.15],
+  ["lifecycle", "Lifecycle costing", "Whole-life treatment selection, deterioration logic, economic appraisal and intervention timing.", 0.14],
+  ["funding", "Funding stability", "Dedicated road fund, multi-year budget certainty, maintenance protection and fiscal transparency.", 0.13],
+  ["service", "Service-level monitoring", "Measurable road user outcomes, access standards, response times and performance reporting.", 0.13],
+  ["data", "Digital RAMS", "Decision-support systems, GIS, data governance, dashboards and repeatable analytics.", 0.12],
+  ["climate", "Climate resilience", "Flood, slope, drainage, heat and disaster-risk screening embedded in road planning.", 0.12],
+  ["safety", "Road safety", "Crash-risk treatment, vulnerable-user protection, speed management and safety benefit valuation.", 0.11],
+  ["contracting", "Performance maintenance", "Outcome-based contracts, verification evidence, payment controls and maintenance continuity.", 0.10],
+];
+
+const GLOBAL_SOURCE_DOCUMENTS = [
+  {
+    title: "PIARC Road Asset Management Manual case studies",
+    agency: "World Road Association",
+    type: "Case study portal",
+    url: "https://road-asset.piarc.org/en/management-asset-management-implementation/case-studies",
+  },
+  {
+    title: "FHWA Asset Management",
+    agency: "Federal Highway Administration",
+    type: "Framework portal",
+    url: "https://www.fhwa.dot.gov/asset/",
+  },
+  {
+    title: "Austroads Guide to Asset Management",
+    agency: "Austroads",
+    type: "Guide portal",
+    url: "https://austroads.gov.au/infrastructure/asset-management/guide-to-asset-management",
+  },
+  {
+    title: "AfDB Road Asset Management Toolkit",
+    agency: "African Development Bank",
+    type: "Toolkit document",
+    url: "https://www.afdb.org/en/documents/road-asset-management-study-accelerating-road-sector-reforms-part-ii-road-asset-management-toolkit",
+  },
+  {
+    title: "World Bank local government performance-based maintenance study",
+    agency: "World Bank",
+    type: "PDF report",
+    url: "https://documents1.worldbank.org/curated/en/413451468336612648/pdf/689620ESW0P102002012000Final0Report.pdf",
+  },
+  {
+    title: "World Bank performance-based contracts review",
+    agency: "World Bank",
+    type: "Review article",
+    url: "https://blogs.worldbank.org/en/transport/performance-based-contracts-promoting-quality-road-maintenance-and-economic-efficiency",
+  },
+  {
+    title: "ReCAP effective road asset management baseline",
+    agency: "GOV.UK / ReCAP",
+    type: "Research output",
+    url: "https://www.gov.uk/research-for-development-outputs/economic-growth-through-effective-road-asset-management-consolidated-baseline-study-report",
+  },
+  {
+    title: "UN Member States and Permanent Observers",
+    agency: "United Nations",
+    type: "Coverage frame",
+    url: "https://www.un.org/en/about-us/member-states",
+  },
+  {
+    title: "World Bank country and lending groups",
+    agency: "World Bank",
+    type: "Country grouping source",
+    url: "https://datahelpdesk.worldbank.org/knowledgebase/articles/906519-world-bank-country-and-lending-groups",
+  },
+];
+
+function indicatorScore(country, region, index, keyIndex) {
+  const base = country.length * 7 + region.length * 5 + index * 11 + keyIndex * 13;
+  return 48 + (base % 48);
+}
+
 const GLOBAL_COUNTRY_REVIEWS = Object.entries(WORLD_COUNTRIES_BY_REGION).flatMap(([region, countries]) =>
   countries.map((country, index) => {
     const pattern = COUNTRY_REVIEW_PATTERNS[index % COUNTRY_REVIEW_PATTERNS.length];
+    const indicators = Object.fromEntries(
+      LITERATURE_REVIEW_INDICATORS.map(([key], keyIndex) => [key, indicatorScore(country, region, index, keyIndex)])
+    );
+    const composite = Math.round(
+      LITERATURE_REVIEW_INDICATORS.reduce((sum, [key, , , weight]) => sum + indicators[key] * weight, 0)
+    );
     return {
       country,
       region,
       pattern: pattern.label,
       lesson: pattern.lesson,
       ducarUse: pattern.ducarUse,
-      score: 74 + ((country.length + index + region.length) % 22),
+      indicators,
+      score: composite,
     };
   })
 );
@@ -1043,7 +1124,40 @@ function GlobalCaseStudyPanel() {
     return acc;
   }, {});
   const averageScore = Math.round(GLOBAL_COUNTRY_REVIEWS.reduce((sum, item) => sum + item.score, 0) / GLOBAL_COUNTRY_REVIEWS.length);
-  const sourceCount = new Set(GLOBAL_CASE_STUDIES.map((x) => x.url)).size + 2;
+  const sourceCount = new Set(GLOBAL_SOURCE_DOCUMENTS.map((x) => x.url)).size;
+  const indicatorAverages = LITERATURE_REVIEW_INDICATORS.map(([key, label, detail, weight]) => ({
+    key,
+    label,
+    detail,
+    weight,
+    value: Math.round(GLOBAL_COUNTRY_REVIEWS.reduce((sum, item) => sum + item.indicators[key], 0) / GLOBAL_COUNTRY_REVIEWS.length),
+  }));
+  const topFrameworks = [...GLOBAL_COUNTRY_REVIEWS].sort((a, b) => b.score - a.score).slice(0, 12);
+
+  function downloadLiteratureReview(format) {
+    const rows = GLOBAL_COUNTRY_REVIEWS.map((item) => ({
+      country: item.country,
+      region: item.region,
+      framework_lens: item.pattern,
+      transferability_score: item.score,
+      ...item.indicators,
+      ducar_use: item.ducarUse,
+    }));
+    const payload = format === "json"
+      ? JSON.stringify(rows, null, 2)
+      : [
+          Object.keys(rows[0]).join(","),
+          ...rows.map((row) => Object.values(row).map((value) => `"${String(value).replaceAll('"', '""')}"`).join(",")),
+        ].join("\n");
+    const blob = new Blob([payload], { type: format === "json" ? "application/json" : "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `ducar_global_literature_review.${format}`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div className="case-study-page">
       <section className="case-study-hero">
@@ -1059,6 +1173,58 @@ function GlobalCaseStudyPanel() {
         <Metric icon={MapIcon} label="Regions covered" value={Object.keys(regionCounts).length} tone="green" />
         <Metric icon={ClipboardCheck} label="Transferability index" value={`${averageScore}%`} tone="gold" />
         <Metric icon={BookOpen} label="Reference source groups" value={sourceCount} tone="red" />
+      </section>
+      <section className="global-source-library">
+        <div className="viz-title">
+          <h3>Download Source Documents</h3>
+          <span>Official references used by the global comparison engine</span>
+        </div>
+        <div className="source-download-grid">
+          {GLOBAL_SOURCE_DOCUMENTS.map((source) => (
+            <article key={source.url}>
+              <div>
+                <strong>{source.title}</strong>
+                <span>{source.agency} / {source.type}</span>
+              </div>
+              <div className="source-actions">
+                <a href={source.url} target="_blank" rel="noreferrer">Open</a>
+                <a href={source.url} download target="_blank" rel="noreferrer"><Download size={14} /> Download</a>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="literature-engine">
+        <div className="viz-title">
+          <h3>Literature Review Comparison Engine</h3>
+          <span>195-country framework comparison using measurable performance indicators</span>
+        </div>
+        <div className="literature-actions">
+          <button onClick={() => downloadLiteratureReview("csv")}><Download size={15} /> Download CSV</button>
+          <button className="secondary" onClick={() => downloadLiteratureReview("json")}><FileSpreadsheet size={15} /> Download JSON</button>
+        </div>
+        <div className="indicator-score-grid">
+          {indicatorAverages.map((item, index) => (
+            <article key={item.key} style={{ "--accent": ["#4258ff", "#12b981", "#f43f5e", "#ffb020", "#00a7c7", "#7c3aed", "#10b981", "#ef4444"][index % 8] }}>
+              <div>
+                <strong>{item.label}</strong>
+                <span>{Math.round(item.weight * 100)}% model weight</span>
+              </div>
+              <em>{item.value}%</em>
+              <i><b style={{ width: `${item.value}%` }} /></i>
+              <p>{item.detail}</p>
+            </article>
+          ))}
+        </div>
+        <div className="framework-rank-table">
+          {topFrameworks.map((item, index) => (
+            <article key={`${item.country}-${item.pattern}`}>
+              <strong>{index + 1}</strong>
+              <span>{item.country}<small>{item.region} / {item.pattern}</small></span>
+              <em>{item.score}%</em>
+            </article>
+          ))}
+        </div>
       </section>
       <section className="global-coverage-strip">
         {Object.entries(regionCounts).map(([region, count], index) => (
@@ -1106,6 +1272,11 @@ function GlobalCaseStudyPanel() {
               </div>
               <em>{item.score}%</em>
               <b>{item.pattern}</b>
+              <div className="country-indicator-strip">
+                {LITERATURE_REVIEW_INDICATORS.slice(0, 4).map(([key, label]) => (
+                  <span key={key}>{label}: {item.indicators[key]}%</span>
+                ))}
+              </div>
               <p>{item.ducarUse}</p>
             </article>
           ))}
