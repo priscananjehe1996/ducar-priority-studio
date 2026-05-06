@@ -2494,6 +2494,91 @@ td .range-value {
   align-items: center;
 }
 
+.global-coverage-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.global-coverage-strip article {
+  --accent: #4258ff;
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #ffffff, color-mix(in srgb, var(--accent) 8%, #ffffff));
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, #ffffff);
+  box-shadow: 0 16px 36px rgba(30, 38, 64, 0.09);
+}
+
+.global-coverage-strip strong,
+.country-review-grid strong {
+  color: #0d1324;
+  font-weight: 950;
+}
+
+.global-coverage-strip span,
+.country-review-grid span,
+.country-review-grid p {
+  margin: 0;
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 850;
+}
+
+.global-coverage-strip i {
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.country-review-grid {
+  max-height: 680px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 10px;
+  overflow: auto;
+  padding-right: 6px;
+}
+
+.country-review-grid article {
+  --accent: #4258ff;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 10px;
+  min-height: 150px;
+  padding: 14px;
+  border-radius: 16px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(247, 249, 255, 0.94)),
+    radial-gradient(circle at 88% 8%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 34%);
+  border: 1px solid rgba(18, 24, 38, 0.08);
+}
+
+.country-review-grid em {
+  align-self: start;
+  padding: 6px 8px;
+  border-radius: 999px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, #ffffff);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 950;
+}
+
+.country-review-grid b {
+  grid-column: 1 / -1;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.country-review-grid p {
+  grid-column: 1 / -1;
+}
+
 .case-card-head span,
 .case-card-head strong {
   display: inline-flex;
