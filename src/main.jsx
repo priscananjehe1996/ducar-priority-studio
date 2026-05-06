@@ -828,6 +828,7 @@ function ProcessFlow({ analysis, grouped }) {
             <article
               key={title}
               className={`flow-node ${index === activeStep ? "active" : ""} ${index < activeStep ? "visited" : ""}`}
+              style={{ "--step": index }}
             >
               <div className="flow-node-head">
                 <i><Icon size={18} /></i>
