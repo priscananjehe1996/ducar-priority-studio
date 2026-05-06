@@ -737,8 +737,8 @@ function IntelligenceGallery({ programme, analysis, grouped, onNavigate, section
   return (
     <section className={`intelligence-gallery ${compact ? "compact" : ""}`} id={`intelligence-gallery-${section}`}>
       <div className="viz-title">
-        <h3>{title || (section === "all" ? "50 Linked Intelligence Views" : "Linked Intelligence Views")}</h3>
-        <span>{scopedVisuals.length} animated charts, graphs and infographics linked to this page</span>
+        <h3>{title || (section === "all" ? "50 Decision Indicators" : "Decision Indicators")}</h3>
+        <span>{scopedVisuals.length} linked indicators</span>
       </div>
       <div className="intelligence-grid">
         {scopedVisuals.map((item, index) => (
@@ -914,7 +914,7 @@ function ManualsEvidencePanel({ analysis }) {
       <section className="viz-card wide-viz">
         <div className="viz-title">
           <h3>Manual Evidence Library</h3>
-          <span>Editable source documents, TORs, manuals and reference files embedded in the app</span>
+          <span>Source documents, TORs, manuals and reference files</span>
         </div>
         <div className="manual-source-grid">
           {MANUAL_SOURCES.map((source) => (
@@ -1006,7 +1006,7 @@ function GlobalCaseStudyPanel() {
         <div>
           <p className="eyebrow">Global case study review</p>
           <h2>International road asset management lessons translated into DUCAR rules</h2>
-          <span>Combines online official resources from PIARC, FHWA, Austroads, World Bank, AfDB, SANRAL and ReCAP/GOV.UK.</span>
+          <span>PIARC, FHWA, Austroads, World Bank, AfDB, SANRAL and ReCAP/GOV.UK sources</span>
         </div>
         <strong>{averageScore}%</strong>
       </section>
@@ -1054,7 +1054,6 @@ function MapScene3D({ programme }) {
   const [roadSort, setRoadSort] = useState("length_km");
   const [nodes, setNodes] = useState(null);
   const [routeMatrix, setRouteMatrix] = useState(null);
-  const [showNodes, setShowNodes] = useState(true);
   const [showFlows, setShowFlows] = useState(true);
   const [selectedRoad, setSelectedRoad] = useState(null);
 
@@ -1224,20 +1223,6 @@ function MapScene3D({ programme }) {
         filter: ["==", ["get", "road_system"], "National"],
         paint: { "line-color": "#fbbf24", "line-width": 2.1, "line-opacity": 1, "line-dasharray": [1.4, 0.9] },
       });
-      map.addLayer({
-        id: "network-junctions",
-        type: "circle",
-        source: "network-nodes",
-        filter: [">", ["get", "degree"], 2],
-        paint: {
-          "circle-radius": ["interpolate", ["linear"], ["get", "degree"], 3, 2.5, 8, 5.5, 18, 9],
-          "circle-color": "#4258ff",
-          "circle-opacity": 0.8,
-          "circle-stroke-color": "#ffffff",
-          "circle-stroke-width": 1.5,
-        },
-      });
-
       map.addSource("selected-road", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
       map.addLayer({
         id: "selected-road-halo",
@@ -1287,8 +1272,7 @@ function MapScene3D({ programme }) {
     if (!map?.isStyleLoaded()) return;
     if (map.getLayer("traffic-flow")) map.setLayoutProperty("traffic-flow", "visibility", showFlows ? "visible" : "none");
     if (map.getLayer("traffic-flow-casing")) map.setLayoutProperty("traffic-flow-casing", "visibility", showFlows ? "visible" : "none");
-    if (map.getLayer("network-junctions")) map.setLayoutProperty("network-junctions", "visibility", showNodes ? "visible" : "none");
-  }, [showFlows, showNodes]);
+  }, [showFlows]);
 
   const matrixRoutes = useMemo(() => {
     const routes = routeMatrix?.routes || [];
@@ -1319,7 +1303,6 @@ function MapScene3D({ programme }) {
         <div className="layer-toggles">
           <button className="layer-btn active unified">Joined Road Network</button>
           <button className={`layer-btn ${showFlows ? "active" : ""}`} onClick={() => setShowFlows((value) => !value)}>Traffic Flow</button>
-          <button className={`layer-btn ${showNodes ? "active" : ""}`} onClick={() => setShowNodes((value) => !value)}>Nodes</button>
         </div>
       </div>
       <div className="road-filter-bar">
@@ -1343,10 +1326,9 @@ function MapScene3D({ programme }) {
         <div className="scene-hud">
           <strong>3D joined road network</strong>
           <span>{filteredRoads.length.toLocaleString()} dissolved visible routes</span>
-          <span>{(nodes?.features?.length || 0).toLocaleString()} snapped network nodes</span>
+          <span>{(nodes?.features?.length || 0).toLocaleString()} analysis nodes</span>
           <span>{(routeMatrix?.routes?.length || 0).toLocaleString()} OD route pairs</span>
           <span>ESRI imagery + labels. Terrain 3x. Pitch 55 degrees.</span>
-          <span>Click any road for attributes.</span>
         </div>
         {selectedRoad && (
           <aside className="road-info-pane open" aria-live="polite">
@@ -1391,7 +1373,6 @@ function MapScene3D({ programme }) {
           <span><i className="line-swatch town-roads-line" /> Town Council Roads</span>
           <span><i className="line-swatch municipal-roads-line" /> Municipal Roads</span>
           <span><i className="line-swatch traffic-flow-line" /> Traffic Flow Index</span>
-          <span><i className="node-swatch" /> Joined Junction Node</span>
           <span><i className="line-swatch selected-road-line" /> Selected Road</span>
         </div>
       </div>
@@ -1494,7 +1475,7 @@ function ProcessFlow({ analysis, grouped }) {
     <section className="panel wide flow-panel" id="framework">
       <div className="panel-title">
         <Network size={18} />
-        <h2>Animated Framework Schematic and Tool Process Flow</h2>
+        <h2>Framework Schematic and Tool Process Flow</h2>
       </div>
 
       <div className="flow-summary">
@@ -2326,12 +2307,12 @@ function App() {
 
   const activePage = NAV_ITEMS.find((item) => item.id === activeSection) || NAV_ITEMS[0];
   const pageMeta = {
-    overview: { ...activePage, title: "Dynamic ML and Geospatial Budget Allocation Tool" },
+    overview: { ...activePage, title: "DUCAR Budget Allocation Tool" },
     controls: { ...activePage, title: "Budget Inputs and Scenario Controls" },
     pim: { ...activePage, title: "Public Investment Management Principles" },
     analytics: { ...activePage, title: "Live Allocation Analytics" },
     traffic: { ...activePage, title: "Traffic, Economic and Deterioration Analytics" },
-    framework: { ...activePage, title: "Animated Framework and Tool Process Flow" },
+    framework: { ...activePage, title: "Framework and Tool Process Flow" },
     gis: { ...activePage, title: "GIS Surface with National Reference Exemption" },
     manuals: { ...activePage, title: "Manuals Repository Evidence and Statistics" },
     "case-studies": { ...activePage, title: "Global Case Study Review" },
@@ -2362,11 +2343,8 @@ function App() {
               <header className="hero">
                 <div>
                   <p className="eyebrow">DUCAR Priority Studio v0.6</p>
-                  <h1>Bright, page-based allocation studio for DUCAR decisions</h1>
-                  <p>
-                    Hyperlinked pages for budget inputs, analytics, GIS layers, framework flow, allocation,
-                    and editable programme outputs.
-                  </p>
+                  <h1>DUCAR budget rationalisation and road asset prioritisation</h1>
+                  <p>Budget inputs, evidence gates, GIS network analysis, allocation scenarios, and programme outputs.</p>
                 </div>
                 <div className="hero-actions">
                   <span className="api-pill"><Brain size={16} /> {apiMode}</span>
@@ -2388,7 +2366,7 @@ function App() {
                   <a className="page-card" href={`#${id}`} key={id} onClick={() => navigateToSection(id)}>
                     <Icon size={28} />
                     <strong>{label}</strong>
-                    <span>Open page</span>
+                    <span>Open</span>
                   </a>
                 ))}
               </section>
@@ -2437,7 +2415,7 @@ function App() {
               <section className="ingestion-engine">
                 <div className="viz-title">
                   <h3>CSV / Excel Ingestion Engine</h3>
-                  <span>Upload, map, preview, append or replace assets</span>
+                  <span>Upload, map, preview, append or replace records</span>
                 </div>
                 <div className="ingestion-dropzone">
                   <input type="file" accept=".csv,.xlsx,.xls" onChange={(e) => ingestFile(e.target.files?.[0])} />
