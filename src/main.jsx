@@ -204,6 +204,47 @@ const OPEN_DATA_LOGIC = [
 const DUCAR_EXEMPTION_TEXT =
   "National roads are visible as a reference layer for connectivity and double-counting checks, but DUCAR analysis, prioritisation and budget allocation focus on non-national roads unless a formal delegation exists.";
 
+const ROAD_CATEGORY_EXPRESSION = [
+  "case",
+  ["==", ["get", "road_system"], "National"], "National Roads",
+  ["==", ["get", "road_source"], "KCCA roads"], "KCCA",
+  ["==", ["get", "road_system"], "CBD Selected"], "City Roads",
+  ["in", ["get", "road_class"], ["literal", ["Community Access Road", "Community Access Roads", "CAR"]]], "Community Access Roads",
+  ["in", ["get", "road_class"], ["literal", ["Municipal Road", "Municipal Roads", "M"]]], "Municipal Roads",
+  ["in", ["get", "road_class"], ["literal", ["Town Council Road", "Town Council Roads", "TC"]]], "Town Council Roads",
+  ["in", ["get", "road_class"], ["literal", ["Urban Road", "Urban CBD Priority Link"]]], "City Roads",
+  ["==", ["get", "road_system"], "Urban"], "City Roads",
+  ["==", ["get", "road_system"], "DUCAR"], "District Roads",
+  ["==", ["get", "road_class"], "District Road"], "District Roads",
+  "District Roads",
+];
+
+const ROAD_CATEGORY_COLORS = [
+  "match",
+  ROAD_CATEGORY_EXPRESSION,
+  "National Roads", "#64748b",
+  "District Roads", "#2563eb",
+  "KCCA", "#7c3aed",
+  "City Roads", "#e11d48",
+  "Community Access Roads", "#16a34a",
+  "Town Council Roads", "#f59e0b",
+  "Municipal Roads", "#0891b2",
+  "#2563eb",
+];
+
+const ROAD_CATEGORY_WIDTHS = [
+  "match",
+  ROAD_CATEGORY_EXPRESSION,
+  "National Roads", 3.6,
+  "District Roads", 4.2,
+  "KCCA", 5.6,
+  "City Roads", 5.4,
+  "Community Access Roads", 3.2,
+  "Town Council Roads", 4,
+  "Municipal Roads", 4.6,
+  4,
+];
+
 /* ─── Metric card ─── */
 function Metric({ icon: Icon, label, value, tone = "blue" }) {
   return (
@@ -530,36 +571,27 @@ function MapScene3D({ programme }) {
         },
       });
       map.addLayer({
-        id: "roads-main-halo",
+        id: "roads-all-halo",
         type: "line",
         source: "roads",
-        filter: ["!=", ["get", "road_system"], "National"],
-        paint: { "line-color": "#ffffff", "line-width": 8, "line-opacity": 0.8, "line-blur": 0.5 },
+        paint: { "line-color": "#ffffff", "line-width": ["+", ROAD_CATEGORY_WIDTHS, 4], "line-opacity": 0.82, "line-blur": 0.5 },
       });
       map.addLayer({
-        id: "roads-main",
+        id: "roads-all",
         type: "line",
         source: "roads",
-        filter: ["!=", ["get", "road_system"], "National"],
         paint: {
-          "line-color": ["match", ["get", "road_system"], "CBD Selected", "#e11d48", "#2563eb"],
-          "line-width": ["match", ["get", "road_system"], "CBD Selected", 6.5, 4.4],
+          "line-color": ROAD_CATEGORY_COLORS,
+          "line-width": ROAD_CATEGORY_WIDTHS,
           "line-opacity": 0.94,
         },
       });
       map.addLayer({
-        id: "roads-reference-halo",
+        id: "national-dash-overlay",
         type: "line",
         source: "roads",
         filter: ["==", ["get", "road_system"], "National"],
-        paint: { "line-color": "#ffffff", "line-width": 7, "line-opacity": 0.7, "line-blur": 0.4 },
-      });
-      map.addLayer({
-        id: "roads-reference",
-        type: "line",
-        source: "roads",
-        filter: ["==", ["get", "road_system"], "National"],
-        paint: { "line-color": "#64748b", "line-width": 3.5, "line-opacity": 0.58, "line-dasharray": [2, 1.2] },
+        paint: { "line-color": "#334155", "line-width": 2.8, "line-opacity": 0.72, "line-dasharray": [2, 1.25] },
       });
 
       map.addSource("selected-road", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
@@ -576,7 +608,7 @@ function MapScene3D({ programme }) {
         paint: { "line-color": "#0f172a", "line-width": 8, "line-opacity": 1 },
       });
 
-      for (const layerId of ["roads-main", "roads-reference"]) {
+      for (const layerId of ["roads-all"]) {
         map.on("click", layerId, (e) => selectRoadFeature(map, e));
         map.on("mouseenter", layerId, () => { map.getCanvas().style.cursor = "pointer"; });
         map.on("mouseleave", layerId, () => { map.getCanvas().style.cursor = ""; });
@@ -666,9 +698,14 @@ function MapScene3D({ programme }) {
       <div className="map-legend logical-legend modern-legend">
         <strong>Legend</strong>
         <div className="legend-grid">
-          <span><i className="line-swatch network-line" /> DUCAR/non-national roads</span>
-          <span><i className="line-swatch reference-line" /> National reference roads</span>
-          <span><i className="line-swatch selected-road-line" /> Selected road</span>
+          <span><i className="line-swatch national-roads-line" /> National Roads</span>
+          <span><i className="line-swatch district-roads-line" /> District Roads</span>
+          <span><i className="line-swatch kcca-roads-line" /> KCCA</span>
+          <span><i className="line-swatch city-roads-line" /> City Roads</span>
+          <span><i className="line-swatch community-roads-line" /> Community Access Roads</span>
+          <span><i className="line-swatch town-roads-line" /> Town Council Roads</span>
+          <span><i className="line-swatch municipal-roads-line" /> Municipal Roads</span>
+          <span><i className="line-swatch selected-road-line" /> Selected Road</span>
         </div>
       </div>
     </section>

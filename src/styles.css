@@ -1608,6 +1608,13 @@ input[type="range"]::-webkit-slider-runnable-track {
 .network-line { border-color: #2563eb; }
 .reference-line { border-color: #64748b; border-top-style: dashed; opacity: 0.72; }
 .selected-road-line { border-color: #0f172a; border-top-width: 8px; }
+.national-roads-line { border-color: #64748b; border-top-style: dashed; opacity: 0.78; }
+.district-roads-line { border-color: #2563eb; }
+.kcca-roads-line { border-color: #7c3aed; border-top-width: 7px; }
+.city-roads-line { border-color: #e11d48; border-top-width: 7px; }
+.community-roads-line { border-color: #16a34a; border-top-width: 5px; }
+.town-roads-line { border-color: #f59e0b; }
+.municipal-roads-line { border-color: #0891b2; border-top-width: 6px; }
 
 /* ─── Leaflet overrides ─── */
 .leaflet-container {
