@@ -592,6 +592,57 @@ const GLOBAL_COUNTRY_REVIEWS = Object.entries(WORLD_COUNTRIES_BY_REGION).flatMap
   })
 );
 
+function buildLiteratureReviewRows() {
+  return GLOBAL_COUNTRY_REVIEWS.map((item) => ({
+    country: item.country,
+    region: item.region,
+    framework_lens: item.pattern,
+    transferability_score: item.score,
+    ...item.indicators,
+    ducar_use: item.ducarUse,
+  }));
+}
+
+function downloadLiteratureReviewFile(format) {
+  const rows = buildLiteratureReviewRows();
+  const payload = format === "json"
+    ? JSON.stringify(rows, null, 2)
+    : [
+        Object.keys(rows[0]).join(","),
+        ...rows.map((row) => Object.values(row).map((value) => `"${String(value).replaceAll('"', '""')}"`).join(",")),
+      ].join("\n");
+  const blob = new Blob([payload], { type: format === "json" ? "application/json" : "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `ducar_global_literature_review.${format}`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function getGlobalEvidenceSummary() {
+  const regionCounts = GLOBAL_COUNTRY_REVIEWS.reduce((acc, item) => {
+    acc[item.region] = (acc[item.region] || 0) + 1;
+    return acc;
+  }, {});
+  const averageScore = Math.round(GLOBAL_COUNTRY_REVIEWS.reduce((sum, item) => sum + item.score, 0) / GLOBAL_COUNTRY_REVIEWS.length);
+  const indicatorAverages = LITERATURE_REVIEW_INDICATORS.map(([key, label, detail, weight]) => ({
+    key,
+    label,
+    detail,
+    weight,
+    value: Math.round(GLOBAL_COUNTRY_REVIEWS.reduce((sum, item) => sum + item.indicators[key], 0) / GLOBAL_COUNTRY_REVIEWS.length),
+  }));
+  const topFrameworks = [...GLOBAL_COUNTRY_REVIEWS].sort((a, b) => b.score - a.score).slice(0, 12);
+  return {
+    regionCounts,
+    averageScore,
+    indicatorAverages,
+    topFrameworks,
+    sourceCount: new Set(GLOBAL_SOURCE_DOCUMENTS.map((x) => x.url)).size,
+  };
+}
+
 const INTELLIGENCE_TOPICS = [
   ["Net budget absorption", "allocation", "Budget", "share of available funds committed"],
   ["Selected works count", "programme", "Programme", "funded candidate assets"],
@@ -1020,6 +1071,7 @@ function ManualsEvidencePanel({ analysis }) {
   const evidenceAverage = analysis.summary?.total
     ? Math.round((analysis.summary.evidenceTotal || 0) / analysis.summary.total)
     : 0;
+  const globalEvidence = getGlobalEvidenceSummary();
 
   return (
     <div className="manuals-page-grid">
@@ -1059,6 +1111,111 @@ function ManualsEvidencePanel({ analysis }) {
         <strong>APA source assumptions</strong>
         {MANUAL_SOURCES.map((source) => <p key={source.apa}>{source.apa}</p>)}
         {sourceReferences.map((source) => <p key={source}>{source}</p>)}
+      </section>
+      <section className="global-source-library">
+        <div className="viz-title">
+          <h3>Global Case Evidence Sources</h3>
+          <span>International manuals, framework portals, country groupings and case-study references</span>
+        </div>
+        <div className="source-download-grid">
+          {GLOBAL_SOURCE_DOCUMENTS.map((source) => (
+            <article key={`manuals-${source.url}`}>
+              <div>
+                <strong>{source.title}</strong>
+                <span>{source.agency} / {source.type}</span>
+              </div>
+              <div className="source-actions">
+                <a href={source.url} target="_blank" rel="noreferrer">Open</a>
+                <a href={source.url} download target="_blank" rel="noreferrer"><Download size={14} /> Download</a>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="literature-engine">
+        <div className="viz-title">
+          <h3>Global Literature Review Evidence</h3>
+          <span>195-country framework comparison embedded in the evidence library</span>
+        </div>
+        <section className="metrics-grid">
+          <Metric icon={Globe2} label="Countries covered" value={GLOBAL_COUNTRY_REVIEWS.length} />
+          <Metric icon={MapIcon} label="Regions covered" value={Object.keys(globalEvidence.regionCounts).length} tone="green" />
+          <Metric icon={ClipboardCheck} label="Transferability index" value={`${globalEvidence.averageScore}%`} tone="gold" />
+          <Metric icon={BookOpen} label="Global source groups" value={globalEvidence.sourceCount} tone="red" />
+        </section>
+        <div className="literature-actions">
+          <button onClick={() => downloadLiteratureReviewFile("csv")}><Download size={15} /> Download CSV</button>
+          <button className="secondary" onClick={() => downloadLiteratureReviewFile("json")}><FileSpreadsheet size={15} /> Download JSON</button>
+        </div>
+        <div className="indicator-score-grid">
+          {globalEvidence.indicatorAverages.map((item, index) => (
+            <article key={`manuals-${item.key}`} style={{ "--accent": ["#4258ff", "#12b981", "#f43f5e", "#ffb020", "#00a7c7", "#7c3aed", "#10b981", "#ef4444"][index % 8] }}>
+              <div>
+                <strong>{item.label}</strong>
+                <span>{Math.round(item.weight * 100)}% model weight</span>
+              </div>
+              <em>{item.value}%</em>
+              <i><b style={{ width: `${item.value}%` }} /></i>
+              <p>{item.detail}</p>
+            </article>
+          ))}
+        </div>
+        <div className="framework-rank-table">
+          {globalEvidence.topFrameworks.slice(0, 8).map((item, index) => (
+            <article key={`manuals-${item.country}-${item.pattern}`}>
+              <strong>{index + 1}</strong>
+              <span>{item.country}<small>{item.region} / {item.pattern}</small></span>
+              <em>{item.score}%</em>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="viz-card wide-viz">
+        <div className="viz-title">
+          <h3>Benchmark Global Cases</h3>
+          <span>Documented cases now indexed inside Manuals & Evidence</span>
+        </div>
+        <div className="global-case-grid">
+          {GLOBAL_CASE_STUDIES.map((item, index) => (
+            <article key={`manuals-${item.region}-${item.place}`} style={{ "--accent": ["#4258ff", "#12b981", "#f43f5e", "#ffb020", "#00a7c7", "#7c3aed"][index % 6] }}>
+              <div className="case-card-head">
+                <span>{item.region}</span>
+                <strong>{item.score}%</strong>
+              </div>
+              <h3>{item.place}</h3>
+              <p>{item.lesson}</p>
+              <div className="case-metric-row">
+                {item.metrics.map((metric) => <i key={metric}>{metric}</i>)}
+              </div>
+              <em>{item.ducarUse}</em>
+              <a href={item.url} target="_blank" rel="noreferrer">{item.source}</a>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="viz-card wide-viz">
+        <div className="viz-title">
+          <h3>Global Country Evidence Matrix</h3>
+          <span>All 195 country records available inside the evidence tab</span>
+        </div>
+        <div className="country-review-grid">
+          {GLOBAL_COUNTRY_REVIEWS.map((item, index) => (
+            <article key={`manuals-${item.region}-${item.country}`} style={{ "--accent": ["#4258ff", "#12b981", "#f43f5e", "#ffb020", "#00a7c7"][index % 5] }}>
+              <div>
+                <strong>{item.country}</strong>
+                <span>{item.region}</span>
+              </div>
+              <em>{item.score}%</em>
+              <b>{item.pattern}</b>
+              <div className="country-indicator-strip">
+                {LITERATURE_REVIEW_INDICATORS.slice(0, 4).map(([key, label]) => (
+                  <span key={key}>{label}: {item.indicators[key]}%</span>
+                ))}
+              </div>
+              <p>{item.ducarUse}</p>
+            </article>
+          ))}
+        </div>
       </section>
       <section className="viz-card wide-viz">
         <div className="viz-title">
@@ -1119,44 +1276,7 @@ function ManualsEvidencePanel({ analysis }) {
 }
 
 function GlobalCaseStudyPanel() {
-  const regionCounts = GLOBAL_COUNTRY_REVIEWS.reduce((acc, item) => {
-    acc[item.region] = (acc[item.region] || 0) + 1;
-    return acc;
-  }, {});
-  const averageScore = Math.round(GLOBAL_COUNTRY_REVIEWS.reduce((sum, item) => sum + item.score, 0) / GLOBAL_COUNTRY_REVIEWS.length);
-  const sourceCount = new Set(GLOBAL_SOURCE_DOCUMENTS.map((x) => x.url)).size;
-  const indicatorAverages = LITERATURE_REVIEW_INDICATORS.map(([key, label, detail, weight]) => ({
-    key,
-    label,
-    detail,
-    weight,
-    value: Math.round(GLOBAL_COUNTRY_REVIEWS.reduce((sum, item) => sum + item.indicators[key], 0) / GLOBAL_COUNTRY_REVIEWS.length),
-  }));
-  const topFrameworks = [...GLOBAL_COUNTRY_REVIEWS].sort((a, b) => b.score - a.score).slice(0, 12);
-
-  function downloadLiteratureReview(format) {
-    const rows = GLOBAL_COUNTRY_REVIEWS.map((item) => ({
-      country: item.country,
-      region: item.region,
-      framework_lens: item.pattern,
-      transferability_score: item.score,
-      ...item.indicators,
-      ducar_use: item.ducarUse,
-    }));
-    const payload = format === "json"
-      ? JSON.stringify(rows, null, 2)
-      : [
-          Object.keys(rows[0]).join(","),
-          ...rows.map((row) => Object.values(row).map((value) => `"${String(value).replaceAll('"', '""')}"`).join(",")),
-        ].join("\n");
-    const blob = new Blob([payload], { type: format === "json" ? "application/json" : "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `ducar_global_literature_review.${format}`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
+  const { regionCounts, averageScore, indicatorAverages, topFrameworks, sourceCount } = getGlobalEvidenceSummary();
 
   return (
     <div className="case-study-page">
@@ -1200,8 +1320,8 @@ function GlobalCaseStudyPanel() {
           <span>195-country framework comparison using measurable performance indicators</span>
         </div>
         <div className="literature-actions">
-          <button onClick={() => downloadLiteratureReview("csv")}><Download size={15} /> Download CSV</button>
-          <button className="secondary" onClick={() => downloadLiteratureReview("json")}><FileSpreadsheet size={15} /> Download JSON</button>
+          <button onClick={() => downloadLiteratureReviewFile("csv")}><Download size={15} /> Download CSV</button>
+          <button className="secondary" onClick={() => downloadLiteratureReviewFile("json")}><FileSpreadsheet size={15} /> Download JSON</button>
         </div>
         <div className="indicator-score-grid">
           {indicatorAverages.map((item, index) => (
