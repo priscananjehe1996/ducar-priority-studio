@@ -222,7 +222,7 @@ const ROAD_CATEGORY_EXPRESSION = [
 const ROAD_CATEGORY_COLORS = [
   "match",
   ROAD_CATEGORY_EXPRESSION,
-  "National Roads", "#64748b",
+  "National Roads", "#111827",
   "District Roads", "#2563eb",
   "KCCA", "#7c3aed",
   "City Roads", "#e11d48",
@@ -235,7 +235,7 @@ const ROAD_CATEGORY_COLORS = [
 const ROAD_CATEGORY_WIDTHS = [
   "match",
   ROAD_CATEGORY_EXPRESSION,
-  "National Roads", 3.6,
+  "National Roads", 6.6,
   "District Roads", 4.2,
   "KCCA", 5.6,
   "City Roads", 5.4,
@@ -574,7 +574,12 @@ function MapScene3D({ programme }) {
         id: "roads-all-halo",
         type: "line",
         source: "roads",
-        paint: { "line-color": "#ffffff", "line-width": ["+", ROAD_CATEGORY_WIDTHS, 4], "line-opacity": 0.82, "line-blur": 0.5 },
+        paint: {
+          "line-color": ["case", ["==", ["get", "road_system"], "National"], "#fde68a", "#ffffff"],
+          "line-width": ["case", ["==", ["get", "road_system"], "National"], 13, ["+", ROAD_CATEGORY_WIDTHS, 4]],
+          "line-opacity": ["case", ["==", ["get", "road_system"], "National"], 0.96, 0.82],
+          "line-blur": ["case", ["==", ["get", "road_system"], "National"], 0.15, 0.5],
+        },
       });
       map.addLayer({
         id: "roads-all",
@@ -591,7 +596,7 @@ function MapScene3D({ programme }) {
         type: "line",
         source: "roads",
         filter: ["==", ["get", "road_system"], "National"],
-        paint: { "line-color": "#334155", "line-width": 2.8, "line-opacity": 0.72, "line-dasharray": [2, 1.25] },
+        paint: { "line-color": "#fbbf24", "line-width": 3.2, "line-opacity": 0.95, "line-dasharray": [1.4, 0.8] },
       });
 
       map.addSource("selected-road", { type: "geojson", data: { type: "FeatureCollection", features: [] } });

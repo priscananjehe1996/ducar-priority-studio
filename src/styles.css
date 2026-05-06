@@ -1608,7 +1608,12 @@ input[type="range"]::-webkit-slider-runnable-track {
 .network-line { border-color: #2563eb; }
 .reference-line { border-color: #64748b; border-top-style: dashed; opacity: 0.72; }
 .selected-road-line { border-color: #0f172a; border-top-width: 8px; }
-.national-roads-line { border-color: #64748b; border-top-style: dashed; opacity: 0.78; }
+.national-roads-line {
+  border-color: #111827;
+  border-top-style: dashed;
+  border-top-width: 9px;
+  box-shadow: 0 0 0 3px #fde68a, 0 6px 14px rgba(17, 24, 39, 0.18);
+}
 .district-roads-line { border-color: #2563eb; }
 .kcca-roads-line { border-color: #7c3aed; border-top-width: 7px; }
 .city-roads-line { border-color: #e11d48; border-top-width: 7px; }
