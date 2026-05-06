@@ -913,7 +913,32 @@ function ManualsEvidencePanel({ analysis }) {
       </section>
       <section className="viz-card wide-viz">
         <div className="viz-title">
-          <h3>Manual Topics Now Feeding Tool Logic</h3>
+          <h3>Manual Evidence Library</h3>
+          <span>Editable source documents, TORs, manuals and reference files embedded in the app</span>
+        </div>
+        <div className="manual-source-grid">
+          {MANUAL_SOURCES.map((source) => (
+            <article key={source.title}>
+              <div>
+                <strong>{source.title}</strong>
+                <span>{source.agency} / {source.year}</span>
+              </div>
+              <a href={source.href} target="_blank" rel="noreferrer">Open source</a>
+              <ul>
+                {source.controls.map((control) => <li key={control}>{control}</li>)}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="manual-reference-note">
+        <strong>APA source assumptions</strong>
+        {MANUAL_SOURCES.map((source) => <p key={source.apa}>{source.apa}</p>)}
+        {sourceReferences.map((source) => <p key={source}>{source}</p>)}
+      </section>
+      <section className="viz-card wide-viz">
+        <div className="viz-title">
+          <h3>Manual Topics Feeding Tool Logic</h3>
           <span>Repository evidence translated into scoring, monitoring and QA assumptions</span>
         </div>
         <div className="manual-topic-grid">
@@ -1558,27 +1583,6 @@ function PimEnginePanel({ programme, analysis }) {
         ))}
       </section>
 
-      <section className="manual-evidence-panel">
-        <div className="viz-title">
-          <h3>Manual Evidence Library</h3>
-          <span>Editable sources embedded in the app</span>
-        </div>
-        <div className="manual-source-grid">
-          {MANUAL_SOURCES.map((source) => (
-            <article key={source.title}>
-              <div>
-                <strong>{source.title}</strong>
-                <span>{source.agency} / {source.year}</span>
-              </div>
-              <a href={source.href} target="_blank" rel="noreferrer">Open source</a>
-              <ul>
-                {source.controls.map((control) => <li key={control}>{control}</li>)}
-              </ul>
-            </article>
-          ))}
-        </div>
-      </section>
-
       <section className="viz-card wide-viz">
         <div className="viz-title">
           <h3>Source-Based Tool Logic</h3>
@@ -1631,12 +1635,6 @@ function PimEnginePanel({ programme, analysis }) {
             </article>
           ))}
         </div>
-      </section>
-
-      {/* ── HDM-4 Input Data Summary Tables ── */}
-      <section className="manual-reference-note">
-        <strong>APA source assumptions</strong>
-        {MANUAL_SOURCES.map((source) => <p key={source.apa}>{source.apa}</p>)}
       </section>
 
       <section className="viz-card" style={{ gridColumn: "1 / -1" }}>
