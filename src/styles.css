@@ -1605,6 +1605,9 @@ input[type="range"]::-webkit-slider-runnable-track {
 .open-line { border-color: #059669; }
 .urban-line { border-color: #9333ea; }
 .cbd-line { border-color: #e11d48; border-top-width: 8px; }
+.network-line { border-color: #2563eb; }
+.reference-line { border-color: #64748b; border-top-style: dashed; opacity: 0.72; }
+.selected-road-line { border-color: #0f172a; border-top-width: 8px; }
 
 /* ─── Leaflet overrides ─── */
 .leaflet-container {
@@ -1841,6 +1844,75 @@ td .range-value {
   text-align: right;
   font-weight: 600;
   color: var(--blue);
+}
+
+/* HDM-4 Input Data Table Blocks */
+.hdm-table-block {
+  margin-bottom: 28px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hdm-table-block:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.08);
+}
+
+.hdm-table-title {
+  margin: 0 0 14px;
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--ink);
+  padding-bottom: 10px;
+  border-bottom: 2px solid;
+  border-image: linear-gradient(90deg, #2563eb, #059669) 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hdm-table-title::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb, #059669);
+  flex-shrink: 0;
+}
+
+.hdm-table-block table {
+  min-width: 100%;
+  font-size: 12px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.hdm-table-block th {
+  background: linear-gradient(90deg, #e0f2fe, #ecfdf5);
+  color: #0f4c75;
+  font-size: 11px;
+  padding: 10px 14px;
+  white-space: nowrap;
+}
+
+.hdm-table-block td {
+  padding: 10px 14px;
+  color: #334155;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.hdm-table-block tr:last-child td {
+  border-bottom: none;
+}
+
+.hdm-table-block tr:hover td {
+  background: rgba(37, 99, 235, 0.04);
 }
 
 /* Modern Maplibre Popup styling */

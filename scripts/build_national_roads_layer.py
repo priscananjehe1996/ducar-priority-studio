@@ -19,13 +19,15 @@ import geopandas as gpd
 from shapely.geometry.base import BaseGeometry
 from shapely.ops import transform
 
+from uganda_layers_manifest import update_manifest
+
 ROOT = Path(__file__).resolve().parents[1]
 PROJECT = ROOT.parent
 TOR = PROJECT.parent
 
 SOURCE = TOR / "Roads" / "networkfy25_26" / "networkfy25_26.shp"
-PUBLIC_OUT = ROOT / "public" / "data" / "uganda_national_roads_fy25_26.geojson"
-SUMMARY_OUT = ROOT / "data" / "uganda_national_roads_summary.json"
+PUBLIC_DIR = ROOT / "public" / "data"
+SUMMARY_DIR = ROOT / "data"
 
 
 def drop_z(geom: BaseGeometry | None) -> BaseGeometry | None:
@@ -49,8 +51,12 @@ def road_class_label(code: str | None) -> str:
 
 
 def main() -> None:
-    PUBLIC_OUT.parent.mkdir(parents=True, exist_ok=True)
-    SUMMARY_OUT.parent.mkdir(parents=True, exist_ok=True)
+    date_tag = datetime.now(timezone.utc).date().isoformat()
+    PUBLIC_DIR.mkdir(parents=True, exist_ok=True)
+    SUMMARY_DIR.mkdir(parents=True, exist_ok=True)
+
+    public_out = PUBLIC_DIR / f"uganda_national_roads_fy25_26_{date_tag}.geojson"
+    summary_out = SUMMARY_DIR / f"uganda_national_roads_summary_{date_tag}.json"
 
     roads = gpd.read_file(SOURCE).to_crs(epsg=4326)
     roads["geometry"] = roads.geometry.apply(drop_z)
@@ -105,12 +111,12 @@ def main() -> None:
     web = roads[out_cols].copy()
     web["geometry"] = web.to_crs(epsg=32636).geometry.simplify(35, preserve_topology=False)
     web = web.to_crs(epsg=4326)
-    web.to_file(PUBLIC_OUT, driver="GeoJSON")
+    public_out.write_text(web.to_json(drop_id=True), encoding="utf-8")
 
     summary = {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "source": str(SOURCE),
-        "output": str(PUBLIC_OUT),
+        "output": str(public_out),
         "record_count": int(len(web)),
         "total_length_km": round(float(web["length_km"].sum()), 2),
         "by_class": web.groupby("road_class").size().to_dict(),
@@ -119,7 +125,15 @@ def main() -> None:
         "assumption": "The national road network is shown as a coordination and exclusion/reference layer. DUCAR allocation should avoid double-counting roads under national responsibility unless an explicit agency agreement exists.",
         "apa_reference": "Uganda national road network FY25/26 shapefile. (2026). Local geospatial dataset: D:/OneDrive/Procurements/TOR - DUCACR/Roads/networkfy25_26/networkfy25_26.shp",
     }
-    SUMMARY_OUT.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    summary_out.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+
+    update_manifest(
+        ROOT,
+        {
+            "national_roads_geojson": str(public_out),
+            "national_roads_summary": str(summary_out),
+        },
+    )
     print(json.dumps(summary, indent=2))
 
 

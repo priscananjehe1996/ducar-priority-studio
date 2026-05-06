@@ -14,11 +14,11 @@ from pathlib import Path
 import geopandas as gpd
 import pandas as pd
 
+from uganda_layers_manifest import load_manifest, update_manifest
+
 ROOT = Path(__file__).resolve().parents[1]
 PUBLIC = ROOT / "public" / "data"
 DATA = ROOT / "data"
-OUT = PUBLIC / "uganda_unified_roads_web.geojson"
-SUMMARY = DATA / "uganda_unified_roads_summary.json"
 CBD_SELECTED_DIR = ROOT.parents[1] / "Selected Roads in CBD"
 CBD_SELECTED_OUT = PUBLIC / "selected_cbd_roads.geojson"
 
@@ -58,8 +58,9 @@ def district_roads() -> gpd.GeoDataFrame:
     return out
 
 
-def national_roads() -> gpd.GeoDataFrame:
-    src = PUBLIC / "uganda_national_roads_fy25_26.geojson"
+def national_roads(manifest: dict | None = None) -> gpd.GeoDataFrame:
+    manifest = manifest or {}
+    src = Path(manifest.get("national_roads_geojson") or (PUBLIC / "uganda_national_roads_fy25_26.geojson"))
     gdf = read_layer(src)
     out = gdf.copy()
     out["road_uid"] = out["national_uid"].map(lambda x: safe(x)) if "national_uid" in out else [f"NAT-{i + 1:05d}" for i in range(len(out))]
@@ -81,8 +82,9 @@ def national_roads() -> gpd.GeoDataFrame:
     return out
 
 
-def osm_roads() -> gpd.GeoDataFrame:
-    src = PUBLIC / "uganda_osm_major_roads_web.geojson"
+def osm_roads(manifest: dict | None = None) -> gpd.GeoDataFrame:
+    manifest = manifest or {}
+    src = Path(manifest.get("osm_major_roads_geojson") or (PUBLIC / "uganda_osm_major_roads_web.geojson"))
     gdf = read_layer(src)
     out = gdf.copy()
     out["road_uid"] = out.apply(lambda r: f"OSM-{safe(r.get('osm_id'), 'unknown')}-{r.name}", axis=1)
@@ -160,12 +162,17 @@ def selected_cbd_roads() -> gpd.GeoDataFrame:
     out["source_start_y"] = out.apply(lambda r: safe(r.get("Start_Y")), axis=1)
     out["source_end_x"] = out.apply(lambda r: safe(r.get("End_X")), axis=1)
     out["source_end_y"] = out.apply(lambda r: safe(r.get("End_Y")), axis=1)
-    out.to_file(CBD_SELECTED_OUT, driver="GeoJSON")
+    CBD_SELECTED_OUT.write_text(out.to_json(drop_id=True), encoding="utf-8")
     return out
 
 
 def main() -> None:
-    layers = [district_roads(), national_roads(), osm_roads(), kcca_roads(), selected_cbd_roads()]
+    manifest = load_manifest(ROOT)
+    date_tag = datetime.now(timezone.utc).date().isoformat()
+    out_path = PUBLIC / f"uganda_unified_roads_web_{date_tag}.geojson"
+    summary_path = DATA / f"uganda_unified_roads_summary_{date_tag}.json"
+
+    layers = [district_roads(), national_roads(manifest), osm_roads(manifest), kcca_roads(), selected_cbd_roads()]
     cols = [
         "road_uid",
         "road_source",
@@ -198,11 +205,11 @@ def main() -> None:
     merged["length_km"] = merged["length_km"].fillna(0).astype(float).round(3)
     ducar_scope = merged[~merged["ducar_analysis_scope"].str.startswith("Reference", na=False)]
     exempt_scope = merged[merged["ducar_analysis_scope"].str.startswith("Reference", na=False)]
-    merged.to_file(OUT, driver="GeoJSON")
+    out_path.write_text(merged.to_json(drop_id=True), encoding="utf-8")
 
     summary = {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
-        "output": str(OUT),
+        "output": str(out_path),
         "record_count": int(len(merged)),
         "total_length_km": round(float(merged["length_km"].sum()), 2),
         "ducar_analysis_record_count": int(len(ducar_scope)),
@@ -216,7 +223,15 @@ def main() -> None:
         "growth_logic": "Re-run source mapping scripts, then this merge script. New road features inherit source/provenance and are appended into one app road layer.",
         "national_exemption_clause": "National roads remain visible in the unified map for reference, connectivity, and double-counting checks, but all DUCAR analysis focuses on non-national roads unless a formal delegation exists.",
     }
-    SUMMARY.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+
+    update_manifest(
+        ROOT,
+        {
+            "unified_roads_geojson": str(out_path),
+            "unified_roads_summary": str(summary_path),
+        },
+    )
     print(json.dumps(summary, indent=2))
 
 

@@ -35,6 +35,25 @@ import { prioritise, summarise } from "./prioritisation.js";
 import "./styles.css";
 
 const BASE = import.meta.env.BASE_URL || "/ducar-priority-studio/";
+
+async function fetchUgandaLayersManifest() {
+  try {
+    const res = await fetch(`${BASE}data/uganda_layers_manifest.json`, { cache: "no-store" });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+function manifestDataUrl(manifest, key, fallbackFile) {
+  const raw = manifest?.[key];
+  if (typeof raw === "string" && raw.trim()) {
+    const filename = raw.replaceAll("\\", "/").split("/").pop();
+    if (filename) return `${BASE}data/${filename}`;
+  }
+  return `${BASE}data/${fallbackFile}`;
+}
 const currency = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 
 /* ─── local ML fallback ─── */
@@ -492,24 +511,55 @@ function MapScene3D({ programme }) {
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
     mapInstance.current = map;
     map.on("load", async () => {
+      const manifest = await fetchUgandaLayersManifest();
       const [roadData, summaryData] = await Promise.all([
-        fetch(`${BASE}data/uganda_unified_roads_web.geojson`).then((r) => r.json()),
-        fetch(`${BASE}data/uganda_roads_district_summary.geojson`).then((r) => r.json()),
+        fetch(manifestDataUrl(manifest, "unified_roads_geojson", "uganda_unified_roads_web.geojson")).then((r) => r.json()),
+        fetch(manifestDataUrl(manifest, "roads_district_summary_geojson", "uganda_roads_district_summary.geojson")).then((r) => r.json()),
       ]);
       setRoads(roadData);
       map.addSource("roads", { type: "geojson", data: roadData });
-      
       map.addLayer({
-        id: "roads-all-halo",
+        id: "terrain-hillshade",
+        type: "hillshade",
+        source: "terrainSource",
+        paint: {
+          "hillshade-exaggeration": 0.32,
+          "hillshade-shadow-color": "#64748b",
+          "hillshade-highlight-color": "#ffffff",
+          "hillshade-accent-color": "#38bdf8",
+        },
+      });
+      map.addLayer({
+        id: "roads-main-halo",
         type: "line",
         source: "roads",
+        filter: ["!=", ["get", "road_system"], "National"],
         paint: { "line-color": "#ffffff", "line-width": 8, "line-opacity": 0.8, "line-blur": 0.5 },
       });
       map.addLayer({
-        id: "roads-all",
+        id: "roads-main",
         type: "line",
         source: "roads",
-        paint: { "line-color": "#2563eb", "line-width": 4, "line-opacity": 0.9 },
+        filter: ["!=", ["get", "road_system"], "National"],
+        paint: {
+          "line-color": ["match", ["get", "road_system"], "CBD Selected", "#e11d48", "#2563eb"],
+          "line-width": ["match", ["get", "road_system"], "CBD Selected", 6.5, 4.4],
+          "line-opacity": 0.94,
+        },
+      });
+      map.addLayer({
+        id: "roads-reference-halo",
+        type: "line",
+        source: "roads",
+        filter: ["==", ["get", "road_system"], "National"],
+        paint: { "line-color": "#ffffff", "line-width": 7, "line-opacity": 0.7, "line-blur": 0.4 },
+      });
+      map.addLayer({
+        id: "roads-reference",
+        type: "line",
+        source: "roads",
+        filter: ["==", ["get", "road_system"], "National"],
+        paint: { "line-color": "#64748b", "line-width": 3.5, "line-opacity": 0.58, "line-dasharray": [2, 1.2] },
       });
 
       map.addSource("selected-road", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
@@ -526,9 +576,11 @@ function MapScene3D({ programme }) {
         paint: { "line-color": "#0f172a", "line-width": 8, "line-opacity": 1 },
       });
 
-      map.on("click", "roads-all", (e) => selectRoadFeature(map, e));
-      map.on("mouseenter", "roads-all", () => { map.getCanvas().style.cursor = "pointer"; });
-      map.on("mouseleave", "roads-all", () => { map.getCanvas().style.cursor = ""; });
+      for (const layerId of ["roads-main", "roads-reference"]) {
+        map.on("click", layerId, (e) => selectRoadFeature(map, e));
+        map.on("mouseenter", layerId, () => { map.getCanvas().style.cursor = "pointer"; });
+        map.on("mouseleave", layerId, () => { map.getCanvas().style.cursor = ""; });
+      }
     });
     return () => { map.remove(); mapInstance.current = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -577,10 +629,10 @@ function MapScene3D({ programme }) {
         <div className="scene-hud">
           <strong>3D road scene</strong>
           <span>{filteredRoads.length.toLocaleString()} visible road records</span>
-          <span>Click any road for assigned attributes</span>
+          <span>Terrain exaggerated 3x. Click any road for attributes.</span>
         </div>
-        <aside className={`road-info-pane ${selectedRoad ? "open" : ""}`} aria-live="polite">
-          {selectedRoad ? (
+        {selectedRoad && (
+          <aside className="road-info-pane open" aria-live="polite">
             <>
               <div className="road-info-header">
                 <div>
@@ -608,18 +660,15 @@ function MapScene3D({ programme }) {
                 ))}
               </div>
             </>
-          ) : (
-            <div className="road-info-empty">
-              <strong>Select a road</strong>
-              <span>Assigned attributes, source status, DUCAR scope, classification and exemption notes will appear here.</span>
-            </div>
-          )}
-        </aside>
+          </aside>
+        )}
       </div>
       <div className="map-legend logical-legend modern-legend">
-        <strong>Geospatial Symbology</strong>
+        <strong>Legend</strong>
         <div className="legend-grid">
-          <span><i className="line-swatch" style={{ background: "#2563eb" }} /> Unified Road Network</span>
+          <span><i className="line-swatch network-line" /> DUCAR/non-national roads</span>
+          <span><i className="line-swatch reference-line" /> National reference roads</span>
+          <span><i className="line-swatch selected-road-line" /> Selected road</span>
         </div>
       </div>
     </section>
@@ -790,6 +839,125 @@ function PimEnginePanel({ programme, analysis }) {
           ))}
         </div>
       </section>
+
+      {/* ── HDM-4 Input Data Summary Tables ── */}
+      <section className="viz-card" style={{ gridColumn: "1 / -1" }}>
+        <div className="viz-title">
+          <h3>HDM-4 Input Data Summary Tables</h3>
+          <span>Uganda Calibrated Parameters</span>
+        </div>
+        {(() => {
+          const hdmTables = [
+            { title: "Representative Vehicles", cols: ["Vehicle Class", "GVW (tonnes)", "ESAL Factor", "% of Fleet"], rows: [
+              ["Motorcycle (MC)", "0.2", "0.0003", "28%"], ["Car / Sedan", "1.5", "0.0004", "22%"], ["Pickup / SUV", "2.8", "0.002", "14%"],
+              ["Mini Bus (14-seat)", "3.5", "0.01", "12%"], ["Medium Bus (Coaster)", "7.0", "0.18", "6%"], ["Medium Truck (2-axle)", "11.0", "0.45", "8%"],
+              ["Heavy Truck (3-axle)", "22.0", "2.1", "5%"], ["Articulated Truck", "40.0", "4.5", "3%"], ["Tanker / Fuel", "36.0", "3.8", "2%"],
+            ]},
+            { title: "Climate Zones", cols: ["Zone", "Rainfall (mm/yr)", "Moisture Index", "Temp Range °C"], rows: [
+              ["Lake Victoria Crescent", "1,200–1,500", "Wet", "18–28"], ["Western Highlands", "1,000–1,800", "Wet-Humid", "12–25"],
+              ["Northern Savanna", "800–1,200", "Sub-humid", "20–35"], ["Karamoja Semi-arid", "500–800", "Dry", "22–38"],
+              ["Eastern Highlands", "1,200–2,000", "Humid", "15–27"], ["Central Plateau", "1,100–1,400", "Sub-humid", "18–30"],
+            ]},
+            { title: "Axle Loading (Vehicle Mass & Loading)", cols: ["Vehicle Type", "Legal Limit (t)", "Avg Observed (t)", "Overload %"], rows: [
+              ["2-Axle Truck", "18.0", "21.4", "38%"], ["3-Axle Truck", "25.0", "28.6", "42%"], ["Artic (6-axle)", "48.0", "54.2", "35%"],
+              ["Tanker", "44.0", "47.8", "28%"], ["Tipper", "22.0", "26.1", "45%"], ["Bus", "16.0", "15.2", "5%"],
+            ]},
+            { title: "Road Deterioration Models", cols: ["Distress Type", "Model", "Key Calibration Factor", "Uganda Value"], rows: [
+              ["Cracking Initiation", "HDM-4 RDME", "Kci (Env.)", "1.15"], ["Cracking Progression", "HDM-4 RDME", "Kcp", "1.08"],
+              ["Ravelling Initiation", "HDM-4 RDME", "Kvi", "0.95"], ["Rutting (Structural)", "HDM-4 RDME", "Krs", "1.22"],
+              ["Roughness Progression", "HDM-4 RDME", "Kgm", "1.10"], ["Potholing", "HDM-4 RDME", "Kpt", "1.30"],
+              ["Edge Break", "HDM-4 RDME", "Ked", "1.05"], ["Texture Depth Loss", "HDM-4 RDME", "Ktd", "0.98"],
+            ]},
+            { title: "Work Effects Models", cols: ["Treatment", "Reset IRI", "Service Life (yr)", "Cost $/km"], rows: [
+              ["Routine Patching", "Reduce 0.5", "1", "800–1,500"], ["Periodic Reseal (SS)", "3.5", "5–7", "15,000–25,000"],
+              ["Overlay 50mm AC", "2.8", "8–10", "85,000–120,000"], ["Reconstruction", "2.0", "15–20", "250,000–450,000"],
+              ["Gravel Resheeting", "8.0", "3–4", "12,000–18,000"], ["Spot Regravelling", "Reduce 2.0", "2", "5,000–8,000"],
+            ]},
+            { title: "Road User Effects Models", cols: ["Component", "Model Type", "Key Input", "Uganda Calibration"], rows: [
+              ["VOC – Fuel", "HDM-4 RUE", "Speed, IRI, gradient", "Fuel UGX 5,200/L"], ["VOC – Tyres", "HDM-4 RUE", "IRI, texture", "Tyre UGX 450K"],
+              ["VOC – Maintenance", "HDM-4 RUE", "Roughness", "Labour UGX 15K/hr"], ["VOC – Depreciation", "HDM-4 RUE", "Utilisation", "As HDM default"],
+              ["Travel Time", "HDM-4 RUE", "Speed model", "See valuation table"], ["Accident Cost", "HDM-4 RUE", "Traffic volume", "See accident table"],
+            ]},
+            { title: "Unit Costs by Surface Type", cols: ["Surface Type", "Construction $/km", "Periodic Maint $/km/yr", "Routine Maint $/km/yr"], rows: [
+              ["AC (Asphalt Concrete)", "350,000–600,000", "8,500", "2,800"], ["DBST (Double Seal)", "180,000–280,000", "5,200", "2,200"],
+              ["SBST (Single Seal)", "120,000–180,000", "4,800", "2,000"], ["Gravel", "45,000–80,000", "3,500", "1,800"],
+              ["Earth", "15,000–30,000", "2,000", "1,200"], ["Concrete (PCCP)", "500,000–800,000", "3,200", "1,500"],
+            ]},
+            { title: "Traffic Flow Patterns", cols: ["Road Class", "Peak Hr %", "Directional Split", "Seasonal Factor"], rows: [
+              ["National Trunk (NT)", "8–12%", "55/45", "1.05–1.15"], ["District Road (DR)", "6–10%", "50/50", "1.10–1.30"],
+              ["Urban Arterial", "10–14%", "60/40", "1.02–1.05"], ["Community Access (CAR)", "4–8%", "50/50", "1.15–1.40"],
+              ["KCCA / CBD", "12–16%", "55/45", "1.01–1.03"],
+            ]},
+            { title: "Speed Flow Types", cols: ["Road Type", "Free Flow (km/h)", "Capacity (veh/hr)", "V/C at LOS D"], rows: [
+              ["2-Lane Paved Rural", "80–100", "1,200", "0.85"], ["2-Lane Unpaved", "40–60", "600", "0.75"],
+              ["4-Lane Divided Urban", "60–80", "3,600", "0.90"], ["Single Carriageway Urban", "40–50", "1,800", "0.80"],
+              ["Mountain / Escarpment", "30–50", "800", "0.70"],
+            ]},
+            { title: "Speed Reduction Factors", cols: ["Factor", "Paved Impact", "Unpaved Impact", "Notes"], rows: [
+              ["Roughness (IRI)", "−2 km/h per IRI unit", "−3 km/h per IRI unit", "Above IRI 4"], ["Gradient > 6%", "−8 to −15 km/h", "−12 to −20 km/h", "Loaded trucks"],
+              ["Curvature", "−5 to −10 km/h", "−8 to −15 km/h", "Radius < 100m"], ["Width < 5.5m", "−5 km/h", "−8 km/h", "Two-way traffic"],
+              ["Wet Season", "−5 to −10 km/h", "−15 to −25 km/h", "Unpaved severely affected"],
+            ]},
+            { title: "Traffic Growth Rates", cols: ["Vehicle Class", "2024–2030 (%/yr)", "2030–2040 (%/yr)", "Source"], rows: [
+              ["Motorcycles", "6.5%", "4.0%", "UNRA AADT surveys"], ["Cars", "5.0%", "3.5%", "UBOS projections"],
+              ["Buses", "4.0%", "3.0%", "MoWT forecasts"], ["Light Trucks", "4.5%", "3.0%", "GDP elasticity model"],
+              ["Heavy Trucks", "5.5%", "4.0%", "Freight corridor data"], ["Articulated", "6.0%", "4.5%", "Northern corridor growth"],
+            ]},
+            { title: "Vehicle Utilization", cols: ["Vehicle Type", "Avg km/yr", "Avg Load Factor", "Service Life (yr)"], rows: [
+              ["Motorcycle", "18,000", "85%", "5"], ["Car / Sedan", "22,000", "40%", "12"], ["Minibus", "55,000", "75%", "8"],
+              ["Medium Truck", "45,000", "70%", "10"], ["Heavy Truck", "60,000", "80%", "12"], ["Articulated", "75,000", "85%", "15"],
+            ]},
+            { title: "Travel Time Valuation", cols: ["Trip Purpose", "Value (UGX/hr)", "Value (USD/hr)", "Basis"], rows: [
+              ["Business – Driver", "25,000", "6.75", "Wage rate method"], ["Business – Passenger", "18,000", "4.86", "GDP per capita"],
+              ["Commuter", "8,500", "2.30", "Willingness-to-pay"], ["Leisure / Social", "4,200", "1.14", "50% of commuter"],
+              ["Freight (per tonne)", "12,000", "3.24", "Inventory cost method"],
+            ]},
+            { title: "Unit Costs of Vehicle Resources", cols: ["Resource", "Unit", "Cost (UGX)", "Cost (USD)"], rows: [
+              ["Diesel Fuel", "Litre", "5,200", "1.41"], ["Petrol Fuel", "Litre", "5,500", "1.49"],
+              ["Engine Oil", "Litre", "28,000", "7.57"], ["New Tyre (truck)", "Each", "1,850,000", "500"],
+              ["New Tyre (car)", "Each", "450,000", "122"], ["Driver Wage", "Hour", "15,000", "4.05"],
+              ["Mechanic Labour", "Hour", "12,000", "3.24"],
+            ]},
+            { title: "Accident Data", cols: ["Metric", "National Roads", "District Roads", "Urban Roads"], rows: [
+              ["Fatal Accidents / 100M veh-km", "8.2", "12.5", "5.4"], ["Serious Injury / 100M veh-km", "22.0", "28.0", "18.0"],
+              ["Minor Injury / 100M veh-km", "45.0", "52.0", "38.0"], ["Cost per Fatality (UGX M)", "680", "680", "680"],
+              ["Cost per Serious Injury (UGX M)", "120", "120", "120"],
+            ]},
+            { title: "Emissions", cols: ["Pollutant", "Car (g/km)", "Truck (g/km)", "Damage Cost (UGX/kg)"], rows: [
+              ["CO₂", "180", "850", "150"], ["CO", "2.5", "6.8", "85"], ["HC", "0.3", "1.2", "320"],
+              ["NOₓ", "0.4", "8.5", "1,200"], ["PM₂.₅", "0.02", "0.35", "18,500"], ["SO₂", "0.01", "0.08", "2,800"],
+            ]},
+            { title: "Road Network Matrix", cols: ["Classification", "Paved (km)", "Unpaved (km)", "Total (km)"], rows: [
+              ["National Trunk", "4,257", "612", "4,869"], ["District Roads (DUCAR)", "8,420", "24,580", "33,000"],
+              ["Urban / KCCA", "1,850", "620", "2,470"], ["Community Access", "2,100", "28,900", "31,000"],
+              ["Total Network", "16,627", "54,712", "71,339"],
+            ]},
+            { title: "Work Standards", cols: ["Standard", "Trigger (IRI)", "Treatment", "Design Life (yr)"], rows: [
+              ["Preventive Maintenance", "< 4.0", "Crack seal, fog spray", "2–3"], ["Reseal", "4.0–6.0", "DBST / Slurry seal", "5–7"],
+              ["Overlay", "6.0–8.0", "50mm AC overlay", "8–12"], ["Rehabilitation", "8.0–12.0", "100mm AC + base repair", "12–15"],
+              ["Reconstruction", "> 12.0", "Full rebuild", "15–20"], ["Gravel Resheet", "N/A (GL < 50mm)", "150mm laterite", "3–4"],
+            ]},
+            { title: "Economic Analysis Parameters", cols: ["Parameter", "Value", "Unit", "Notes"], rows: [
+              ["Discount Rate", "12%", "%/yr", "MoFPED standard"], ["Analysis Period", "20", "years", "HDM-4 default for Uganda"],
+              ["Base Year", "2024", "—", "Current calibration year"], ["Currency", "UGX", "—", "Exchange: 3,700 UGX/USD"],
+              ["Price Contingency", "5%", "%/yr", "Inflation assumption"], ["VOC Savings Weight", "1.0", "—", "Full economic cost"],
+              ["Time Savings Weight", "1.0", "—", "Full valuation"], ["Accident Savings Weight", "1.0", "—", "Full valuation"],
+              ["Min EIRR Threshold", "12%", "%", "GoU acceptance threshold"], ["Min NPV", "> 0", "UGX", "Positive net benefit required"],
+            ]},
+          ];
+          return hdmTables.map(({ title, cols, rows }) => (
+            <div key={title} className="hdm-table-block">
+              <h4 className="hdm-table-title">{title}</h4>
+              <div className="table-wrap" style={{ margin: 0, padding: 0 }}>
+                <table style={{ minWidth: "auto" }}>
+                  <thead><tr>{cols.map(c => <th key={c}>{c}</th>)}</tr></thead>
+                  <tbody>{rows.map((row, i) => <tr key={i}>{row.map((cell, j) => <td key={j}>{cell}</td>)}</tr>)}</tbody>
+                </table>
+              </div>
+            </div>
+          ));
+        })()}
+      </section>
     </div>
   );
 }
@@ -857,6 +1025,7 @@ function MapPanel({ programme }) {
   async function loadLayers(map) {
     setLoading(true);
     try {
+      const manifest = await fetchUgandaLayersManifest();
       // District boundaries
       const distRes = await fetch(`${BASE}data/districts.geojson`);
       if (distRes.ok) {
@@ -904,7 +1073,7 @@ function MapPanel({ programme }) {
       }
 
       // National road network FY25/26
-      const nationalRes = await fetch(`${BASE}data/uganda_national_roads_fy25_26.geojson`);
+      const nationalRes = await fetch(manifestDataUrl(manifest, "national_roads_geojson", "uganda_national_roads_fy25_26.geojson"));
       if (nationalRes.ok) {
         const nationalData = await nationalRes.json();
         const nationalColor = {
@@ -936,7 +1105,7 @@ function MapPanel({ programme }) {
       }
 
       // All-road district summary from OSM + DUCAR master build
-      const summaryRes = await fetch(`${BASE}data/uganda_roads_district_summary.geojson`);
+      const summaryRes = await fetch(manifestDataUrl(manifest, "roads_district_summary_geojson", "uganda_roads_district_summary.geojson"));
       if (summaryRes.ok) {
         const summaryData = await summaryRes.json();
         layersRef.current.roadSummary = L.geoJSON(summaryData, {
@@ -960,11 +1129,11 @@ function MapPanel({ programme }) {
         }).addTo(map);
         if (!showKCCA) map.removeLayer(layersRef.current.kcca);
       }
-      const unifiedRes = await fetch(`${BASE}data/uganda_unified_roads_web.geojson`);
+      const unifiedRes = await fetch(manifestDataUrl(manifest, "unified_roads_geojson", "uganda_unified_roads_web.geojson"));
       if (unifiedRes.ok) setRoadData(await unifiedRes.json());
 
       // OSM major/named roads
-      const osmRes = await fetch(`${BASE}data/uganda_osm_major_roads_web.geojson`);
+      const osmRes = await fetch(manifestDataUrl(manifest, "osm_major_roads_geojson", "uganda_osm_major_roads_web.geojson"));
       if (osmRes.ok) {
         const osmData = await osmRes.json();
         const classColor = {

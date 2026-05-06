@@ -32,6 +32,8 @@ import requests
 from shapely.geometry.base import BaseGeometry
 from shapely.ops import transform
 
+from uganda_layers_manifest import update_manifest
+
 ROOT = Path(__file__).resolve().parents[1]
 PROJECT = ROOT.parent
 TOR = PROJECT.parent
@@ -311,25 +313,47 @@ def build_district_summary(master: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
 def write_outputs(master: gpd.GeoDataFrame) -> dict[str, Any]:
     gpkg = DATA_DIR / "uganda_roads_master.gpkg"
     geojson = DATA_DIR / "uganda_roads_master.geojson"
-    old_web_geojson = PUBLIC_DATA_DIR / "uganda_osm_roads_web.geojson"
-    web_geojson = PUBLIC_DATA_DIR / "uganda_osm_major_roads_web.geojson"
-    district_summary_geojson = PUBLIC_DATA_DIR / "uganda_roads_district_summary.geojson"
-    summary_path = DATA_DIR / "uganda_roads_master_summary.json"
-    rules_path = REPORT_DIR / "DUCAR_OSM_Road_Classification_Rules.csv"
+    date_tag = datetime.now(timezone.utc).date().isoformat()
+    web_geojson = PUBLIC_DATA_DIR / f"uganda_osm_major_roads_web_{date_tag}.geojson"
+    district_summary_geojson = PUBLIC_DATA_DIR / f"uganda_roads_district_summary_{date_tag}.geojson"
+    summary_path = DATA_DIR / f"uganda_roads_master_summary_{date_tag}.json"
+    rules_path = DATA_DIR / f"DUCAR_OSM_Road_Classification_Rules_{date_tag}.csv"
 
     print(f"Writing full editable master GeoPackage: {gpkg}", flush=True)
-    master.to_file(gpkg, layer="uganda_roads_master", driver="GPKG")
+    try:
+        master.to_file(
+            gpkg,
+            layer="uganda_roads_master",
+            driver="GPKG",
+            layer_options={"OVERWRITE": "YES"},
+        )
+    except (PermissionError, OSError):
+        date_tag = datetime.now(timezone.utc).date().isoformat()
+        fallback_dir = Path.home() / ".codex" / "automations" / "refresh-uganda-road-master-mapping"
+        fallback_dir.mkdir(parents=True, exist_ok=True)
+        fallback = fallback_dir / f"uganda_roads_master_{date_tag}.gpkg"
+        if fallback.exists():
+            fallback.unlink()
+        print(
+            f"WARNING: Unable to overwrite {gpkg} (file may be open/locked). Writing fallback GeoPackage: {fallback}",
+            flush=True,
+        )
+        master.to_file(
+            fallback,
+            layer="uganda_roads_master",
+            driver="GPKG",
+            layer_options={"OVERWRITE": "YES"},
+        )
+        gpkg = fallback
     if WRITE_FULL_GEOJSON:
         print(f"Writing full GeoJSON copy: {geojson}", flush=True)
-        master.to_file(geojson, driver="GeoJSON")
+        geojson.write_text(master.to_json(drop_id=True), encoding="utf-8")
     else:
         geojson = None
-    if old_web_geojson.exists():
-        old_web_geojson.unlink()
     print(f"Writing browser line layer: {web_geojson}", flush=True)
-    build_web_layer(master).to_file(web_geojson, driver="GeoJSON")
+    web_geojson.write_text(build_web_layer(master).to_json(drop_id=True), encoding="utf-8")
     print(f"Writing browser district summary layer: {district_summary_geojson}", flush=True)
-    build_district_summary(master).to_file(district_summary_geojson, driver="GeoJSON")
+    district_summary_geojson.write_text(build_district_summary(master).to_json(drop_id=True), encoding="utf-8")
 
     rules = pd.DataFrame(
         [
@@ -363,6 +387,16 @@ def write_outputs(master: gpd.GeoDataFrame) -> dict[str, Any]:
         "important_assumption": "OSM classifications are planning-screen assignments only. They must be validated against statutory road ownership, gazetted road lists, field survey, and the Uganda road asset management manuals before final budgeting or legal reporting.",
     }
     summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+
+    update_manifest(
+        ROOT,
+        {
+            "osm_major_roads_geojson": str(web_geojson),
+            "roads_district_summary_geojson": str(district_summary_geojson),
+            "roads_master_gpkg": str(gpkg),
+            "roads_master_summary": str(summary_path),
+        },
+    )
     return summary
 
 
