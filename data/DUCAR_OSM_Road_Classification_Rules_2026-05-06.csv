@@ -1,0 +1,12 @@
+osm_highway,ducar_class,ducar_code,assumption
+motorway,National Road,NR,OSM motorway: strategic controlled-access or highest mobility road; outside DUCAR unless delegated.
+trunk,National Road,NR,OSM trunk: major interregional road; treated as national network for screening.
+primary,National Road,NR,OSM primary: major national/regional road; treated as national unless local inventory confirms DUCAR responsibility.
+secondary,District Road,DR,OSM secondary: likely inter-district connector; DUCAR district candidate where not in UNRA network.
+tertiary,District Road,DR,OSM tertiary: district/sub-county connector.
+unclassified,Community Access Road,CAR,"OSM unclassified: lower-order public road, mapped as community access candidate pending field confirmation."
+residential,Urban Road,UR,OSM residential: urban/local settlement road.
+living_street,Urban Road,UR,OSM living street: urban local access road.
+service,Community Access Road,CAR,OSM service: local access/service road; requires ownership screening.
+track,Community Access Road,CAR,OSM track: rural/agricultural access candidate; requires maintainability confirmation.
+road,Unclassified - Verify,VERIFY,OSM highway=road is an unknown temporary class; field/manual classification required.

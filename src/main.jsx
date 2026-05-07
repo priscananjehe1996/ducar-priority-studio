@@ -34,6 +34,7 @@ import "leaflet/dist/leaflet.css";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import sample from "../data/sample_assets.json";
+import { HDM4_INDICATORS, HDM4_INPUT_TABLES } from "./hdm4Data.js";
 import { prioritise, sourceReferences, summarise } from "./prioritisation.js";
 import { WORLD_COUNTRIES_BY_REGION } from "./worldCountries.js";
 import "./styles.css";
@@ -188,6 +189,7 @@ const NAV_ITEMS = [
   { id: "pim", label: "PIMS Engine", icon: ClipboardCheck },
   { id: "analytics", label: "Analytics", icon: LineChart },
   { id: "traffic", label: "Traffic Analytics", icon: Truck },
+  { id: "hdm4", label: "HDM-4 Inputs", icon: Database },
   { id: "framework", label: "Framework Flow", icon: Network },
   { id: "gis", label: "GIS Surface", icon: MapIcon },
   { id: "manuals", label: "Manuals & Evidence", icon: BookOpen },
@@ -278,6 +280,7 @@ const OPEN_DATA_LOGIC = [
   "Local UNRA/DUCAR/KCCA shapefiles remain authoritative where they conflict with generic open mapping.",
   "DUCAR TOR source evidence controls condition survey procedures, performance indicators, RAM framework gates, and monitoring frequency logic.",
   "Budget monitoring evidence separates financial absorption, physical progress, output delivery, and variance flags before final workplan export.",
+  "MoWT road design, specifications, NMT, urban road and road-and-bridge manual catalogues feed geometric, drainage, pavement, safety, materials, quality and maintenance rules.",
 ];
 
 const MANUAL_SOURCES = [
@@ -345,6 +348,52 @@ const MANUAL_SOURCES = [
     apa: "Compiled DUCAR source digest. (2026). Extracted source notes for DUCAR framework, monitoring, construction, budget, and RAM logic.",
     controls: ["Traceable assumptions", "Keyword evidence", "Source paragraphs", "Decision-rule provenance", "Implementation backlog"],
   },
+  {
+    title: "General Specifications for Road and Bridge Works",
+    agency: "Ministry of Works and Transport",
+    year: "2026",
+    href: `${BASE}docs/mowt/Final-General-Specifications-for-Roads-and-Bridges_March-2026.pdf`,
+    apa: "Ministry of Works and Transport. (2026). General specifications for road and bridge works. The Republic of Uganda.",
+    controls: ["Public roadworks standards", "Materials specifications", "Construction quality", "Bridge works", "Maintenance and approval controls"],
+  },
+  {
+    title: "Road Design Manual Volume VI: Urban Roads",
+    agency: "Ministry of Works and Transport",
+    year: "2023",
+    href: `${BASE}docs/mowt/URDM-Manual-Part-1-July-2023.pdf`,
+    apa: "Ministry of Works and Transport. (2023). Road design manual volume VI: Urban roads. The Republic of Uganda.",
+    controls: ["Urban street hierarchy", "Traffic operations", "Junctions", "Road safety", "Urban drainage and utilities"],
+  },
+  {
+    title: "Road Design Manual Volume VI: Urban Roads Standard Drawings",
+    agency: "Ministry of Works and Transport",
+    year: "2023",
+    href: `${BASE}docs/mowt/URDM-Standard-Drawings-July2023.pdf`,
+    apa: "Ministry of Works and Transport. (2023). Road design manual volume VI: Urban roads, part 2 standard drawings. The Republic of Uganda.",
+    controls: ["Urban road cross-sections", "Junction details", "Drainage details", "Traffic control drawings", "Construction details"],
+  },
+  {
+    title: "Road Design Manual Volume VII: Non-Motorized Transport",
+    agency: "Ministry of Works and Transport",
+    year: "2026",
+    href: `${BASE}docs/mowt/NMT-Design-and-Operational-Manual-web-2.pdf`,
+    apa: "Ministry of Works and Transport. (2026). Road design manual volume VII: Non-motorized transport. The Republic of Uganda.",
+    controls: ["Pedestrian facilities", "Cycling facilities", "Safe crossings", "Universal access", "NMT operations and maintenance"],
+  },
+];
+
+const MOWT_CATALOGUE_MANUALS = [
+  ["Road Design Manual Volume 1: Geometric Design", "2010", "https://www.works.go.ug/index.php/policies-regulations/manuals-for-road-bridge-works/18-manuals-for-road-and-bridge-works/152-road-design-manual-volume-1-geometric-design-mowt-2010", "Alignment, cross-section, sight distance and junction geometry."],
+  ["Road Design Manual Volume 2: Drainage Design", "2010", "https://mail.works.go.ug/policies-regulations/manuals-for-road-bridge-works/18-manuals-for-road-and-bridge-works/153-road-design-manual-volume-2-drainage-design-mowt-2010", "Hydrology, culverts, drainage structures and stormwater performance."],
+  ["Road Design and Construction Manual: Low Volume Sealed Roads", "2018", "https://www.works.go.ug/policies-regulations/manuals-for-road-bridge-works/18-manuals-for-road-and-bridge-works/154-road-design-and-construction-manual-low-volume-sealed-roads-mowt-2018", "Low-volume sealed road selection, design and construction controls."],
+  ["Road Maintenance Management Manual", "2010", "https://www.works.go.ug/policies-regulations/manuals-for-road-bridge-works/18-manuals-for-road-and-bridge-works/155-road-maintenance-management-manual-mowt-2010", "Maintenance planning, prioritisation, road condition and works programming."],
+  ["Road Planning and Design Manual", "2002", "https://www.works.go.ug/policies-regulations/manuals-for-road-bridge-works/18-manuals-for-road-and-bridge-works/156-road-planning-and-design-manual-mowhc-2002", "Planning, road function, project preparation and design basis."],
+  ["Road Project Implementation Manual", "2010", "https://www.works.go.ug/policies-regulations/manuals-for-road-bridge-works/18-manuals-for-road-and-bridge-works/157-road-project-implementation-manual-mowt-2010", "Implementation controls, procurement, supervision and reporting."],
+  ["Volume 3 Part I: Flexible Pavements Manual", "2010", "https://www.works.go.ug/policies-regulations/manuals-for-road-bridge-works/18-manuals-for-road-and-bridge-works/158-volume-3-part-i-flexible-pavements-manual-mowt-2010", "Traffic loading, subgrade, surfacing and flexible pavement design."],
+  ["Volume 3 Part II: Rigid Pavements Manual", "2010", "https://www.works.go.ug/policies-regulations/manuals-for-road-bridge-works/18-manuals-for-road-and-bridge-works/159-volume-3-part-ii-rigid-pavements-manual-mowt-2010", "Concrete pavement structure, joints, materials and design checks."],
+  ["Volume 3 Part III: Gravel Roads Manual", "2010", "https://www.works.go.ug/policies-regulations/manuals-for-road-bridge-works/18-manuals-for-road-and-bridge-works/160-volume-3-part-iii-gravel-roads-manual-mowt-2010", "Gravel materials, wearing course, maintenance and climate exposure."],
+  ["Volume 4: Bridge Design Manual", "2010", "https://www.works.go.ug/policies-regulations/manuals-for-road-bridge-works/18-manuals-for-road-and-bridge-works/161-volume-4-bridge-design-manual-mowt-2010", "Bridge loading, hydraulic checks, structures and safety resilience."],
+  ["Scheme for Maintaining DUCAR and Urban Roads using Own Equipment and Road Gangs", "Catalogue", "https://www.works.go.ug/policies-regulations/manuals-for-road-bridge-works?start=0", "Force account, equipment planning, road gangs and routine maintenance delivery."],
 ];
 
 const MANUAL_GATEWAYS = [
@@ -833,9 +882,8 @@ function AllocationBarChart({ grouped }) {
         <span>Top region / class groupings</span>
       </div>
       <div className="mini-bars">
-        {top.map(([label, value], index) => (
-          <div className="mini-bar" key={label}>
-            <span>{String(index + 1).padStart(2, "0")}</span>
+        {top.map(([label, value]) => (
+          <div className="mini-bar no-rank" key={label}>
             <strong>{label}</strong>
             <div><i style={{ width: `${(value / max) * 100}%` }} /></div>
             <em>UGX {currency.format(value)}</em>
@@ -870,12 +918,17 @@ function RiskHeatmap({ programme }) {
                   style={{ "--risk": avg }}
                   title={`${region} / ${cls}: ${Math.round(avg * 100)}% risk`}
                 >
-                  {items.length ? `${Math.round(avg * 100)}%` : "—"}
+                  {items.length ? `${Math.round(avg * 100)}%` : "-"}
                 </span>
               );
             })}
           </React.Fragment>
         ))}
+      </div>
+      <div className="chart-legend">
+        <span><i style={{ background: "rgba(18, 185, 129, 0.35)" }} /> Lower risk</span>
+        <span><i style={{ background: "rgba(245, 158, 11, 0.55)" }} /> Moderate risk</span>
+        <span><i style={{ background: "rgba(244, 63, 94, 0.78)" }} /> Higher risk</span>
       </div>
     </section>
   );
@@ -925,7 +978,7 @@ function IntelligenceGallery({ programme, analysis, grouped, onNavigate, section
             style={{ "--accent": item.color, "--delay": `${index * 0.025}s` }}
           >
             <div className="intel-card-head">
-              <span>{String(item.globalIndex + 1).padStart(2, "0")} / {item.family}</span>
+              <span>{item.family}</span>
               <strong>{item.value}%</strong>
             </div>
             <h4>{item.title}</h4>
@@ -938,6 +991,7 @@ function IntelligenceGallery({ programme, analysis, grouped, onNavigate, section
               {item.type === 4 && <div className="intel-dots">{item.bars.map((bar, i) => <i key={i} style={{ opacity: 0.28 + bar / 140 }} />)}</div>}
               {item.type === 5 && <div className="intel-stack">{item.bars.slice(0, 4).map((bar, i) => <i key={i} style={{ flexGrow: bar }} />)}</div>}
             </div>
+            <small className="chart-key"><i style={{ background: item.color }} /> Key: {item.family} signal</small>
           </a>
         ))}
       </div>
@@ -1020,6 +1074,80 @@ function TrafficAnalyticsPanel({ programme, grouped }) {
   );
 }
 
+function Hdm4InputsPanel() {
+  const maxRows = Math.max(...HDM4_INPUT_TABLES.map((table) => table.rows.length));
+  return (
+    <div className="hdm4-page-grid">
+      <section className="traffic-command-card hdm4-hero">
+        <p className="eyebrow">HDM-4 data input library</p>
+        <strong>{HDM4_INPUT_TABLES.length}</strong>
+        <span>input groups covering traffic loading, climate, deterioration, works effects, user costs and economic appraisal</span>
+        <div className="index-scale"><i style={{ left: "88%" }} /></div>
+      </section>
+      <section className="metrics-grid">
+        <Metric icon={Truck} label="Vehicle classes" value={HDM4_INPUT_TABLES[0].rows.length} tone="green" />
+        <Metric icon={Database} label="Input rows" value={HDM4_INPUT_TABLES.reduce((sum, table) => sum + table.rows.length, 0)} tone="gold" />
+        <Metric icon={LineChart} label="Model indicators" value={HDM4_INDICATORS.length} tone="cyan" />
+        <Metric icon={ClipboardCheck} label="Calibration readiness" value="81%" tone="red" />
+      </section>
+      <section className="literature-engine">
+        <div className="viz-title">
+          <h3>HDM-4 Readiness Indicators</h3>
+          <span>Key and legend: blue bars show available calibration strength for each model area</span>
+        </div>
+        <div className="indicator-score-grid">
+          {HDM4_INDICATORS.map(([label, detail, value], index) => (
+            <article key={label} style={{ "--accent": ["#4258ff", "#12b981", "#f43f5e", "#ffb020", "#00a7c7", "#7c3aed"][index % 6] }}>
+              <div>
+                <strong>{label}</strong>
+                <span>readiness score</span>
+              </div>
+              <em>{value}%</em>
+              <i><b style={{ width: `${value}%` }} /></i>
+              <p>{detail}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="viz-card wide-viz">
+        <div className="viz-title">
+          <h3>Input Coverage Chart</h3>
+          <span>Legend: bar length = row count per HDM-4 input table</span>
+        </div>
+        <div className="mini-bars">
+          {HDM4_INPUT_TABLES.map((table) => (
+            <div className="mini-bar no-rank" key={table.title}>
+              <strong>{table.title}</strong>
+              <div><i style={{ width: `${(table.rows.length / maxRows) * 100}%` }} /></div>
+              <em>{table.rows.length} rows</em>
+            </div>
+          ))}
+        </div>
+      </section>
+      {HDM4_INPUT_TABLES.map((table) => (
+        <section className="viz-card wide-viz hdm-table-card" key={table.title}>
+          <div className="viz-title">
+            <h3>{table.title}</h3>
+            <span>{table.unit}</span>
+          </div>
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>{table.columns.map((column) => <th key={column}>{column}</th>)}</tr>
+              </thead>
+              <tbody>
+                {table.rows.map((row) => (
+                  <tr key={row.join("-")}>{row.map((cell, index) => <td key={`${cell}-${index}`}>{cell}</td>)}</tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ))}
+    </div>
+  );
+}
+
 function MediaRibbon() {
   const items = [
     { label: "2D GIS intelligence", value: "CBD + DUCAR + reference roads", icon: MapIcon },
@@ -1061,8 +1189,20 @@ function useManualsCatalog() {
   return catalog;
 }
 
+function useMowtManualsCatalog() {
+  const [catalog, setCatalog] = useState({ records: [] });
+  useEffect(() => {
+    fetch(`${BASE}data/mowt_manuals_catalog.json`, { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : { records: [] }))
+      .then(setCatalog)
+      .catch(() => setCatalog({ records: [] }));
+  }, []);
+  return catalog;
+}
+
 function ManualsEvidencePanel({ analysis }) {
   const catalog = useManualsCatalog();
+  const mowtCatalog = useMowtManualsCatalog();
   const summary = catalog?.summary || {};
   const topicCards = catalog?.topic_cards || [];
   const roles = Object.entries(catalog?.by_evidence_role || {});
@@ -1072,6 +1212,7 @@ function ManualsEvidencePanel({ analysis }) {
     ? Math.round((analysis.summary.evidenceTotal || 0) / analysis.summary.total)
     : 0;
   const globalEvidence = getGlobalEvidenceSummary();
+  const mowtPages = (mowtCatalog.records || []).reduce((sum, item) => sum + Number(item.pages || 0), 0);
 
   return (
     <div className="manuals-page-grid">
@@ -1086,6 +1227,7 @@ function ManualsEvidencePanel({ analysis }) {
         <Metric icon={Database} label="Manual folders" value={summary.folders || 0} tone="gold" />
         <Metric icon={FileSpreadsheet} label="File extensions" value={summary.extensions || 0} tone="red" />
         <Metric icon={ClipboardCheck} label="Evidence readiness" value={`${evidenceAverage}%`} tone="cyan" />
+        <Metric icon={Database} label="MoWT downloaded pages" value={mowtPages.toLocaleString()} tone="green" />
       </section>
       <section className="viz-card wide-viz">
         <div className="viz-title">
@@ -1110,7 +1252,43 @@ function ManualsEvidencePanel({ analysis }) {
       <section className="manual-reference-note">
         <strong>APA source assumptions</strong>
         {MANUAL_SOURCES.map((source) => <p key={source.apa}>{source.apa}</p>)}
+        {MOWT_CATALOGUE_MANUALS.map(([title, year, url]) => (
+          <p key={title}>Ministry of Works and Transport. ({year}). {title}. The Republic of Uganda. Catalogue record retrieved May 7, 2026, from {url}</p>
+        ))}
         {sourceReferences.map((source) => <p key={source}>{source}</p>)}
+      </section>
+      <section className="viz-card wide-viz">
+        <div className="viz-title">
+          <h3>MoWT Road Manual Catalogue</h3>
+          <span>Public downloads plus official catalogue records used in the thought engine</span>
+        </div>
+        <div className="manual-record-table">
+          {MOWT_CATALOGUE_MANUALS.map(([title, year, url, use]) => (
+            <article key={title}>
+              <strong>{title}</strong>
+              <span>Ministry of Works and Transport / {year}</span>
+              <em>{use}</em>
+              <a href={url} target="_blank" rel="noreferrer">Open catalogue record</a>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="viz-card wide-viz">
+        <div className="viz-title">
+          <h3>Downloaded MoWT Manual Content Signals</h3>
+          <span>{(mowtCatalog.records || []).length} PDFs / {mowtPages.toLocaleString()} pages indexed</span>
+        </div>
+        <div className="manual-topic-grid">
+          {(mowtCatalog.records || []).map((item, index) => (
+            <article key={item.name} style={{ "--accent": ["#4258ff", "#12b981", "#f43f5e", "#ffb020"][index % 4] }}>
+              <span>{item.pages || 0}</span>
+              <strong>{item.name}</strong>
+              <p>{item.sample_text || "Text extraction pending."}</p>
+              <div><i style={{ width: `${Math.min(100, Number(item.pages || 0) / 5)}%` }} /></div>
+              <em>{(item.keywords || []).map((kw) => `${kw.term} ${kw.count}`).join(" / ")}</em>
+            </article>
+          ))}
+        </div>
       </section>
       <section className="global-source-library">
         <div className="viz-title">
@@ -2676,6 +2854,7 @@ function App() {
     pim: { ...activePage, title: "Public Investment Management Principles" },
     analytics: { ...activePage, title: "Live Allocation Analytics" },
     traffic: { ...activePage, title: "Traffic, Economic and Deterioration Analytics" },
+    hdm4: { ...activePage, title: "HDM-4 Data Inputs and Calibration Tables" },
     framework: { ...activePage, title: "Framework and Tool Process Flow" },
     gis: { ...activePage, title: "GIS Surface with National Reference Exemption" },
     manuals: { ...activePage, title: "Manuals Repository Evidence and Statistics" },
@@ -2819,7 +2998,7 @@ function App() {
                 <RiskHeatmap programme={programme} />
                 <ProgrammeDonut programme={programme} />
               </div>
-              <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} section="all" limit={50} title="All 50 Linked Intelligence Views" />
+              <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} section="all" limit={50} title="Linked Decision Intelligence Views" />
             </>
           )}
 
@@ -2839,6 +3018,12 @@ function App() {
             <>
               <TrafficAnalyticsPanel programme={programme} grouped={grouped} />
               <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} section="traffic" limit={10} compact title="Traffic and Economic Intelligence" />
+            </>
+          )}
+          {activeSection === "hdm4" && (
+            <>
+              <Hdm4InputsPanel />
+              <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} section="traffic" limit={10} compact title="HDM-4 Linked Indicators" />
             </>
           )}
           {activeSection === "gis" && (

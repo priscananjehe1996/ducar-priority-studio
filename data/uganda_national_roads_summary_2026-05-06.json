@@ -1,0 +1,27 @@
+{
+  "generated_at_utc": "2026-05-06T23:32:59.069295+00:00",
+  "source": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\Roads\\networkfy25_26\\networkfy25_26.shp",
+  "output": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\data\\uganda_national_roads_fy25_26_2026-05-06.geojson",
+  "record_count": 1014,
+  "total_length_km": 21227.44,
+  "by_class": {
+    "Class A National Road": 89,
+    "Class B National Road": 77,
+    "Class C National Road": 770,
+    "Main National Road": 78
+  },
+  "by_surface": {
+    "Bituminous": 341,
+    "Unsealed": 673
+  },
+  "by_maintenance_region": {
+    "Central": 322,
+    "Eastern": 157,
+    "North Eastern": 93,
+    "Northern": 158,
+    "Southern": 173,
+    "Western": 111
+  },
+  "assumption": "The national road network is shown as a coordination and exclusion/reference layer. DUCAR allocation should avoid double-counting roads under national responsibility unless an explicit agency agreement exists.",
+  "apa_reference": "Uganda national road network FY25/26 shapefile. (2026). Local geospatial dataset: D:/OneDrive/Procurements/TOR - DUCACR/Roads/networkfy25_26/networkfy25_26.shp"
+}

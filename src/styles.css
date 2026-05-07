@@ -529,6 +529,10 @@ button.secondary:hover {
   gap: 12px;
 }
 
+.mini-bar.no-rank {
+  grid-template-columns: minmax(170px, 1fr) 1.2fr 130px;
+}
+
 .mini-bar span {
   width: 30px;
   height: 30px;
@@ -564,6 +568,37 @@ button.secondary:hover {
   font: 900 12px/1 monospace;
   font-style: normal;
   text-align: right;
+}
+
+.chart-legend,
+.chart-key {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  color: #35506b;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.chart-legend {
+  margin-top: 12px;
+}
+
+.chart-legend span,
+.chart-key {
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(18, 24, 38, 0.08);
+}
+
+.chart-legend i,
+.chart-key i {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
+  border-radius: 999px;
 }
 
 .heatmap-grid {
@@ -1970,7 +2005,23 @@ td .range-value {
   color: var(--blue);
 }
 
-/* HDM-4 Input Data Table Blocks */
+.hdm4-page-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.hdm4-hero {
+  min-height: 245px;
+  background:
+    radial-gradient(circle at 82% 12%, rgba(255, 176, 32, 0.28), transparent 28%),
+    linear-gradient(135deg, #0d1324, #4258ff 54%, #00a7c7);
+}
+
+.hdm-table-card .table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
 .hdm-table-block {
   margin-bottom: 28px;
   padding: 20px;
@@ -3596,7 +3647,7 @@ select {
   position: relative;
   min-height: 230px;
   display: grid;
-  grid-template-rows: auto auto auto 1fr;
+  grid-template-rows: auto auto auto 1fr auto;
   gap: 10px;
   padding: 16px;
   overflow: hidden;
@@ -3695,6 +3746,12 @@ select {
   min-height: 82px;
   display: grid;
   align-items: end;
+}
+
+.intel-card .chart-key {
+  width: max-content;
+  max-width: 100%;
+  justify-self: start;
 }
 
 .intel-gauge {
