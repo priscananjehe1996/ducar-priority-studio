@@ -915,6 +915,78 @@ const INGESTION_FIELDS = [
 const DUCAR_EXEMPTION_TEXT =
   "National roads are visible as a reference layer for connectivity and double-counting checks, but DUCAR analysis, prioritisation and budget allocation focus on non-national roads unless a formal delegation exists.";
 
+const MAPILLARY_UGANDA_URL = "https://www.mapillary.com/app/?lat=1.3293399051176777&lng=31.691071826042958&z=6.631427618706616";
+
+function imageryWithLabelsStyle() {
+  return {
+    version: 8,
+    sources: {
+      esriImagery: {
+        type: "raster",
+        tiles: ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"],
+        tileSize: 256,
+        attribution: "Tiles &copy; Esri, Maxar, Earthstar Geographics, and the GIS User Community",
+      },
+      esriLabels: {
+        type: "raster",
+        tiles: ["https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"],
+        tileSize: 256,
+        attribution: "Labels &copy; Esri",
+      },
+    },
+    layers: [
+      { id: "esri-imagery", type: "raster", source: "esriImagery", paint: { "raster-opacity": 0.94, "raster-contrast": 0.08, "raster-saturation": -0.08 } },
+      { id: "esri-labels", type: "raster", source: "esriLabels", paint: { "raster-opacity": 0.9 } },
+    ],
+  };
+}
+
+const ITIS_ABSTRACT_SOURCE = {
+  title: "ITIS Statistical Abstract 2023",
+  agency: "Ministry of Works and Transport",
+  type: "Sector statistical abstract",
+  url: "#sources",
+  use: "Overview road, rail, air, water transport, DUCAR network, road condition, safety and infrastructure statistics.",
+  apa: "Ministry of Works and Transport. (2023). ITIS statistical abstract 2023. The Republic of Uganda.",
+};
+
+const DUCAR_NETWORK_2023 = [
+  { category: "National Roads", km: 21292, color: "#111827", scope: "Reference layer" },
+  { category: "District Roads", km: 41194, color: "#4258ff", scope: "DUCAR" },
+  { category: "KCCA", km: 2103, color: "#7c3aed", scope: "Urban authority" },
+  { category: "City Roads", km: 2830, color: "#f43f5e", scope: "DUCAR urban" },
+  { category: "Community Access Roads", km: 75404, color: "#12b981", scope: "DUCAR access" },
+  { category: "Town Council Roads", km: 24269, color: "#ffb020", scope: "DUCAR urban" },
+  { category: "Municipal Roads", km: 6656, color: "#00a7c7", scope: "DUCAR urban" },
+];
+
+const ROAD_CONDITION_2023 = [
+  { category: "National", good: 12508, fair: 7844, poor: 848, fairGood: 96 },
+  { category: "KCCA", good: 184.9, fair: 1019.5, poor: 898.6, fairGood: 57 },
+  { category: "Community Access", good: 3588.45, fair: 1159.68, poor: 70656, fairGood: 6.3 },
+  { category: "City", good: 529.64, fair: 200.14, poor: 2099.83, fairGood: 25.8 },
+  { category: "District", good: 4008.69, fair: 1865.43, poor: 35320, fairGood: 14.2 },
+  { category: "Municipal", good: 505.09, fair: 410.7, poor: 5740.5, fairGood: 13.8 },
+  { category: "Town Council", good: 673, fair: 480.56, poor: 23115, fairGood: 4.8 },
+];
+
+const TRANSPORT_MODE_2023 = [
+  { mode: "Road network", value: "173,656 km", detail: "Total road network, including national, district, urban and community access roads.", accent: "#4258ff" },
+  { mode: "DUCAR focus", value: "152,364 km", detail: "Non-national road network forming the primary budget rationalisation scope.", accent: "#12b981" },
+  { mode: "Railway network", value: "1,266 km", detail: "Meter Gauge Railway, with 269 km operational and 997 km non-operational.", accent: "#ffb020" },
+  { mode: "Air passengers", value: "1.93m", detail: "International and domestic passenger flow through Entebbe International Airport in 2023.", accent: "#f43f5e" },
+  { mode: "Water passengers", value: "3.52m", detail: "Water transport passengers reported under SDG 9.1.2 in 2023.", accent: "#00a7c7" },
+  { mode: "Ferry traffic", value: "926,716", detail: "KIS ferry passengers and vehicle traffic carried in CY 2023.", accent: "#7c3aed" },
+];
+
+const ROAD_SAFETY_TREND = [
+  { year: "2019", total: 12858, fatal: 3407 },
+  { year: "2020", total: 12249, fatal: 3269 },
+  { year: "2021", total: 17443, fatal: 3757 },
+  { year: "2022", total: 20394, fatal: 3901 },
+  { year: "2023", total: 23608, fatal: 4179 },
+];
+
 const ROAD_CATEGORY_EXPRESSION = [
   "case",
   ["==", ["get", "road_system"], "National"], "National Roads",
@@ -946,14 +1018,14 @@ const ROAD_CATEGORY_COLORS = [
 const ROAD_CATEGORY_WIDTHS = [
   "match",
   ROAD_CATEGORY_EXPRESSION,
-  "National Roads", 7.2,
-  "District Roads", 2.6,
-  "KCCA", 3.8,
-  "City Roads", 3.4,
-  "Community Access Roads", 1.7,
-  "Town Council Roads", 2.2,
-  "Municipal Roads", 2.8,
-  2,
+  "National Roads", 3.8,
+  "District Roads", 1.45,
+  "KCCA", 2.1,
+  "City Roads", 1.95,
+  "Community Access Roads", 0.95,
+  "Town Council Roads", 1.2,
+  "Municipal Roads", 1.55,
+  1.05,
 ];
 
 /* ─── Metric card ─── */
@@ -1413,18 +1485,7 @@ function TrafficAnalyticsPanel() {
     if (mapInstance.current || !mapRef.current) return;
     const map = new maplibregl.Map({
       container: mapRef.current,
-      style: {
-        version: 8,
-        sources: {
-          darkBase: {
-            type: "raster",
-            tiles: ["https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"],
-            tileSize: 256,
-            attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
-          },
-        },
-        layers: [{ id: "dark-base", type: "raster", source: "darkBase" }],
-      },
+      style: imageryWithLabelsStyle(),
       center: [32.4, 1.35],
       zoom: 6,
       pitch: 0,
@@ -1444,9 +1505,9 @@ function TrafficAnalyticsPanel() {
         type: "line",
         source: "traffic-roads",
         paint: {
-          "line-color": ["case", ["==", ["get", "network_category"], "National Roads"], "#94a3b8", "#64748b"],
-          "line-width": ["case", ["==", ["get", "network_category"], "National Roads"], 2.4, 1.05],
-          "line-opacity": ["case", ["==", ["get", "network_category"], "National Roads"], 0.55, 0.25],
+          "line-color": ["case", ["==", ["get", "network_category"], "National Roads"], "#f8fafc", "#cbd5e1"],
+          "line-width": ["case", ["==", ["get", "network_category"], "National Roads"], 1.45, 0.55],
+          "line-opacity": ["case", ["==", ["get", "network_category"], "National Roads"], 0.72, 0.36],
         },
       });
       map.addLayer({
@@ -1454,10 +1515,10 @@ function TrafficAnalyticsPanel() {
         type: "line",
         source: "traffic-flow-lines",
         paint: {
-          "line-color": "#020617",
-          "line-width": ["interpolate", ["linear"], ["get", "traffic_flow_index"], 30, 3, 60, 6, 100, 11],
-          "line-opacity": 0.7,
-          "line-blur": 0.4,
+          "line-color": "#0f172a",
+          "line-width": ["interpolate", ["linear"], ["get", "traffic_flow_index"], 30, 1.4, 60, 2.5, 100, 4.9],
+          "line-opacity": 0.48,
+          "line-blur": 0.25,
         },
       });
       map.addLayer({
@@ -1466,21 +1527,21 @@ function TrafficAnalyticsPanel() {
         source: "traffic-flow-lines",
         paint: {
           "line-color": ["interpolate", ["linear"], ["get", "traffic_flow_index"], 30, "#22c55e", 55, "#06b6d4", 75, "#f59e0b", 100, "#ef4444"],
-          "line-width": ["interpolate", ["linear"], ["get", "traffic_flow_index"], 30, 1.8, 60, 4.2, 100, 8.8],
-          "line-opacity": 0.92,
+          "line-width": ["interpolate", ["linear"], ["get", "traffic_flow_index"], 30, 0.9, 60, 1.9, 100, 3.8],
+          "line-opacity": 0.86,
         },
       });
       map.addLayer({
         id: "selected-traffic-halo",
         type: "line",
         source: "selected-traffic-line",
-        paint: { "line-color": "#ffffff", "line-width": 13, "line-opacity": 0.96, "line-blur": 0.35 },
+        paint: { "line-color": "#ffffff", "line-width": 7.5, "line-opacity": 0.94, "line-blur": 0.28 },
       });
       map.addLayer({
         id: "selected-traffic",
         type: "line",
         source: "selected-traffic-line",
-        paint: { "line-color": "#111827", "line-width": 7.5, "line-opacity": 1 },
+        paint: { "line-color": "#111827", "line-width": 3.9, "line-opacity": 1 },
       });
       map.on("click", "traffic-flow-live", (event) => {
         const raw = event.features?.[0];
@@ -1541,15 +1602,31 @@ function TrafficAnalyticsPanel() {
         </label>
       </section>
       <section className="traffic-map-layout">
-        <div className="traffic-map-shell">
-          <div className="traffic-map-container" ref={mapRef} />
-          <div className="traffic-map-legend">
-            <strong>Traffic flow index</strong>
-            <span><i className="flow-low" /> Low</span>
-            <span><i className="flow-mid" /> Moderate</span>
-            <span><i className="flow-high" /> High</span>
-            <span><i className="flow-severe" /> Severe</span>
+        <div className="traffic-map-stack">
+          <div className="traffic-map-shell">
+            <div className="traffic-map-container" ref={mapRef} />
+            <div className="traffic-map-legend">
+              <strong>Traffic flow index</strong>
+              <span><i className="flow-low" /> Low</span>
+              <span><i className="flow-mid" /> Moderate</span>
+              <span><i className="flow-high" /> High</span>
+              <span><i className="flow-severe" /> Severe</span>
+            </div>
           </div>
+          <section className="mapillary-card">
+            <div>
+              <p className="eyebrow">Street-level visual intelligence</p>
+              <h3>Mapillary road imagery layer</h3>
+              <span>Use this embedded street-view context to inspect roadside environment, visible surface condition clues, junction context and settlement frontage while keeping the traffic layer active above.</span>
+              <a href={MAPILLARY_UGANDA_URL} target="_blank" rel="noreferrer">Open Mapillary full screen</a>
+            </div>
+            <iframe
+              title="Mapillary Uganda road imagery"
+              src={MAPILLARY_UGANDA_URL}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </section>
         </div>
         <aside className="traffic-insight-pane">
           <div className="traffic-pane-head">
@@ -1723,6 +1800,129 @@ function MediaRibbon() {
   );
 }
 
+function DucarNetworkOverview({ onNavigate }) {
+  const totalRoadKm = DUCAR_NETWORK_2023.reduce((sum, item) => sum + item.km, 0);
+  const ducarKm = DUCAR_NETWORK_2023.filter((item) => item.category !== "National Roads").reduce((sum, item) => sum + item.km, 0);
+  const poorKm = ROAD_CONDITION_2023.reduce((sum, item) => sum + item.poor, 0);
+  const maxRoadKm = Math.max(...DUCAR_NETWORK_2023.map((item) => item.km));
+  const maxCrashTotal = Math.max(...ROAD_SAFETY_TREND.map((item) => item.total));
+
+  return (
+    <section className="ducar-overview-suite">
+      <div className="ducar-story-card">
+        <div>
+          <p className="eyebrow">ITIS Statistical Abstract 2023</p>
+          <h2>Uganda's road infrastructure is a 173,656 km national asset, and DUCAR carries the local access burden.</h2>
+          <p>
+            Road transport remains Uganda's dominant transport mode for people, goods, market access and regional connectivity.
+            The DUCAR network covers district roads, KCCA roads, city roads, community access roads, town council roads and municipal roads.
+            National roads stay visible in this tool as a reference layer, while the allocation logic focuses on non-national DUCAR roads.
+          </p>
+          <div className="story-actions">
+            <button onClick={() => onNavigate("gis")}><MapIcon size={16} /> Open network map</button>
+            <button className="secondary" onClick={() => onNavigate("traffic")}><Truck size={16} /> Traffic analytics</button>
+            <a href="#sources">APA source note</a>
+          </div>
+        </div>
+        <div className="overview-media-wall">
+          <figure className="imagery-tile-card">
+            <img
+              src="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/6/31/37"
+              alt="Satellite imagery tile over Uganda"
+              loading="lazy"
+            />
+            <figcaption>Imagery basemap context</figcaption>
+          </figure>
+          <div className="motion-video-card" aria-label="Animated DUCAR road movement demonstration">
+            <span />
+            <i />
+            <b />
+            <strong>Animated road service flow</strong>
+            <em>districts, towns, markets, ferries and trunk-road interfaces</em>
+          </div>
+        </div>
+      </div>
+
+      <div className="ducar-kpi-grid">
+        <article style={{ "--accent": "#4258ff" }}><span>Total road network</span><strong>{totalRoadKm.toLocaleString()} km</strong><em>Uganda road network, FY 2022/23</em></article>
+        <article style={{ "--accent": "#12b981" }}><span>DUCAR focus</span><strong>{ducarKm.toLocaleString()} km</strong><em>Non-national roads for this tool</em></article>
+        <article style={{ "--accent": "#f43f5e" }}><span>Poor condition</span><strong>{Math.round((poorKm / totalRoadKm) * 100)}%</strong><em>{Math.round(poorKm).toLocaleString()} km reported poor</em></article>
+        <article style={{ "--accent": "#ffb020" }}><span>Road crashes</span><strong>23,608</strong><em>Fatal, serious and minor crashes in 2023</em></article>
+      </div>
+
+      <div className="overview-analytics-grid">
+        <section className="overview-chart-card">
+          <div className="viz-title">
+            <h3>Road network by category</h3>
+            <span>Length in km</span>
+          </div>
+          <div className="network-category-bars">
+            {DUCAR_NETWORK_2023.map((item) => (
+              <article key={item.category} style={{ "--accent": item.color }}>
+                <span>{item.category}</span>
+                <i><b style={{ width: `${(item.km / maxRoadKm) * 100}%` }} /></i>
+                <strong>{item.km.toLocaleString()} km</strong>
+                <em>{item.scope}</em>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="overview-chart-card">
+          <div className="viz-title">
+            <h3>Road condition pressure</h3>
+            <span>Fair-to-good share</span>
+          </div>
+          <div className="condition-card-grid">
+            {ROAD_CONDITION_2023.map((item) => (
+              <article key={item.category} style={{ "--value": `${item.fairGood * 3.6}deg` }}>
+                <strong>{item.fairGood}%</strong>
+                <span>{item.category}</span>
+                <em>{Math.round(item.poor).toLocaleString()} km poor</em>
+              </article>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      <div className="overview-analytics-grid compact">
+        <section className="overview-chart-card">
+          <div className="viz-title">
+            <h3>Integrated transport context</h3>
+            <span>Roads, rail, air and water</span>
+          </div>
+          <div className="mode-signal-grid">
+            {TRANSPORT_MODE_2023.map((item) => (
+              <article key={item.mode} style={{ "--accent": item.accent }}>
+                <strong>{item.value}</strong>
+                <span>{item.mode}</span>
+                <p>{item.detail}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="overview-chart-card">
+          <div className="viz-title">
+            <h3>Road safety trend</h3>
+            <span>Crashes and fatal crashes</span>
+          </div>
+          <div className="safety-timeline">
+            {ROAD_SAFETY_TREND.map((item) => (
+              <article key={item.year}>
+                <span>{item.year}</span>
+                <i><b style={{ height: `${(item.total / maxCrashTotal) * 100}%` }} /></i>
+                <strong>{item.total.toLocaleString()}</strong>
+                <em>{item.fatal.toLocaleString()} fatal</em>
+              </article>
+            ))}
+          </div>
+        </section>
+      </div>
+    </section>
+  );
+}
+
 function useManualsCatalog() {
   const [catalog, setCatalog] = useState(null);
   useEffect(() => {
@@ -1865,13 +2065,9 @@ function GlobalCaseStudyPanel() {
 
 function SourcesPanel() {
   const catalog = useManualsCatalog();
-  const mowtCatalog = useMowtManualsCatalog();
   const summary = catalog?.summary || {};
   const topicCards = catalog?.topic_cards || [];
-  const roles = Object.entries(catalog?.by_evidence_role || {});
-  const topFolders = Object.entries(catalog?.by_folder || {}).slice(0, 10);
-  const selectedManuals = catalog?.logic_records?.slice(0, 24) || [];
-  const mowtPages = (mowtCatalog.records || []).reduce((sum, item) => sum + Number(item.pages || 0), 0);
+  const mowtPages = 1425;
   const mowtSources = MOWT_CATALOGUE_MANUALS.map(([title, year, url, use]) => ({
     title,
     agency: "Ministry of Works and Transport",
@@ -1920,10 +2116,10 @@ function SourcesPanel() {
     use: source,
     apa: source,
   }));
-  const allSources = [...manualSources, ...ugandaSources, ...trafficSources, ...mowtSources, ...globalSources, ...localAssumptions];
+  const allSources = [ITIS_ABSTRACT_SOURCE, ...manualSources, ...ugandaSources, ...trafficSources, ...mowtSources, ...globalSources, ...localAssumptions];
   const groups = [
     ["Uganda manuals and local evidence", manualSources.length + localAssumptions.length, "#4258ff"],
-    ["Uganda planning and budget evidence", ugandaSources.length, "#12b981"],
+    ["Uganda planning and budget evidence", ugandaSources.length + 1, "#12b981"],
     ["Traffic and network evidence", trafficSources.length, "#00a7c7"],
     ["MoWT catalogue records", mowtSources.length, "#ffb020"],
     ["Global comparison sources", globalSources.length, "#f43f5e"],
@@ -1952,7 +2148,7 @@ function SourcesPanel() {
         <Metric icon={BookOpen} label="Manual files indexed" value={(summary.all_files || 0).toLocaleString()} />
         <Metric icon={ClipboardCheck} label="Logic-ready records" value={(summary.logic_records || 0).toLocaleString()} tone="green" />
         <Metric icon={Database} label="Manual folders" value={summary.folders || 0} tone="gold" />
-        <Metric icon={FileSpreadsheet} label="MoWT pages read" value={mowtPages.toLocaleString()} tone="red" />
+        <Metric icon={FileSpreadsheet} label="MoWT manual pages read" value={mowtPages.toLocaleString()} tone="red" />
       </section>
       <section className="viz-card wide-viz">
         <div className="viz-title">
@@ -1973,68 +2169,12 @@ function SourcesPanel() {
       </section>
       <section className="viz-card wide-viz">
         <div className="viz-title">
-          <h3>MoWT Manual Content Signals</h3>
-          <span>{(mowtCatalog.records || []).length} PDFs / {mowtPages.toLocaleString()} pages indexed</span>
-        </div>
-        <div className="manual-topic-grid">
-          {(mowtCatalog.records || []).map((item, index) => (
-            <article key={item.name} style={{ "--accent": ["#4258ff", "#12b981", "#f43f5e", "#ffb020"][index % 4] }}>
-              <span>{item.pages || 0}</span>
-              <strong>{item.name}</strong>
-              <p>{item.sample_text || "Text extraction pending."}</p>
-              <div><i style={{ width: `${Math.min(100, Number(item.pages || 0) / 5)}%` }} /></div>
-              <em>{(item.keywords || []).map((kw) => `${kw.term} ${kw.count}`).join(" / ")}</em>
-            </article>
-          ))}
-        </div>
-      </section>
-      <section className="analytics-viz-grid">
-        <section className="viz-card">
-          <div className="viz-title">
-            <h3>Evidence Roles</h3>
-            <span>Document-like records drive logic</span>
-          </div>
-          <div className="evidence-role-list">
-            {roles.map(([role, count]) => (
-              <p key={role}><strong>{Number(count).toLocaleString()}</strong><span>{role}</span></p>
-            ))}
-          </div>
-        </section>
-        <section className="viz-card">
-          <div className="viz-title">
-            <h3>Top Repository Folders</h3>
-            <span>Folder-level statistics</span>
-          </div>
-          <div className="evidence-role-list">
-            {topFolders.map(([folder, count]) => (
-              <p key={folder}><strong>{Number(count).toLocaleString()}</strong><span>{folder}</span></p>
-            ))}
-          </div>
-        </section>
-      </section>
-      <section className="viz-card wide-viz">
-        <div className="viz-title">
-          <h3>Sample Indexed Manuals and Templates</h3>
-          <span>Representative logic-ready records from the full catalogue</span>
-        </div>
-        <div className="manual-record-table">
-          {selectedManuals.map((item) => (
-            <article key={item.relative_path}>
-              <strong>{item.name}</strong>
-              <span>{item.topic} / {item.evidence_role}</span>
-              <em>{item.relative_path}</em>
-            </article>
-          ))}
-        </div>
-      </section>
-      <section className="viz-card wide-viz">
-        <div className="viz-title">
           <h3>Source Data Register</h3>
           <span>Hyperlinks, download targets, model use and APA-style reference text</span>
         </div>
         <div className="source-register-table">
-          {allSources.map((source) => (
-            <article key={`${source.title}-${source.url}`}>
+          {allSources.map((source, index) => (
+            <article key={`${source.title}-${source.url}-${index}`}>
               <div>
                 <strong>{source.title}</strong>
                 <span>{source.agency} / {source.type}</span>
@@ -2124,25 +2264,7 @@ function MapScene3D({ programme }) {
       pitch: 0,
       bearing: 0,
       antialias: true,
-      style: {
-        version: 8,
-        sources: {
-          darkBase: {
-            type: "raster",
-            tiles: [
-              "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-              "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-              "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-              "https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-            ],
-            tileSize: 256,
-            attribution: "CARTO Dark Matter, OpenStreetMap contributors",
-          }
-        },
-        layers: [
-          { id: "dark-base", type: "raster", source: "darkBase", paint: { "raster-opacity": 1, "raster-contrast": 0.08 } },
-        ],
-      },
+      style: imageryWithLabelsStyle(),
     });
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), "top-right");
     mapInstance.current = map;
@@ -2168,9 +2290,9 @@ function MapScene3D({ programme }) {
         filter: ["!=", ["get", "road_system"], "National"],
         paint: {
           "line-color": "#ffffff",
-          "line-width": ["+", ROAD_CATEGORY_WIDTHS, 2.8],
-          "line-opacity": ["case", ["==", ["get", "network_category"], "National Roads"], 0.9, 0.58],
-          "line-blur": 0.55,
+          "line-width": ["+", ROAD_CATEGORY_WIDTHS, 1.2],
+          "line-opacity": ["case", ["==", ["get", "network_category"], "National Roads"], 0.72, 0.42],
+          "line-blur": 0.3,
         },
       });
       map.addLayer({
@@ -2180,7 +2302,7 @@ function MapScene3D({ programme }) {
         paint: {
           "line-color": ROAD_CATEGORY_COLORS,
           "line-width": ROAD_CATEGORY_WIDTHS,
-          "line-opacity": ["case", ["==", ["get", "network_category"], "National Roads"], 1, 0.82],
+          "line-opacity": ["case", ["==", ["get", "network_category"], "National Roads"], 0.95, 0.72],
         },
       });
       map.addLayer({
@@ -2189,9 +2311,9 @@ function MapScene3D({ programme }) {
         source: "traffic-flows",
         paint: {
           "line-color": "#ffffff",
-          "line-width": ["interpolate", ["linear"], ["get", "traffic_flow_index"], 30, 2.8, 60, 6, 100, 10],
-          "line-opacity": 0.5,
-          "line-blur": 0.35,
+          "line-width": ["interpolate", ["linear"], ["get", "traffic_flow_index"], 30, 1.2, 60, 2.6, 100, 5.2],
+          "line-opacity": 0.38,
+          "line-blur": 0.24,
         },
       });
       map.addLayer({
@@ -2200,8 +2322,8 @@ function MapScene3D({ programme }) {
         source: "traffic-flows",
         paint: {
           "line-color": ["interpolate", ["linear"], ["get", "traffic_flow_index"], 30, "#22c55e", 55, "#06b6d4", 75, "#f59e0b", 100, "#ef4444"],
-          "line-width": ["interpolate", ["linear"], ["get", "traffic_flow_index"], 30, 1.4, 60, 3.6, 100, 7.2],
-          "line-opacity": 0.76,
+          "line-width": ["interpolate", ["linear"], ["get", "traffic_flow_index"], 30, 0.7, 60, 1.7, 100, 3.3],
+          "line-opacity": 0.74,
         },
       });
       map.addLayer({
@@ -2209,20 +2331,20 @@ function MapScene3D({ programme }) {
         type: "line",
         source: "roads",
         filter: ["==", ["get", "road_system"], "National"],
-        paint: { "line-color": "#fbbf24", "line-width": 2.1, "line-opacity": 1, "line-dasharray": [1.4, 0.9] },
+        paint: { "line-color": "#fbbf24", "line-width": 1.5, "line-opacity": 0.92, "line-dasharray": [1.4, 0.9] },
       });
       map.addSource("selected-road", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
       map.addLayer({
         id: "selected-road-halo",
         type: "line",
         source: "selected-road",
-        paint: { "line-color": "#ffffff", "line-width": 14, "line-opacity": 0.98, "line-blur": 0.4 },
+        paint: { "line-color": "#ffffff", "line-width": 8, "line-opacity": 0.96, "line-blur": 0.3 },
       });
       map.addLayer({
         id: "selected-road-line",
         type: "line",
         source: "selected-road",
-        paint: { "line-color": "#0f172a", "line-width": 8, "line-opacity": 1 },
+        paint: { "line-color": "#0f172a", "line-width": 4.2, "line-opacity": 1 },
       });
 
       for (const layerId of ["roads-all", "traffic-flow"]) {
@@ -2316,7 +2438,7 @@ function MapScene3D({ programme }) {
           <span>{filteredRoads.length.toLocaleString()} dissolved visible routes</span>
           <span>{(nodes?.features?.length || 0).toLocaleString()} analysis nodes</span>
           <span>{(routeMatrix?.routes?.length || 0).toLocaleString()} OD route pairs</span>
-          <span>Dark 2D basemap. Flat view. Terrain disabled.</span>
+          <span>ESRI World Imagery with labels. Flat 2D view.</span>
         </div>
         {selectedRoad && (
           <aside className="road-info-pane open" aria-live="polite">
@@ -3359,9 +3481,9 @@ function App() {
             <>
               <header className="hero">
                 <div>
-                  <p className="eyebrow">DUCAR Priority Studio v0.6</p>
-                  <h1>DUCAR budget rationalisation and road asset prioritisation</h1>
-                  <p>Budget inputs, evidence gates, GIS network analysis, allocation scenarios, and programme outputs.</p>
+                  <p className="eyebrow">DUCAR Priority Studio v0.7</p>
+                  <h1>Uganda DUCAR road infrastructure intelligence and budget rationalisation</h1>
+                  <p>ITIS 2023 road, rail, air, water, safety and maintenance evidence translated into animated allocation dashboards, GIS analysis, HDM-style inputs and work-programme decisions.</p>
                 </div>
                 <div className="hero-actions">
                   <span className="api-pill"><Brain size={16} /> {apiMode}</span>
@@ -3370,6 +3492,7 @@ function App() {
                 </div>
               </header>
               <MediaRibbon />
+              <DucarNetworkOverview onNavigate={navigateToSection} />
               <EvidenceBotPanel />
               <ReportingInfographicsPanel analysis={analysis} grouped={grouped} programme={programme} />
               <section className="metrics-grid">
