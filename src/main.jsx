@@ -1942,6 +1942,25 @@ function useManualsCatalog() {
   return catalog;
 }
 
+function useEvidenceSynthesis() {
+  const [synthesis, setSynthesis] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${BASE}data/evidence_synthesis.json`, { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled) setSynthesis(data);
+      })
+      .catch(() => {
+        if (!cancelled) setSynthesis(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  return synthesis;
+}
+
 function useMowtManualsCatalog() {
   const [catalog, setCatalog] = useState({ records: [] });
   useEffect(() => {
@@ -2116,7 +2135,10 @@ function SourcesPanel() {
     use: source,
     apa: source,
   }));
-  const allSources = [ITIS_ABSTRACT_SOURCE, ...manualSources, ...ugandaSources, ...trafficSources, ...mowtSources, ...globalSources, ...localAssumptions];
+  const allSources = [ITIS_ABSTRACT_SOURCE, ...manualSources, ...ugandaSources, ...trafficSources, ...mowtSources, ...globalSources, ...localAssumptions].filter((source, index, sources) => {
+    const key = `${source.title}-${source.url}`;
+    return sources.findIndex((item) => `${item.title}-${item.url}` === key) === index;
+  });
   const groups = [
     ["Uganda manuals and local evidence", manualSources.length + localAssumptions.length, "#4258ff"],
     ["Uganda planning and budget evidence", ugandaSources.length + 1, "#12b981"],
@@ -2644,6 +2666,170 @@ function ProcessFlow({ analysis, grouped }) {
   );
 }
 
+function formatEvidenceCell(value) {
+  if (value === null || value === undefined || value === "") return "No data";
+  if (typeof value === "number") return Number.isInteger(value) ? value.toLocaleString() : value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+  return String(value);
+}
+
+function EvidenceMiniTable({ table, maxRows = 8 }) {
+  if (!table?.rows?.length) return null;
+  return (
+    <div className="evidence-mini-table">
+      <div className="viz-title">
+        <h3>{table.title}</h3>
+        {table.source && <a href="#sources">APA source</a>}
+      </div>
+      <div className="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              {table.columns.map((column) => <th key={column}>{column}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {table.rows.slice(0, maxRows).map((row, index) => (
+              <tr key={`${table.title}-${index}`}>
+                {row.map((cell, cellIndex) => <td key={`${index}-${cellIndex}`}>{formatEvidenceCell(cell)}</td>)}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {table.rows.length > maxRows && <small>{table.rows.length - maxRows} more rows remain in the evidence dataset.</small>}
+    </div>
+  );
+}
+
+function EvidenceSynthesisPanel() {
+  const synthesis = useEvidenceSynthesis();
+  const summary = synthesis?.summary || {};
+  const topicChart = synthesis?.documentTopicChart || [];
+  const network = synthesis?.itisCharts?.charts?.network || synthesis?.itisTables?.road_network_by_category;
+  const condition = synthesis?.itisCharts?.charts?.condition || synthesis?.itisTables?.road_condition_by_category;
+  const crashes = synthesis?.itisCharts?.charts?.crashes || synthesis?.itisTables?.road_crashes_by_nature;
+  const ferry = synthesis?.itisCharts?.charts?.ferry || synthesis?.itisTables?.ferry_operations_kis;
+  const onlineGroup = synthesis?.onlineEvidence?.groupChart;
+  const onlineSources = synthesis?.onlineEvidence?.sourceTable;
+  const documentTable = synthesis?.documentTable;
+  const maxRoadKm = Math.max(1, ...(network?.rows || []).map((row) => Number(row[1] || 0)));
+  const maxPoorKm = Math.max(1, ...(condition?.rows || []).map((row) => Number(row[3] || 0)));
+  const maxCrash = Math.max(1, ...(crashes?.rows || []).map((row) => Number(row[4] || 0)));
+  const statusLabel = synthesis ? "Evidence read complete" : "Loading evidence reader";
+
+  return (
+    <section className="evidence-synthesis-suite">
+      <div className="evidence-synthesis-hero">
+        <div>
+          <p className="eyebrow">{statusLabel}</p>
+          <h2>Document-to-decision intelligence now drives the PIMS engine.</h2>
+          <span>
+            The app reads the local manuals, TORs, budget reports, MoWT manuals, ITIS tables, national repository catalogue and global framework links,
+            then converts them into decision charts and tables used by the allocation logic.
+          </span>
+          <a href="#sources">Open source register</a>
+        </div>
+        <strong>{(summary.core_words_read || 0).toLocaleString()}</strong>
+        <em>words read</em>
+      </div>
+
+      <section className="metrics-grid evidence-read-grid">
+        <Metric icon={BookOpen} label="Core documents read" value={(summary.core_documents_read || 0).toLocaleString()} />
+        <Metric icon={FileSpreadsheet} label="Pages extracted" value={(summary.core_pages_read || 0).toLocaleString()} tone="green" />
+        <Metric icon={Database} label="DOCX tables read" value={(summary.docx_tables_read || 0).toLocaleString()} tone="gold" />
+        <Metric icon={ClipboardCheck} label="Manual records indexed" value={(summary.manual_repository_files || 0).toLocaleString()} tone="red" />
+        <Metric icon={Globe2} label="Online sources checked" value={(summary.online_sources_checked || 0).toLocaleString()} />
+      </section>
+
+      <div className="evidence-chart-grid">
+        <section className="viz-card evidence-topic-card">
+          <div className="viz-title">
+            <h3>Extracted Decision Topics</h3>
+            <span>Keyword evidence across the fully-read national documents</span>
+          </div>
+          <div className="evidence-topic-bars">
+            {topicChart.slice(0, 11).map((item, index) => (
+              <article key={item.topic} style={{ "--accent": ["#4258ff", "#12b981", "#f43f5e", "#ffb020", "#00a7c7", "#7c3aed"][index % 6] }}>
+                <span>{item.topic}</span>
+                <i><b style={{ width: `${item.share}%` }} /></i>
+                <strong>{Number(item.mentions || 0).toLocaleString()}</strong>
+                <p>{item.decision_use}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="viz-card evidence-road-card">
+          <div className="viz-title">
+            <h3>ITIS Road Network Table</h3>
+            <span>Length by category, with DUCAR scope separated</span>
+          </div>
+          <div className="evidence-road-bars">
+            {(network?.rows || []).map((row, index) => (
+              <article key={row[0]} style={{ "--accent": ["#111827", "#4258ff", "#7c3aed", "#f43f5e", "#12b981", "#ffb020", "#00a7c7"][index % 7] }}>
+                <span>{row[0]}</span>
+                <i><b style={{ width: `${(Number(row[1] || 0) / maxRoadKm) * 100}%` }} /></i>
+                <strong>{Number(row[1] || 0).toLocaleString()} km</strong>
+                <em>{row[2]}</em>
+              </article>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      <div className="evidence-chart-grid">
+        <section className="viz-card evidence-condition-card">
+          <div className="viz-title">
+            <h3>Condition Pressure from ITIS</h3>
+            <span>Poor-condition kilometres by network category</span>
+          </div>
+          <div className="evidence-condition-bars">
+            {(condition?.rows || []).map((row) => {
+              const poor = Number(row[3] || 0);
+              const total = Number(row[4] || 1);
+              const fairGood = Math.round(((Number(row[1] || 0) + Number(row[2] || 0)) / total) * 100);
+              return (
+                <article key={row[0]}>
+                  <div><strong>{row[0]}</strong><span>{fairGood}% fair-good</span></div>
+                  <i><b style={{ width: `${(poor / maxPoorKm) * 100}%` }} /></i>
+                  <em>{poor.toLocaleString()} km poor</em>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="viz-card evidence-crash-card">
+          <div className="viz-title">
+            <h3>Road Safety Trend Read from ITIS</h3>
+            <span>Fatal, serious and minor crashes</span>
+          </div>
+          <div className="evidence-crash-bars">
+            {(crashes?.rows || []).map((row) => (
+              <article key={row[0]}>
+                <span>{row[0]}</span>
+                <i><b style={{ height: `${(Number(row[4] || 0) / maxCrash) * 100}%` }} /></i>
+                <strong>{Number(row[4] || 0).toLocaleString()}</strong>
+                <em>{Number(row[1] || 0).toLocaleString()} fatal</em>
+              </article>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      <div className="evidence-table-grid">
+        <EvidenceMiniTable table={documentTable} maxRows={9} />
+        <EvidenceMiniTable table={onlineGroup} maxRows={6} />
+      </div>
+
+      <div className="evidence-table-grid">
+        <EvidenceMiniTable table={ferry} maxRows={5} />
+        <EvidenceMiniTable table={onlineSources} maxRows={8} />
+      </div>
+    </section>
+  );
+}
+
 function PimEnginePanel({ programme, analysis }) {
   const selectedCount = programme.filter(p => p.status === "Selected").length;
   const totalCount = Math.max(1, programme.length);
@@ -2691,6 +2877,8 @@ function PimEnginePanel({ programme, analysis }) {
           <SignalTile key={chk.id} label={chk.label} value={`${Math.round((chk.pass / chk.total) * 100)}%`} sublabel="clearance rate" tone={chk.pass / chk.total > 0.7 ? "green" : "red"} />
         ))}
       </section>
+
+      <EvidenceSynthesisPanel />
 
       <section className="viz-card wide-viz">
         <div className="viz-title">

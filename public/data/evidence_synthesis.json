@@ -1,0 +1,2869 @@
+{
+  "generated_at_utc": "2026-05-07T14:26:30.280621+00:00",
+  "method": {
+    "local_documents": "PDF and DOCX text extraction using pypdf and python-docx; JSON digest parsed as text.",
+    "manual_repository": "Full national manual repository classified from manuals_catalog.json; unsupported legacy/binary files are used as metadata evidence.",
+    "online_sources": "National and global URLs fetched with source status, text sample extraction and decision-topic scoring.",
+    "apa_rule": "Every generated table carries a source string; source links remain in the Sources tab."
+  },
+  "summary": {
+    "core_documents_found": 25,
+    "core_documents_read": 25,
+    "core_pages_read": 1940,
+    "core_words_read": 985696,
+    "docx_tables_read": 127,
+    "manual_repository_files": 5221,
+    "manual_logic_records": 2199,
+    "mowt_pdf_records": 4,
+    "online_sources_checked": 15,
+    "online_sources_read": 7
+  },
+  "documents": [
+    {
+      "name": "CONSTRUCTION-MANUAL-.pdf",
+      "path": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\CONSTRUCTION-MANUAL-.pdf",
+      "extension": ".pdf",
+      "bytes": 20910862,
+      "pages": 257,
+      "tables": 0,
+      "words": 91189,
+      "characters": 606958,
+      "dominant_topic": "Construction QA",
+      "topic_counts": {
+        "PIMS appraisal": 11,
+        "Budget monitoring": 8,
+        "Road condition": 52,
+        "RAM and lifecycle": 4,
+        "Traffic and axle load": 134,
+        "GIS and network": 16,
+        "Construction QA": 1352,
+        "Climate and drainage": 328,
+        "Safety and NMT": 180,
+        "Bridge and structures": 195,
+        "Procurement and contracts": 174
+      },
+      "summary_points": [
+        "68 PART A: ROAD DESIGN AND CONSTRUCTION MANUAL FOR LOW VOLUME SEALED ROADS 6.5 Design of Roads with Stabilised Road bases 6.5.1 Design of Roads with Cement or Lime Stabilised Road Bases Table 617 shows the structural designs for roads with chemically stabilized road base.",
+        "MDE Figure 9-34 Horizontal Road Signs \u2013 Road Markings 223 PART B: ROAD DESIGN AND CONSTRUCTION MANUAL FOR LOW VOLUME SEALED ROADS Activity: Construction of humps on the surface of the road Code: 550 Reference Code Application This code is used for the construction of humps on the road surface or ground indicated by the Supervising Engineer.",
+        "2 PART A: ROAD DESIGN AND CONSTRUCTION MANUAL FOR LOW VOLUME SEALED ROADS 2.0 Road Investigations 2.1 Introduction This section covers road investigations which are appropriate for low volume roads.",
+        "PART B: ROAD DESIGN AND CONSTRUCTION MANUAL FOR LOW VOLUME SEALED ROADS PART B: DESIGN OF LOW VOLUME ROADS 240 Ministry of Works and Transport Plot 57-59 Jinja Road P.O."
+      ],
+      "status": "read"
+    },
+    {
+      "name": "Draft Traffic data collection policies and procedures version March 2016.docx",
+      "path": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\Draft Traffic data collection policies and procedures version March 2016.docx",
+      "extension": ".docx",
+      "bytes": 306811,
+      "pages": 0,
+      "tables": 23,
+      "words": 7614,
+      "characters": 50186,
+      "dominant_topic": "Traffic and axle load",
+      "topic_counts": {
+        "PIMS appraisal": 0,
+        "Budget monitoring": 4,
+        "Road condition": 0,
+        "RAM and lifecycle": 2,
+        "Traffic and axle load": 212,
+        "GIS and network": 18,
+        "Construction QA": 67,
+        "Climate and drainage": 0,
+        "Safety and NMT": 10,
+        "Bridge and structures": 5,
+        "Procurement and contracts": 17
+      },
+      "summary_points": [
+        "a road link on an \u201cA\u201d road was assigned to a daughter station on an \u201cA\u201d road, and the same for \u201cB\u201d roads and \u201cC\u201d roads; A road link was first assigned to a count station on the same road.",
+        "The adjustment factor for AADT was therefore taken as 1.0; In the case of no daughter station located on the same road as the road link, the AADT of the road section was assumed to be equal to the average of all daughter station AADTs on the same functional road class and in the same district as the road link.",
+        "06:00 to 10:00 and 16:00 to 20:00 in an urban environment), in order to obtain a representative sample of heavy vehicle traffic at the location; Perform the weigh-in-motion (WIM) measurements (using the portable WIM equipment owned by UNRA) at the selected location, and categorise each measurement according to the vehicle classes used by UNRA.",
+        "greater than 16 inches), with one or more axles containing more than two wheels and with a typical carrying capacity of more than 4 000 kg."
+      ],
+      "status": "read"
+    },
+    {
+      "name": "DUCAR.docx",
+      "path": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR.docx",
+      "extension": ".docx",
+      "bytes": 15526,
+      "pages": 0,
+      "tables": 0,
+      "words": 234,
+      "characters": 1708,
+      "dominant_topic": "GIS and network",
+      "topic_counts": {
+        "PIMS appraisal": 2,
+        "Budget monitoring": 0,
+        "Road condition": 2,
+        "RAM and lifecycle": 0,
+        "Traffic and axle load": 0,
+        "GIS and network": 8,
+        "Construction QA": 0,
+        "Climate and drainage": 0,
+        "Safety and NMT": 1,
+        "Bridge and structures": 1,
+        "Procurement and contracts": 0
+      },
+      "summary_points": [
+        "X X +1 Synonyms and Related Terms District, Urban and Community Access Roads Local Government Roads Rural Roads Network DUCAR Maintenance Programme Key Data Points Total Size: Approximately 138,510 km.",
+        "The DUCAR network refers to the District, Urban, and Community Access Roads network in Uganda, representing the largest share of the country\u2019s road infrastructure, accounting for approximately 86.8% (138,510 km) of the total road network.",
+        "Key Aspects of the DUCAR Network Structure: Comprised of district roads (~38,603 km), urban roads (~17,849 km), and community access roads (~79,948 km).",
+        "Condition: More than 40% (up to 60%) is considered to be beyond maintenance level, requiring rehabilitation."
+      ],
+      "status": "read"
+    },
+    {
+      "name": "DUCAR_source_digest.json",
+      "path": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_source_digest.json",
+      "extension": ".json",
+      "bytes": 531590,
+      "pages": 0,
+      "tables": 0,
+      "words": 72620,
+      "characters": 506772,
+      "dominant_topic": "RAM and lifecycle",
+      "topic_counts": {
+        "PIMS appraisal": 63,
+        "Budget monitoring": 109,
+        "Road condition": 629,
+        "RAM and lifecycle": 673,
+        "Traffic and axle load": 282,
+        "GIS and network": 456,
+        "Construction QA": 517,
+        "Climate and drainage": 136,
+        "Safety and NMT": 65,
+        "Bridge and structures": 594,
+        "Procurement and contracts": 90
+      },
+      "summary_points": [
+        "The functional condition of the paved road network stands at 19% in very good condition, 58% in good condition, 16% in fair condition, & 7% in poor condition.",
+        "For the unpaved road network \u2013 7% is in very good condition, 17% in good condition, 51% in fair condition, 22% in poor condition and 3% in very poor condition.",
+        "Chapter 5.2 (Pavement Management Support Services \u2013 Finalise Pavement Maintenance Management Strategy) and Chapter 5.3 (Bridge Management Support Services \u2013 Finalise Bridge Maintenance Management Strategy) state as follows:\", \"\u201cA proposed pavement maintenance management strategy is currently included with the general road asset management policy / strategy.",
+        "[ { \"file\": \"D:\\\\OneDrive\\\\Procurements\\\\TOR - DUCACR\\\\DUCAR.docx\", \"chars\": 1708, \"head\": \"The DUCAR network refers to the District, Urban, and Community Access Roads network in Uganda, representing the largest share of the country\u2019s road infrastructure, accounting for approximately 86.8% (138,510 km) of the total road network."
+      ],
+      "status": "read"
+    },
+    {
+      "name": "Final-General-Specifications-for-Roads-and-Bridges_March-2026.pdf",
+      "path": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\docs\\mowt\\Final-General-Specifications-for-Roads-and-Bridges_March-2026.pdf",
+      "extension": ".pdf",
+      "bytes": 14059237,
+      "pages": 550,
+      "tables": 0,
+      "words": 405788,
+      "characters": 2629096,
+      "dominant_topic": "Construction QA",
+      "topic_counts": {
+        "PIMS appraisal": 6,
+        "Budget monitoring": 73,
+        "Road condition": 166,
+        "RAM and lifecycle": 4,
+        "Traffic and axle load": 964,
+        "GIS and network": 84,
+        "Construction QA": 5838,
+        "Climate and drainage": 639,
+        "Safety and NMT": 396,
+        "Bridge and structures": 1224,
+        "Procurement and contracts": 3128
+      },
+      "summary_points": [
+        "MINISTRY OF WORKS AND TRANSPORT THE REPUBLIC OF UGANDA General Specifications for Road and Bridge Works Ministry of Works and Transport Plot 57 -59, Old Port Bell Road PO BOX 7174, Kampala, Uganda MARCH 2026 i FOREWORD By the powers entrusted to me under the Roads Act 2019, I am pleased to present the General Specifications for Road and Bridge Works, 202 6.",
+        "ITEM UNIT 55.05 ROAD STUDS (STATE TYPE) NUMBER (no.) GENERAL SPECIFICATIONS FOR ROAD AND BRIDGE WORKS SERIES 5000 - ANCILLARY ROADWORKS THE REPUBLIC OF UGANDA, MINISTRY OF WORKS AND TRANSPORT PAGE 5000 - 26 The unit of measurement for road studs shall be the actual number of approved road studs placed.",
+        "ix) Road Markings The road markings shall be provided conforming to the requirements of SECTION 5500 and shall be as per GENERAL SPECIFICATIONS FOR ROAD AND BRIDGE WORKS SERIES 5000 - ANCILLARY ROADWORKS THE REPUBLIC OF UGANDA, MINISTRY OF WORKS AND TRANSPORT PAGE 5000 - 66 the approved drawings or as directed by the Engineer.",
+        "Traffic GENERAL SPECIFICATIONS FOR ROAD AND BRIDGE WORKS SERIES 1000 - GENERAL THE REPUBLIC OF UGANDA, MINISTRY OF WORKS AND TRANSPORT PAGE 1000 - 85 signs, traffic control signals and barriers shall be used for direction and control of traffic and to inform drivers of the importance to slow down and drive carefully."
+      ],
+      "status": "read"
+    },
+    {
+      "name": "Guidelines for Road Performance Indicators.docx",
+      "path": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\Guidelines for Road Performance Indicators.docx",
+      "extension": ".docx",
+      "bytes": 386912,
+      "pages": 0,
+      "tables": 5,
+      "words": 18082,
+      "characters": 126998,
+      "dominant_topic": "RAM and lifecycle",
+      "topic_counts": {
+        "PIMS appraisal": 28,
+        "Budget monitoring": 41,
+        "Road condition": 63,
+        "RAM and lifecycle": 139,
+        "Traffic and axle load": 24,
+        "GIS and network": 35,
+        "Construction QA": 38,
+        "Climate and drainage": 3,
+        "Safety and NMT": 35,
+        "Bridge and structures": 13,
+        "Procurement and contracts": 10
+      },
+      "summary_points": [
+        "It is furthermore expected that after the publishing of the ISO 55000 standard in 2014 that it will become a mechanism and benchmark for asset rich organisations (and therefore also roads authorities) to show that they practice good road infrastructure asset management.",
+        "The current road network of 21,000km for which UNRA is responsible, will not increase substantially without a corresponding increase in Road Fund allocations to UNRA for maintenance commitments.",
+        "The adoption of the ISO 55000 international standard will require that UNRA accept a Road Infrastructure Asset Management Policy (RIAMP) (in process), and prepare a Strategic Asset Management Plan (SAMP) (not yet prepared).",
+        "In terms of earlier discussions around ISO 55000, they cover assets and asset systems but lack a focus on the asset management system per se."
+      ],
+      "status": "read"
+    },
+    {
+      "name": "Integrated Transport Infrastructure Services Annual Budget Monitoring report FY 2023-24.pdf",
+      "path": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\Integrated Transport Infrastructure Services Annual Budget Monitoring report FY 2023-24.pdf",
+      "extension": ".pdf",
+      "bytes": 8396172,
+      "pages": 106,
+      "tables": 0,
+      "words": 39268,
+      "characters": 301151,
+      "dominant_topic": "Budget monitoring",
+      "topic_counts": {
+        "PIMS appraisal": 145,
+        "Budget monitoring": 400,
+        "Road condition": 12,
+        "RAM and lifecycle": 72,
+        "Traffic and axle load": 38,
+        "GIS and network": 157,
+        "Construction QA": 186,
+        "Climate and drainage": 78,
+        "Safety and NMT": 72,
+        "Bridge and structures": 160,
+        "Procurement and contracts": 351
+      },
+      "summary_points": [
+        "ii) Road safety campaigns and inspections: The MoWT carried out five (41.67%) out of 12 road safety campaigns and undertake seven (58.3%) out of 12 detailed road crash investigations.",
+        "ii) Road safety campaigns and inspections: The MoWT carried out five (41.67%) out of 12 road safety campaigns and undertake seven (58.3%) out of 12 detailed road crash investigations.",
+        "The cumulative target construction progress on other bridges was: 75% progress for Kwapa Bridge (Tororo); 20% for Tajar Bridge (Bulamburi); 8% for Nyahuka-Mirambi Bridge (Bundibugyo); 90% for Aderema Bridge (Tororo); 20% for Kadokolene swamp crossing (Budaka); 45% for Osudan - Abarila swamp crossing in Katakwi and Amuria; and 5% for Kiyanja Swamp in Ntoroko.",
+        "The cumulative target construction progress on other bridges was: 75% progress for Kwapa Bridge (Tororo); 20% for Tajar Bridge (Bulamburi); 8% for Nyahuka-Mirambi Bridge (Bundibugyo); 90% for Aderema Bridge (Tororo); 20% for Kadokolene swamp crossing (Budaka); 45% for Osudan - Abarila swamp crossing in Katakwi and Amuria; and 5% for Kiyanja Swamp in Ntoroko."
+      ],
+      "status": "read"
+    },
+    {
+      "name": "LTPPMS Establish Guide.docx",
+      "path": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\LTPPMS Establish Guide.docx",
+      "extension": ".docx",
+      "bytes": 755614,
+      "pages": 0,
+      "tables": 36,
+      "words": 23145,
+      "characters": 160381,
+      "dominant_topic": "Road condition",
+      "topic_counts": {
+        "PIMS appraisal": 17,
+        "Budget monitoring": 2,
+        "Road condition": 601,
+        "RAM and lifecycle": 157,
+        "Traffic and axle load": 188,
+        "GIS and network": 81,
+        "Construction QA": 127,
+        "Climate and drainage": 110,
+        "Safety and NMT": 24,
+        "Bridge and structures": 28,
+        "Procurement and contracts": 0
+      },
+      "summary_points": [
+        "Figure : The Four Excluded Deflection Measurements of Road A1 Figure : The Deflection Measurement Distribution for Road A1 Figure : Deflection Measurement Distribution for a Potion of Road A1 Table 2 shows the average deflection measurements on the homogenous Road A1.",
+        "Table .3: IQL examples for road data The HDM-4 data requirements, at IQL-2 and IQL-2B are as follows: Road geometry: HDM-4 requires four primary parameters defining rise and fall and horizontal curvature, plus five that define the speed regime on the road.",
+        "Parameters of Uganda\u2019s paved roads TO BE CONSIDERED FOR the HDM-4 LTPP design matrix 4-1 4.1 Introduction 4-1 4.2 Climate and environment 4-1 4.3 Terrain 4-2 4.4 Pavement Type 4-2 4.5 Pavement Strength 4-3 4.6 Traffic 4-6 4.7 Condition 4-7 5.",
+        "(This number was also adopted by other road agencies in southern Africa and has proven over the last 15 years to be adequate for the calculation of the HDM-4 calibration factors.) The total paved road network of UNRA is approximately 4 000 km, and roughly each 110 km of road will therefore be represented by one LTPP section."
+      ],
+      "status": "read"
+    },
+    {
+      "name": "MaintenanceManagementFeatures_Rev1.docx",
+      "path": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\MaintenanceManagementFeatures_Rev1.docx",
+      "extension": ".docx",
+      "bytes": 28219,
+      "pages": 0,
+      "tables": 2,
+      "words": 447,
+      "characters": 3606,
+      "dominant_topic": "GIS and network",
+      "topic_counts": {
+        "PIMS appraisal": 0,
+        "Budget monitoring": 2,
+        "Road condition": 4,
+        "RAM and lifecycle": 4,
+        "Traffic and axle load": 0,
+        "GIS and network": 5,
+        "Construction QA": 1,
+        "Climate and drainage": 0,
+        "Safety and NMT": 0,
+        "Bridge and structures": 1,
+        "Procurement and contracts": 2
+      },
+      "summary_points": [
+        "| USD 5,000 | USD 214,000 2 | Configuration, Implementation, Training (once-off) | USD 332,000 | USD 145,000 | USD 290,000 Total contract cost | USD 332,000 | USD 155,000 | USD 718,000 Comment | Needs to be developed on new web-based platform.",
+        "2, not for Deighton RMMS Options evaluated | Roughton Maintenance Planning System, ROMAPS | Zutari Maintenance Management System, MMS | dTIMS\u00ae Operations Management, OM 1 | Database | Currently MS-Access.",
+        "| \u2713 | \u2713 | \u2713 11 | Create maintenance projects for subcontractors and monitor project progress on the system.",
+        "Control actual vs planned expenditure | \u2713 | \u2713 | \u2713 10 | Short-term work orders \u2013 job cards."
+      ],
+      "status": "read"
+    },
+    {
+      "name": "NMT-Design-and-Operational-Manual-web-2.pdf",
+      "path": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\docs\\mowt\\NMT-Design-and-Operational-Manual-web-2.pdf",
+      "extension": ".pdf",
+      "bytes": 6220837,
+      "pages": 206,
+      "tables": 0,
+      "words": 46860,
+      "characters": 346316,
+      "dominant_topic": "Safety and NMT",
+      "topic_counts": {
+        "PIMS appraisal": 25,
+        "Budget monitoring": 13,
+        "Road condition": 28,
+        "RAM and lifecycle": 12,
+        "Traffic and axle load": 544,
+        "GIS and network": 73,
+        "Construction QA": 175,
+        "Climate and drainage": 101,
+        "Safety and NMT": 1154,
+        "Bridge and structures": 75,
+        "Procurement and contracts": 21
+      },
+      "summary_points": [
+        "Maintenance works for roads and NMT facilities by designated agencies shall be based on technical standards set in the road maintenance management manual (MoWT, 2010), Road maintenance specifications, (MoWT, 2010), pavement rehabilitation manual, (MoWT, 2010), general specifications for roads and bridges, (MoWT, 2005) and District Road Works manuals.",
+        "ii) The Traffic and Road Safety Act, 1998 (Amendment) Act (2020) This version repeals and replaces the 1998 traffic and road safety act, cap 361 with various amendments of the principal sections to strengthen road transport regulation and safety management.",
+        "170 Non-Motorized Transport Manual Non-Motorized Transport Manual MINISTRY OF WORKS AND TRANSPORT Table 12-1: Maintenance Categories Maintenance category Definition Activities Routine maintenance Maintenance is required continually on every road despite its engineering characteristics or traffic volume.",
+        "10 Non-Motorized Transport Manual Non-Motorized Transport Manual MINISTRY OF WORKS AND TRANSPORT 1.5.1.3 Policies and Plans a) National Road Safety Policy (2014) The policy relies on and encapsulates five pillars which include road safety management, safer roads and mobility, safer vehicles, safer road users, and post-crash care."
+      ],
+      "status": "read"
+    },
+    {
+      "name": "Panel Inspection Guide.docx",
+      "path": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\Panel Inspection Guide.docx",
+      "extension": ".docx",
+      "bytes": 210485,
+      "pages": 0,
+      "tables": 4,
+      "words": 7289,
+      "characters": 50764,
+      "dominant_topic": "Bridge and structures",
+      "topic_counts": {
+        "PIMS appraisal": 0,
+        "Budget monitoring": 21,
+        "Road condition": 46,
+        "RAM and lifecycle": 6,
+        "Traffic and axle load": 21,
+        "GIS and network": 30,
+        "Construction QA": 7,
+        "Climate and drainage": 11,
+        "Safety and NMT": 4,
+        "Bridge and structures": 93,
+        "Procurement and contracts": 1
+      },
+      "summary_points": [
+        "the final m&R/M&U lists 6-1 APPENDIX A AND B: PANEL INSPECTION FORMS FOR PAVED AND UNPAVED ROADS INTRODUCTION 1.1 Scope of this Document This document is intended to provide guidelines for the execution of road panel inspections by UNRA in support of the finalisation of the Maintenance and Rehabilitation Plans obtained from a strategic analysis.",
+        "The Road Management System of the Uganda National Roads Authority (UNRA) is a sophisticated asset management system containing inter alia a Pavement Management System (PMS) (including both paved and unpaved roads), a Traffic Information System (TIS) and a Bridge and Major Culvert Management System (BMS).",
+        "process to be followed during the panel inspection 5-1 5.1 Introduction 5-1 5.2 Information needed for the panel inspection 5-1 5.3 Panel inspection procedure 5-1 5.4 Completion of panel inspection forms 5-2 6.",
+        "planning meeting: COMPILE FIELD LIST OF M&R / M&U PROJECTS TO VISIT 4-1 4.1 Introduction 4-1 4.2 Information to be used during the meeting 4-1 4.3 Attendance of planning meeting 4-2 4.4 Process to be followed during the meeting 4-3 4.5 Outcomes of the planning meeting 4-4 5."
+      ],
+      "status": "read"
+    },
+    {
+      "name": "Pavement data collection policies and procedures.docx",
+      "path": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\Pavement data collection policies and procedures.docx",
+      "extension": ".docx",
+      "bytes": 280327,
+      "pages": 0,
+      "tables": 21,
+      "words": 5182,
+      "characters": 34247,
+      "dominant_topic": "Construction QA",
+      "topic_counts": {
+        "PIMS appraisal": 0,
+        "Budget monitoring": 5,
+        "Road condition": 46,
+        "RAM and lifecycle": 3,
+        "Traffic and axle load": 6,
+        "GIS and network": 17,
+        "Construction QA": 77,
+        "Climate and drainage": 0,
+        "Safety and NMT": 10,
+        "Bridge and structures": 44,
+        "Procurement and contracts": 22
+      },
+      "summary_points": [
+        "Roadway inspection data collection consists of: Routine maintenance inspection: This is a cursory, visual check carried out by road maintenance personnel who have a good practical knowledge of roadway routine maintenance needs, but who are not necessarily specialists in pavement condition inspection.",
+        "The PMS makes use of two forms, ie: Carriageway and shoulder condition (paved) (consisting of one A4 page); Carriageway and shoulder condition (unpaved) (consisting of one A4 page); The forms are a crucial part of the PMS and shall not be changed without the consideration of the issues listed in Chapter 7, roadway data specifications.",
+        "Routine maintenance inspections | Refer to the ROMAPS data collection policies and procedures Visual condition inspections | A minimum frequency of once in 2 years for upper classification roads, to once in 4 years for lower classification roads.",
+        "\u2018Quality verification and acceptance activities are those that govern the verification and acceptance of the roadway inventory and condition data\u2019 (refer NCHRP 401)."
+      ],
+      "status": "read"
+    },
+    {
+      "name": "Public-Investment-Manual-for-Project-Preparation-and-Appraisal.pdf",
+      "path": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\Public-Investment-Manual-for-Project-Preparation-and-Appraisal.pdf",
+      "extension": ".pdf",
+      "bytes": 5303145,
+      "pages": 152,
+      "tables": 0,
+      "words": 57014,
+      "characters": 387097,
+      "dominant_topic": "PIMS appraisal",
+      "topic_counts": {
+        "PIMS appraisal": 1214,
+        "Budget monitoring": 99,
+        "Road condition": 8,
+        "RAM and lifecycle": 17,
+        "Traffic and axle load": 116,
+        "GIS and network": 4,
+        "Construction QA": 75,
+        "Climate and drainage": 5,
+        "Safety and NMT": 20,
+        "Bridge and structures": 17,
+        "Procurement and contracts": 56
+      },
+      "summary_points": [
+        "76 Public Investment Manual for Project Preparation and Appraisal 77Public Investment Manual for Project Preparation and Appraisal Figure 4.15: ToC VS LFA in picture 76 Public Investment Manual for Project Preparation and Appraisal 77Public Investment Manual for Project Preparation and Appraisal Chapter 5 Integrated Project Analysis 5A.",
+        "60 Public Investment Manual for Project Preparation and Appraisal 61Public Investment Manual for Project Preparation and Appraisal Figure 4.11 The project description logic of high road accidents in Uganda 4.51 Table 4.5 below shows the structure of the LFM for low rates of road accidents on highways in Uganda.",
+        "30 35 35 35 Total project cost 358 425 355 402 \u2022 The traffic officers are equipped with the tools to detect traffic offenders \u2022 The Public is willing to attend the road safety talks/seminars.",
+        "24 Public Investment Manual for Project Preparation and Appraisal 25Public Investment Manual for Project Preparation and Appraisal Box 3.1: Cost Benefit Analysis as a tool for ensuring efficient allocation of public resources 26 Public Investment Manual for Project Preparation and Appraisal 27Public Investment Manual for Project Preparation and Appraisal 3C."
+      ],
+      "status": "read"
+    },
+    {
+      "name": "QMP Template for Traffic Data Collection.docx",
+      "path": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\QMP Template for Traffic Data Collection.docx",
+      "extension": ".docx",
+      "bytes": 46218,
+      "pages": 0,
+      "tables": 5,
+      "words": 4413,
+      "characters": 29482,
+      "dominant_topic": "Construction QA",
+      "topic_counts": {
+        "PIMS appraisal": 0,
+        "Budget monitoring": 0,
+        "Road condition": 3,
+        "RAM and lifecycle": 2,
+        "Traffic and axle load": 31,
+        "GIS and network": 5,
+        "Construction QA": 107,
+        "Climate and drainage": 0,
+        "Safety and NMT": 0,
+        "Bridge and structures": 3,
+        "Procurement and contracts": 17
+      },
+      "summary_points": [
+        "It confirms UNRA\u2019s commitment to collection of good quality data for use in its Traffic Information System (TIS) to support management of its pavements, gravel roads, bridges and major culverts in terms of its corporate vision, mission and goals, as expressed through its Road Infrastructure Asset Management Policy.",
+        "4.4 Data Verification Procedures 4.4.1 Equipment data verification During the data collection process a variety of methods is available for ensuring the continued collection of satisfactory quality data.",
+        "4.3 Equipment and Method Calibration, Certification, Inspection and Verification 4.3.1 Objective Verification that the equipment is functioning according to expectations, and that approved methods of operation are followed which are crucial for the data quality control.",
+        "4.2 Personnel training and certification 4.2.1 Objective Personnel deploying and operating the TIS equipment, shall be properly trained, tested and certified prior to the start of any surveys."
+      ],
+      "status": "read"
+    },
+    {
+      "name": "Revised__TOR__for_Consultancy_Services_for_RAM_and_Investment_Planning_Support_for_UNRA_PS_Comments(1).docx",
+      "path": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\Revised__TOR__for_Consultancy_Services_for_RAM_and_Investment_Planning_Support_for_UNRA_PS_Comments(1).docx",
+      "extension": ".docx",
+      "bytes": 92283,
+      "pages": 0,
+      "tables": 5,
+      "words": 7904,
+      "characters": 55392,
+      "dominant_topic": "RAM and lifecycle",
+      "topic_counts": {
+        "PIMS appraisal": 2,
+        "Budget monitoring": 13,
+        "Road condition": 28,
+        "RAM and lifecycle": 120,
+        "Traffic and axle load": 34,
+        "GIS and network": 86,
+        "Construction QA": 18,
+        "Climate and drainage": 5,
+        "Safety and NMT": 2,
+        "Bridge and structures": 64,
+        "Procurement and contracts": 12
+      },
+      "summary_points": [
+        "The functional condition of the paved road network stands at 19% in very good condition, 58% in good condition, 16% in fair condition, & 7% in poor condition.",
+        "For the unpaved road network \u2013 7% is in very good condition, 17% in good condition, 51% in fair condition, 22% in poor condition and 3% in very poor condition.",
+        "Terms of Reference Terms of Reference for Consultancy services for Road Asset Management & Investment Planning 1.0 INTRODUCTION The Uganda National Roads Authority (UNRA) was established by an Act of Parliament in 2006, and started operations in 2008.",
+        "In 2016 \u2013 2017 UNRA received technical support for a period of two years with a focus of enhancing the practice of road and Bridge Asset Management."
+      ],
+      "status": "read"
+    },
+    {
+      "name": "TOR HDM Calibration_PDU.docx",
+      "path": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\TOR HDM Calibration_PDU.docx",
+      "extension": ".docx",
+      "bytes": 37021,
+      "pages": 0,
+      "tables": 2,
+      "words": 3829,
+      "characters": 25767,
+      "dominant_topic": "Traffic and axle load",
+      "topic_counts": {
+        "PIMS appraisal": 19,
+        "Budget monitoring": 0,
+        "Road condition": 30,
+        "RAM and lifecycle": 48,
+        "Traffic and axle load": 79,
+        "GIS and network": 11,
+        "Construction QA": 22,
+        "Climate and drainage": 8,
+        "Safety and NMT": 17,
+        "Bridge and structures": 1,
+        "Procurement and contracts": 0
+      },
+      "summary_points": [
+        "The Uganda National Roads Authority (UNRA) is responsible for the maintenance and management of the 20,544km National Road Network.",
+        "PART 2 \u2013 Terms of Reference Introduction Uganda National Roads Authority (UNRA) was established by an Act of Parliament, the UNRA Act 2006, because of GoU\u2019s road sector reforms aimed at commercialization of road management.",
+        "The Traffic/Road Safety Expert shall be a qualified and competent Registered professional Civil Engineer with a degree in Civil or Traffic Engineering or equivalent qualification and with a minimum of 10 years experience in traffic data collection, analysis and forecasting.",
+        "For example, if a 10 per cent increase in traffic loading causes a 2.9 per cent increase in roughness developed after 15 years, the impact elasticity term of traffic loading for that roughness result is 0.29."
+      ],
+      "status": "read"
+    },
+    {
+      "name": "TOR_1_DUCAR_Road_Condition_Monitoring_Guidelines.docx",
+      "path": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\TOR_1_DUCAR_Road_Condition_Monitoring_Guidelines.docx",
+      "extension": ".docx",
+      "bytes": 38630,
+      "pages": 0,
+      "tables": 2,
+      "words": 1521,
+      "characters": 12274,
+      "dominant_topic": "Road condition",
+      "topic_counts": {
+        "PIMS appraisal": 0,
+        "Budget monitoring": 7,
+        "Road condition": 22,
+        "RAM and lifecycle": 6,
+        "Traffic and axle load": 5,
+        "GIS and network": 14,
+        "Construction QA": 18,
+        "Climate and drainage": 8,
+        "Safety and NMT": 5,
+        "Bridge and structures": 7,
+        "Procurement and contracts": 4
+      },
+      "summary_points": [
+        "| Month 8 Key expert | Minimum role and experience Team Leader / Road Asset Management Specialist | Civil engineering or transport asset management professional with at least 12 years of experience in road maintenance planning, condition assessment and public-sector advisory assignments.",
+        "7.0 OBLIGATIONS OF THE CLIENT - Provide available road inventory, condition, bridge, traffic, maintenance, budget and expenditure data.",
+        "2.0 OBJECTIVES The main objective of the assignment is to develop practical, standardised and affordable guidelines for monitoring road condition and maintenance performance on DUCAR roads, including the procedures, equipment, forms, data quality controls and reporting arrangements required for routine maintenance decision-making.",
+        "Define road condition indicators and survey levels - Prepare a practical condition indicator framework covering carriageway, shoulders, side drains, cross drainage, bridges, culverts, road furniture, vegetation, erosion, safety hazards and accessibility constraints."
+      ],
+      "status": "read"
+    },
+    {
+      "name": "TOR_2_DUCAR_Roads_Bridges_Maintenance_Prioritisation_Framework.docx",
+      "path": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\TOR_2_DUCAR_Roads_Bridges_Maintenance_Prioritisation_Framework.docx",
+      "extension": ".docx",
+      "bytes": 40358,
+      "pages": 0,
+      "tables": 4,
+      "words": 2014,
+      "characters": 16123,
+      "dominant_topic": "Budget monitoring",
+      "topic_counts": {
+        "PIMS appraisal": 4,
+        "Budget monitoring": 34,
+        "Road condition": 29,
+        "RAM and lifecycle": 6,
+        "Traffic and axle load": 9,
+        "GIS and network": 10,
+        "Construction QA": 10,
+        "Climate and drainage": 17,
+        "Safety and NMT": 8,
+        "Bridge and structures": 28,
+        "Procurement and contracts": 2
+      },
+      "summary_points": [
+        "2.0 OBJECTIVES The main objective of the assignment is to develop a rationalised, transparent and repeatable framework for allocating available maintenance budgets and prioritising interventions on DUCAR roads and bridges using road condition, bridge condition, risk, accessibility, traffic, socio-economic importance, maintainability and budget constraints.",
+        "| Month 9 Key expert | Minimum role and experience Team Leader / Road Asset Management Specialist | Civil engineering or transport asset management professional with at least 12 years of experience in road maintenance planning, condition assessment and public-sector advisory assignments.",
+        "Develop classification and data requirements - Define the minimum data required to prioritise each road or bridge, including road ID, administrative area, road class, surface type, length, traffic or usage proxy, condition score, drainage condition, access function, maintenance history, estimated quantities and unit rates.",
+        "7.0 OBLIGATIONS OF THE CLIENT - Provide available road inventory, condition, bridge, traffic, maintenance, budget and expenditure data."
+      ],
+      "status": "read"
+    },
+    {
+      "name": "TOR__for_Consultancy_Services_for_Guidelines for Monitoring Road Performance Indicators_DUCAR.docx",
+      "path": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\TOR__for_Consultancy_Services_for_Guidelines for Monitoring Road Performance Indicators_DUCAR.docx",
+      "extension": ".docx",
+      "bytes": 58741,
+      "pages": 0,
+      "tables": 2,
+      "words": 4371,
+      "characters": 33955,
+      "dominant_topic": "Traffic and axle load",
+      "topic_counts": {
+        "PIMS appraisal": 5,
+        "Budget monitoring": 8,
+        "Road condition": 22,
+        "RAM and lifecycle": 27,
+        "Traffic and axle load": 40,
+        "GIS and network": 32,
+        "Construction QA": 24,
+        "Climate and drainage": 3,
+        "Safety and NMT": 5,
+        "Bridge and structures": 10,
+        "Procurement and contracts": 2
+      },
+      "summary_points": [
+        "A key concern in the road sector is the poor condition of the network, particularly the unpaved roads, where only about 12.7% are in good condition and approximately 79.9% are classified as poor, reflecting significant deterioration and reduced serviceability.",
+        "Key Experts and Minimum Requirements Team Leader / Road Asset Management Specialist The Team Leader shall be a Civil Engineer or Transport Asset Management Specialist with at least twelve (12) years of post-qualification experience in road asset management, maintenance planning, and performance monitoring systems.",
+        "Traffic Engineer / Traffic Data Specialist The Traffic Engineer / Traffic Data Specialist shall be a qualified professional with substantial experience in traffic data collection, analysis, and application within road asset management systems.",
+        "The Team Leader shall possess strong practical experience in Road Management Systems (RMS) and shall be familiar with international asset management frameworks, including ISO 55000."
+      ],
+      "status": "read"
+    },
+    {
+      "name": "TOR__for_Consultancy_Services_for_Guidelines for Monitoring Road Performance Indicators_uganda road network.docx",
+      "path": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\TOR__for_Consultancy_Services_for_Guidelines for Monitoring Road Performance Indicators_uganda road network.docx",
+      "extension": ".docx",
+      "bytes": 57695,
+      "pages": 0,
+      "tables": 2,
+      "words": 4723,
+      "characters": 36450,
+      "dominant_topic": "Traffic and axle load",
+      "topic_counts": {
+        "PIMS appraisal": 5,
+        "Budget monitoring": 8,
+        "Road condition": 22,
+        "RAM and lifecycle": 27,
+        "Traffic and axle load": 41,
+        "GIS and network": 37,
+        "Construction QA": 27,
+        "Climate and drainage": 3,
+        "Safety and NMT": 5,
+        "Bridge and structures": 9,
+        "Procurement and contracts": 2
+      },
+      "summary_points": [
+        "Key Experts and Minimum Requirements Team Leader / Road Asset Management Specialist The Team Leader shall be a Civil Engineer or Transport Asset Management Specialist with at least twelve (12) years of post-qualification experience in road asset management, maintenance planning, and performance monitoring systems.",
+        "Traffic Engineer / Traffic Data Specialist The Traffic Engineer / Traffic Data Specialist shall be a qualified professional with substantial experience in traffic data collection, analysis, and application within road asset management systems.",
+        "Only about 12.7% of unpaved roads are reported to be in good condition, while approximately 79.9% are rated poor, indicating extensive deterioration and reduced service levels.",
+        "TASK 8: Integration with Road Asset Management Systems The Consultant shall ensure that performance monitoring is not conducted in isolation but is fully embedded within the asset management cycle, supporting functions such as maintenance planning, budgeting, prioritisation, and performance evaluation."
+      ],
+      "status": "read"
+    },
+    {
+      "name": "TOR__for_Consultancy_Services_for_RAM_DUCAR part 1_framework.docx",
+      "path": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\TOR__for_Consultancy_Services_for_RAM_DUCAR part 1_framework.docx",
+      "extension": ".docx",
+      "bytes": 53684,
+      "pages": 0,
+      "tables": 4,
+      "words": 2589,
+      "characters": 20293,
+      "dominant_topic": "Road condition",
+      "topic_counts": {
+        "PIMS appraisal": 8,
+        "Budget monitoring": 25,
+        "Road condition": 37,
+        "RAM and lifecycle": 12,
+        "Traffic and axle load": 9,
+        "GIS and network": 22,
+        "Construction QA": 16,
+        "Climate and drainage": 19,
+        "Safety and NMT": 10,
+        "Bridge and structures": 33,
+        "Procurement and contracts": 3
+      },
+      "summary_points": [
+        "| 1 Month Key expert | Minimum role and experience Team Leader / Road Asset Management Specialist | Civil engineering or transport asset management professional with at least 12 years of experience in road maintenance planning, condition assessment and public-sector advisory assignments.",
+        "Key Experts and Minimum Requirements Team Leader / Road Asset Management Specialist A Civil Engineer or Transport Asset Management Specialist with at least twelve (12) years of post-qualification experience in road asset management and maintenance planning.",
+        "Define the minimum data required to prioritise each road or bridge, including road ID, administrative area, road class, surface type, length, traffic or usage proxy, condition score, drainage condition, access function, maintenance history, estimated quantities and unit rates.",
+        "The Team Leader shall have hands-on experience with Road Management Systems (RMS) and familiarity with international asset management standards such as ISO 55000."
+      ],
+      "status": "read"
+    },
+    {
+      "name": "TOR__for_Consultancy_Services_for_RAM_DUCAR.docx",
+      "path": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\TOR__for_Consultancy_Services_for_RAM_DUCAR.docx",
+      "extension": ".docx",
+      "bytes": 57422,
+      "pages": 0,
+      "tables": 5,
+      "words": 3192,
+      "characters": 25104,
+      "dominant_topic": "Road condition",
+      "topic_counts": {
+        "PIMS appraisal": 9,
+        "Budget monitoring": 35,
+        "Road condition": 41,
+        "RAM and lifecycle": 13,
+        "Traffic and axle load": 9,
+        "GIS and network": 29,
+        "Construction QA": 18,
+        "Climate and drainage": 19,
+        "Safety and NMT": 10,
+        "Bridge and structures": 38,
+        "Procurement and contracts": 3
+      },
+      "summary_points": [
+        "| Month 9 Key expert | Minimum role and experience Team Leader / Road Asset Management Specialist | Civil engineering or transport asset management professional with at least 12 years of experience in road maintenance planning, condition assessment and public-sector advisory assignments.",
+        "As of 2025, Uganda's total road network is estimated at approximately 173,656 kilometres, of which community access roads alone account for over 75,404 kilometres, followed by district roads at approximately 41,194 kilometres and national roads at about 21,292 kilometres.",
+        "When combined, the total DUCAR network is approximately 152,456 km; therefore, the DUCAR network alone accounts for over 85% of the entire road network.",
+        "Key Experts and Minimum Requirements Team Leader / Road Asset Management Specialist A Civil Engineer or Transport Asset Management Specialist with at least twelve (12) years of post-qualification experience in road asset management and maintenance planning."
+      ],
+      "status": "read"
+    },
+    {
+      "name": "TOR__for_Consultancy_Services_for_Road_Condition_Monitoring_Guidelines_DUCAR.docx",
+      "path": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\TOR__for_Consultancy_Services_for_Road_Condition_Monitoring_Guidelines_DUCAR.docx",
+      "extension": ".docx",
+      "bytes": 56562,
+      "pages": 0,
+      "tables": 5,
+      "words": 2998,
+      "characters": 23624,
+      "dominant_topic": "Bridge and structures",
+      "topic_counts": {
+        "PIMS appraisal": 7,
+        "Budget monitoring": 33,
+        "Road condition": 36,
+        "RAM and lifecycle": 11,
+        "Traffic and axle load": 8,
+        "GIS and network": 25,
+        "Construction QA": 18,
+        "Climate and drainage": 18,
+        "Safety and NMT": 9,
+        "Bridge and structures": 37,
+        "Procurement and contracts": 3
+      },
+      "summary_points": [
+        "| Month 9 Key expert | Minimum role and experience Team Leader / Road Asset Management Specialist | Civil engineering or transport asset management professional with at least 12 years of experience in road maintenance planning, condition assessment and public-sector advisory assignments.",
+        "As of 2025, Uganda's total road network is estimated at approximately 173,656 kilometres, of which community access roads alone account for over 75,404 kilometres, followed by district roads at approximately 41,194 kilometres and national roads at about 21,292 kilometres.",
+        "When combined, the total DUCAR network is approximately 152,456 km; therefore, the DUCAR network alone accounts for over 85% of the entire road network.",
+        "Key Experts and Minimum Requirements Team Leader / Road Asset Management Specialist A Civil Engineer or Transport Asset Management Specialist with at least twelve (12) years of post-qualification experience in road asset management and maintenance planning."
+      ],
+      "status": "read"
+    },
+    {
+      "name": "URDM-Manual-Part-1-July-2023.pdf",
+      "path": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\docs\\mowt\\URDM-Manual-Part-1-July-2023.pdf",
+      "extension": ".pdf",
+      "bytes": 20253852,
+      "pages": 589,
+      "tables": 0,
+      "words": 162766,
+      "characters": 1215240,
+      "dominant_topic": "Traffic and axle load",
+      "topic_counts": {
+        "PIMS appraisal": 59,
+        "Budget monitoring": 240,
+        "Road condition": 183,
+        "RAM and lifecycle": 67,
+        "Traffic and axle load": 1273,
+        "GIS and network": 222,
+        "Construction QA": 967,
+        "Climate and drainage": 881,
+        "Safety and NMT": 789,
+        "Bridge and structures": 314,
+        "Procurement and contracts": 712
+      },
+      "summary_points": [
+        "Factors to calculate Maintainable Condition Index (MCI) Factor % Road Drainage Condition Factor 40.00 Road Shoulder Condition Factor 20.00 Road Surface Condition Factor 40.00 Total 100.00 Cut-off value of Maintainable Condition Index for road maintenance = 2.5; up to which the road section is maintainable.",
+        "Spot Repair Contracts X X X X X X X X X X X X X LGBFP process X X AURICS process X X AURWP process X X URBAN ROADS DESIGN MANUAL July 2023 MINISTRY OF WORKS AND TRANSPORT 1-96 1.3 CHAPTER 3: ROAD INVENTORY, CONDITION AND TRAFFIC SURVEYS 1.3.1 INTRODUCTION Road Inventory, Condition and Traffic Surveys data are important inputs in the road planning process.",
+        "URBAN ROADS DESIGN MANUALS July 2023 12 2 Road Furniture Maintenance 2.1 Traffic Sign Maintenance WORK ACTIVITY DESCRIPTION Repair and/or clean damaged or dirty traffic signs using hand tools and labour to maintain an acceptable condition.",
+        "URBAN ROADS DESIGN MANUAL July 2023 MINISTRY OF WORKS AND TRANSPORT 1-103 1.5 CHAPTER 5: ROAD WORKS PLANNING DATABASE 1.5.1 INTRODUCTION A road works planning database is an important element in planning it enables the urban councils to know their road network, their conditions, and the costs of maintenance and improvements when required."
+      ],
+      "status": "read"
+    },
+    {
+      "name": "URDM-Standard-Drawings-July2023.pdf",
+      "path": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\docs\\mowt\\URDM-Standard-Drawings-July2023.pdf",
+      "extension": ".pdf",
+      "bytes": 10836631,
+      "pages": 80,
+      "tables": 0,
+      "words": 10644,
+      "characters": 94297,
+      "dominant_topic": "Traffic and axle load",
+      "topic_counts": {
+        "PIMS appraisal": 0,
+        "Budget monitoring": 0,
+        "Road condition": 1,
+        "RAM and lifecycle": 0,
+        "Traffic and axle load": 95,
+        "GIS and network": 12,
+        "Construction QA": 83,
+        "Climate and drainage": 56,
+        "Safety and NMT": 10,
+        "Bridge and structures": 34,
+        "Procurement and contracts": 1
+      },
+      "summary_points": [
+        "ROAD FILL 30 230 'K' 175 (MASONRY ALTERNATIVE) PIPE BOX 250 30mm CEMENT MORTAR CAPPINGCEMENT MORTARED MASONRYHEADWALL AND WINGWALL 30250ROAD FILL 300 MIN.200 30 SEE DETAIL 1ROAD FILL 25030 NOTES :1.",
+        "MINISTRY OF WORKS AND TRANSPORTTHE REPUBLIC OF UGANDA Approved by:Issue Date:PROJECT TITLECATEGORYDRAWING TITLESTATUSDOUBLE RCC CULVERT CROSSINGSFINALROAD DRAINAGESCALENot to ScaleDRAWING REFERENCECUL-9JULY 2023ENGINEER-IN-CHIEF2023 UGANDA URBAN ROADS DESIGN MANUAL SELECTED GRANULAR BACKFILL DETAIL - A 100 THK.",
+        "3 KERBR=12m FOOTWAY R=12mR=15mLAY-BYR=6mEXISTING ROADTRAFFIC DIRECTIONLAY-BYPASSENGER WAITINGAREA/FOOTWAYPLAN OF TYPICAL MINIBUS-TAXI LAY-BYEXISTING CHANNEL (OR IN THE CASE OFNEW CONSTRUCTION FIG.",
+        "*2.25m MIN15.5 m 6m MIN*2.25m MIN(10.5m ROAD RESERVE)*2.25m MIN6m MIN*2.25m MIN(10.5m ROAD RESERVE) 4."
+      ],
+      "status": "read"
+    }
+  ],
+  "documentTable": {
+    "title": "Core national documents actually text-extracted",
+    "columns": [
+      "Document",
+      "Type",
+      "Pages",
+      "DOCX tables",
+      "Words read",
+      "Dominant topic",
+      "Read status"
+    ],
+    "rows": [
+      [
+        "Final-General-Specifications-for-Roads-and-Bridges_March-2026.pdf",
+        "PDF",
+        550,
+        "",
+        405788,
+        "Construction QA",
+        "read"
+      ],
+      [
+        "URDM-Manual-Part-1-July-2023.pdf",
+        "PDF",
+        589,
+        "",
+        162766,
+        "Traffic and axle load",
+        "read"
+      ],
+      [
+        "CONSTRUCTION-MANUAL-.pdf",
+        "PDF",
+        257,
+        "",
+        91189,
+        "Construction QA",
+        "read"
+      ],
+      [
+        "DUCAR_source_digest.json",
+        "JSON",
+        "",
+        "",
+        72620,
+        "RAM and lifecycle",
+        "read"
+      ],
+      [
+        "Public-Investment-Manual-for-Project-Preparation-and-Appraisal.pdf",
+        "PDF",
+        152,
+        "",
+        57014,
+        "PIMS appraisal",
+        "read"
+      ],
+      [
+        "NMT-Design-and-Operational-Manual-web-2.pdf",
+        "PDF",
+        206,
+        "",
+        46860,
+        "Safety and NMT",
+        "read"
+      ],
+      [
+        "Integrated Transport Infrastructure Services Annual Budget Monitoring report FY 2023-24.pdf",
+        "PDF",
+        106,
+        "",
+        39268,
+        "Budget monitoring",
+        "read"
+      ],
+      [
+        "LTPPMS Establish Guide.docx",
+        "DOCX",
+        "",
+        36,
+        23145,
+        "Road condition",
+        "read"
+      ],
+      [
+        "Guidelines for Road Performance Indicators.docx",
+        "DOCX",
+        "",
+        5,
+        18082,
+        "RAM and lifecycle",
+        "read"
+      ],
+      [
+        "URDM-Standard-Drawings-July2023.pdf",
+        "PDF",
+        80,
+        "",
+        10644,
+        "Traffic and axle load",
+        "read"
+      ],
+      [
+        "Revised__TOR__for_Consultancy_Services_for_RAM_and_Investment_Planning_Support_for_UNRA_PS_Comments(1).docx",
+        "DOCX",
+        "",
+        5,
+        7904,
+        "RAM and lifecycle",
+        "read"
+      ],
+      [
+        "Draft Traffic data collection policies and procedures version March 2016.docx",
+        "DOCX",
+        "",
+        23,
+        7614,
+        "Traffic and axle load",
+        "read"
+      ],
+      [
+        "Panel Inspection Guide.docx",
+        "DOCX",
+        "",
+        4,
+        7289,
+        "Bridge and structures",
+        "read"
+      ],
+      [
+        "Pavement data collection policies and procedures.docx",
+        "DOCX",
+        "",
+        21,
+        5182,
+        "Construction QA",
+        "read"
+      ],
+      [
+        "TOR__for_Consultancy_Services_for_Guidelines for Monitoring Road Performance Indicators_uganda road network.docx",
+        "DOCX",
+        "",
+        2,
+        4723,
+        "Traffic and axle load",
+        "read"
+      ],
+      [
+        "QMP Template for Traffic Data Collection.docx",
+        "DOCX",
+        "",
+        5,
+        4413,
+        "Construction QA",
+        "read"
+      ],
+      [
+        "TOR__for_Consultancy_Services_for_Guidelines for Monitoring Road Performance Indicators_DUCAR.docx",
+        "DOCX",
+        "",
+        2,
+        4371,
+        "Traffic and axle load",
+        "read"
+      ],
+      [
+        "TOR HDM Calibration_PDU.docx",
+        "DOCX",
+        "",
+        2,
+        3829,
+        "Traffic and axle load",
+        "read"
+      ],
+      [
+        "TOR__for_Consultancy_Services_for_RAM_DUCAR.docx",
+        "DOCX",
+        "",
+        5,
+        3192,
+        "Road condition",
+        "read"
+      ],
+      [
+        "TOR__for_Consultancy_Services_for_Road_Condition_Monitoring_Guidelines_DUCAR.docx",
+        "DOCX",
+        "",
+        5,
+        2998,
+        "Bridge and structures",
+        "read"
+      ],
+      [
+        "TOR__for_Consultancy_Services_for_RAM_DUCAR part 1_framework.docx",
+        "DOCX",
+        "",
+        4,
+        2589,
+        "Road condition",
+        "read"
+      ],
+      [
+        "TOR_2_DUCAR_Roads_Bridges_Maintenance_Prioritisation_Framework.docx",
+        "DOCX",
+        "",
+        4,
+        2014,
+        "Budget monitoring",
+        "read"
+      ],
+      [
+        "TOR_1_DUCAR_Road_Condition_Monitoring_Guidelines.docx",
+        "DOCX",
+        "",
+        2,
+        1521,
+        "Road condition",
+        "read"
+      ],
+      [
+        "MaintenanceManagementFeatures_Rev1.docx",
+        "DOCX",
+        "",
+        2,
+        447,
+        "GIS and network",
+        "read"
+      ],
+      [
+        "DUCAR.docx",
+        "DOCX",
+        "",
+        "",
+        234,
+        "GIS and network",
+        "read"
+      ]
+    ]
+  },
+  "documentTopicChart": [
+    {
+      "topic": "Construction QA",
+      "mentions": 9788,
+      "share": 100.0,
+      "decision_use": "Design, material, testing, supervision and quality acceptance rules."
+    },
+    {
+      "topic": "Procurement and contracts",
+      "mentions": 4633,
+      "share": 47.3,
+      "decision_use": "Tender readiness, BOQ, contract administration and payment controls."
+    },
+    {
+      "topic": "Traffic and axle load",
+      "mentions": 4162,
+      "share": 42.5,
+      "decision_use": "AADT, representative vehicles, axle-load pressure and speed-flow assumptions."
+    },
+    {
+      "topic": "Bridge and structures",
+      "mentions": 3028,
+      "share": 30.9,
+      "decision_use": "Bridge/culvert inventory, inspection and structural criticality gates."
+    },
+    {
+      "topic": "Safety and NMT",
+      "mentions": 2841,
+      "share": 29.0,
+      "decision_use": "Crash exposure, vulnerable users and safety countermeasure benefits."
+    },
+    {
+      "topic": "Climate and drainage",
+      "mentions": 2448,
+      "share": 25.0,
+      "decision_use": "Flood, drainage, culvert and climate-resilience screens."
+    },
+    {
+      "topic": "Road condition",
+      "mentions": 2111,
+      "share": 21.6,
+      "decision_use": "Condition-based treatment triggers, deterioration pressure and monitoring tiers."
+    },
+    {
+      "topic": "PIMS appraisal",
+      "mentions": 1629,
+      "share": 16.6,
+      "decision_use": "Project admission, appraisal readiness, affordability and gate control."
+    },
+    {
+      "topic": "GIS and network",
+      "mentions": 1489,
+      "share": 15.2,
+      "decision_use": "Route identity, district joins, topology, route matrix and spatial equity."
+    },
+    {
+      "topic": "RAM and lifecycle",
+      "mentions": 1432,
+      "share": 14.6,
+      "decision_use": "Lifecycle planning, work standards, system governance and optimisation."
+    },
+    {
+      "topic": "Budget monitoring",
+      "mentions": 1180,
+      "share": 12.1,
+      "decision_use": "Budget release, absorption, variance and physical progress checks."
+    }
+  ],
+  "manualRepository": {
+    "summary": {
+      "all_files": 5221,
+      "logic_records": 2199,
+      "total_bytes": 5096861344,
+      "folders": 23,
+      "extensions": 86,
+      "topics": 10
+    },
+    "by_topic": {
+      "Other repository evidence": 2423,
+      "Road condition": 726,
+      "Traffic and axle loading": 599,
+      "Environment and safeguards": 573,
+      "Construction and supervision": 294,
+      "Asset management": 218,
+      "Training and systems": 211,
+      "Bridge and structures": 94,
+      "Quality management": 46,
+      "GIS and referencing": 37
+    },
+    "by_role": {
+      "Attachment / media / executable": 3022,
+      "Primary manual / rule source": 2051,
+      "Template / database / tabular source": 109,
+      "Supporting document": 27,
+      "Training and implementation source": 12
+    },
+    "by_folder_top": {
+      "Super Manuals": 2628,
+      "Manuals": 727,
+      "Building Manuals": 655,
+      "UNRA Manuals": 556,
+      "BRIDGES AND MAJOR STRUCTURES INVENTORY AND INSPECTION": 439,
+      "Pavement Design Manuals": 46,
+      "ROMDAS Manuals": 33,
+      "Asset Management Manuals": 31,
+      "ROMDAS": 20,
+      "Inventory and Inspection manuals": 12,
+      "Pave't Evaln": 12,
+      "Training Manuals": 11
+    },
+    "by_extension_top": {
+      ".jpg": 953,
+      ".doc": 952,
+      ".pdf": 841,
+      ".gif": 426,
+      ".cdr": 420,
+      ".xls": 275,
+      ".dwg": 170,
+      ".db": 149,
+      ".docx": 71,
+      ".his": 66,
+      ".png": 62,
+      ".bak": 62
+    },
+    "logic_record_count": 2199,
+    "file_count": 5221
+  },
+  "manualRepositoryCharts": {
+    "topics": {
+      "title": "Full manual repository by evidence topic",
+      "columns": [
+        "Topic",
+        "Files"
+      ],
+      "rows": [
+        [
+          "Other repository evidence",
+          2423
+        ],
+        [
+          "Road condition",
+          726
+        ],
+        [
+          "Traffic and axle loading",
+          599
+        ],
+        [
+          "Environment and safeguards",
+          573
+        ],
+        [
+          "Construction and supervision",
+          294
+        ],
+        [
+          "Asset management",
+          218
+        ],
+        [
+          "Training and systems",
+          211
+        ],
+        [
+          "Bridge and structures",
+          94
+        ],
+        [
+          "Quality management",
+          46
+        ],
+        [
+          "GIS and referencing",
+          37
+        ]
+      ]
+    },
+    "roles": {
+      "title": "Full manual repository by evidence role",
+      "columns": [
+        "Role",
+        "Files"
+      ],
+      "rows": [
+        [
+          "Attachment / media / executable",
+          3022
+        ],
+        [
+          "Primary manual / rule source",
+          2051
+        ],
+        [
+          "Template / database / tabular source",
+          109
+        ],
+        [
+          "Supporting document",
+          27
+        ],
+        [
+          "Training and implementation source",
+          12
+        ]
+      ]
+    },
+    "folders": {
+      "title": "Largest national manual folders",
+      "columns": [
+        "Folder",
+        "Files"
+      ],
+      "rows": [
+        [
+          "Super Manuals",
+          2628
+        ],
+        [
+          "Manuals",
+          727
+        ],
+        [
+          "Building Manuals",
+          655
+        ],
+        [
+          "UNRA Manuals",
+          556
+        ],
+        [
+          "BRIDGES AND MAJOR STRUCTURES INVENTORY AND INSPECTION",
+          439
+        ],
+        [
+          "Pavement Design Manuals",
+          46
+        ],
+        [
+          "ROMDAS Manuals",
+          33
+        ],
+        [
+          "Asset Management Manuals",
+          31
+        ],
+        [
+          "ROMDAS",
+          20
+        ],
+        [
+          "Inventory and Inspection manuals",
+          12
+        ],
+        [
+          "Pave't Evaln",
+          12
+        ],
+        [
+          "Training Manuals",
+          11
+        ]
+      ]
+    }
+  },
+  "mowtManuals": [
+    {
+      "name": "Final-General-Specifications-for-Roads-and-Bridges_March-2026.pdf",
+      "pages": 550,
+      "bytes": 14059237,
+      "sample_text": "MINISTRY OF WORKS AND TRANSPORT THE REPUBLIC OF UGANDA General Specifications for Road and Bridge Works Ministry of Works and Transport Plot 57 -59, Old Port Bell Road PO BOX 7174, Kampala, Uganda MARCH 2026 i FOREWORD By the powers entrusted to me under the Roads Act 2019, I am pleased to present the General Specifications for Road and Bridge Works, 202 6. As Government, we are committed to enhancing the quality and safety of Uganda \u2019s road infrastructure. The General Specifications will be part of the legal and technical framework for use in planning, design, construction, maintenance and operation of efficient and effective public road and bridge infrastructure in our country. The Ministry of Works and Transport, in consultation with stakeholders has undertaken a comprehensive review of the previous specifications that were launched in 2005 and updated them accordingly. The revisions have incorporated the latest advancements in technology, the best pract ices observed locally, regionally and internationally, as well as the valuable experiences gathered from practitioners in the road construction industry. The importance of well -designed, constructed and maintained public roads cannot be overstated. They ar e vital to our national development and facilitate trade, tourism, security, agriculture, mining, mobility, and connectivity across our",
+      "keywords": [
+        {
+          "term": "road",
+          "count": 48
+        },
+        {
+          "term": "bridge",
+          "count": 18
+        },
+        {
+          "term": "concrete",
+          "count": 18
+        },
+        {
+          "term": "contract",
+          "count": 17
+        },
+        {
+          "term": "materials",
+          "count": 16
+        },
+        {
+          "term": "quality",
+          "count": 15
+        },
+        {
+          "term": "asphalt",
+          "count": 13
+        },
+        {
+          "term": "pavement",
+          "count": 12
+        }
+      ]
+    },
+    {
+      "name": "NMT-Design-and-Operational-Manual-web-2.pdf",
+      "pages": 206,
+      "bytes": 6220837,
+      "sample_text": "Non-Motorized Transport Manual Non-Motorized Transport Manual aMINISTRY OF WORKS AND TRANSPORT THE REPUBLIC OF UGANDA MINISTRY OF WORKS AND TRANSPORT ROAD DESIGN MANUAL VOLUME VII: NON-MOTORIZED TRANSPORT JANUARY 2025 b Non-Motorized Transport Manual Non-Motorized Transport Manual MINISTRY OF WORKS AND TRANSPORT MINISTRY OF WORKS AND TRANSPORT JANUARY 2025 Non-Motorized Transport Manual Non-Motorized Transport Manual cMINISTRY OF WORKS AND TRANSPORT THE REPUBLIC OF UGANDA MINISTRY OF WORKS AND TRANSPORT ROAD DESIGN MANUAL VOLUME VII: NON-MOTORIZED TRANSPORT JANUARY 2025 d Non-Motorized Transport Manual Non-Motorized Transport Manual MINISTRY OF WORKS AND TRANSPORT Non-Motorized Transport Manual Non-Motorized Transport Manual iMINISTRY OF WORKS AND TRANSPORT Foreword By the powers vested in me under Section 6 of the Road Act (2019), I am honoured to present the Non-Motorized Transport Manual, 2025. This manual will be used as one of the standards for the safe, efficient, effective and sustainable design of public roads in Uganda. As a Ministry, we remain steadfast in our commitment to integrating pedestrians and cycling facilities into design and construction of road and bridge infrastructure. This manual will serve as a critical component of the legal and technical framework for the planning, design, construction, maintenance, and operation of efficient a",
+      "keywords": [
+        {
+          "term": "road",
+          "count": 31
+        },
+        {
+          "term": "design",
+          "count": 31
+        },
+        {
+          "term": "pedestrian",
+          "count": 9
+        },
+        {
+          "term": "traffic",
+          "count": 5
+        },
+        {
+          "term": "maintenance",
+          "count": 5
+        },
+        {
+          "term": "safety",
+          "count": 3
+        },
+        {
+          "term": "urban",
+          "count": 3
+        },
+        {
+          "term": "cycling",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "name": "URDM-Manual-Part-1-July-2023.pdf",
+      "pages": 589,
+      "bytes": 20253852,
+      "sample_text": "The Republic of Uganda MINISTRY OF WORKS AND TRANSPORT ROAD DESIGN MANUAL Volume VI: Urban Roads PART 1: Design Manual and Appendices FINAL JULY 2023 URBAN ROADS DESIGN MANUAL July 2023 MINISTRY OF WORKS AND TRANSPORT i FOREWORD Background and Objective of the updated 2023 Urban Roads Design Manual Road transport is the dominant mode of transport in Uganda, presently accounting for over 90 percent of the volume of freight and passenger movement. Uganda has a road network of approximately 159,529km of national, district, urban and community access roads, representing one of the huge national assets, valued at approx. US$ 7.7M, in 2019. Presently, the roads network is largely unpaved with only about 7,149km of the roads paved, thereby representing 4.5% of the total road network. Uganda\u2019s roads network is a critical component for the socio-economic development of the country, as it is vital for people and freight transport that supports production, competitiveness, trade and mobility. Road network development and maintenance are key strategic priorities for national and human development. In the last 10 years, the numbers of Cities, Municipals and Town Councils have risen rapidly due to creation of new districts, cities and other local government administrative units. By June 2021, the administrative units comprised of 135 Districts, 1 Capital City (Kampala Capital City Authority",
+      "keywords": [
+        {
+          "term": "road",
+          "count": 65
+        },
+        {
+          "term": "design",
+          "count": 56
+        },
+        {
+          "term": "urban",
+          "count": 50
+        },
+        {
+          "term": "maintenance",
+          "count": 24
+        },
+        {
+          "term": "contract",
+          "count": 8
+        },
+        {
+          "term": "pavement",
+          "count": 6
+        },
+        {
+          "term": "traffic",
+          "count": 6
+        },
+        {
+          "term": "drainage",
+          "count": 4
+        }
+      ]
+    },
+    {
+      "name": "URDM-Standard-Drawings-July2023.pdf",
+      "pages": 80,
+      "bytes": 10836631,
+      "sample_text": "Plot Date: July 20, 2023Last Save Date: July 19, 2023 at 09:55Last Save By: Jenkins, Herald THE REPUBLIC OF UGANDA FINALJULY 2023 MINISTRY OF WORKS AND TRANSPORTROAD DESIGN MANUALVolume VI: Urban RoadsPart 2: Standard Drawings MINISTRY OF WORKS AND TRANSPORTTHE REPUBLIC OF UGANDA Plot Date: July 20, 2023Last Save Date: July 20, 2023 at 12:00Last Save By: Jenkins, Herald LIST OF STANDARD DRAWINGS Approved by:Issue Date:PROJECT TITLECATEGORYDRAWING TITLESTATUSLIST OF STANDARD DRAWINGSFINALCONTENTSJULY 2023ENGINEER-IN-CHIEF2023 UGANDA URBAN ROADS DESIGN MANUAL MINISTRY OF WORKS AND TRANSPORTTHE REPUBLIC OF UGANDA Plot Date: July 11, 2023Last Save Date: July 11, 2023 at 17:48Last Save By: Jenkins, Herald Approved by:Issue Date:PROJECT TITLECATEGORYDRAWING TITLESTATUSDRAWING CHECKLIST & STANDARDSFINALJULY 2023ENGINEER-IN-CHIEF2023 UGANDA URBAN ROADS DESIGN MANUALGENERAL DRAWING CHECKLIST & STANDARDS DRAWING REFERENCEG - 1 Plot Date: July 15, 2023Last Save Date: July 15, 2023 at 14:32Last Save By: Jenkins, Herald DRAWING ISSUE REGISTERREVDATEBYDESCRIPTION AUTHORITY APPROVAL CONTRACT No.PROJECT No.DRAWING No.PAPER SIZESCALE DIVISION: ......................................................NAME: .....................................PROF REG No: ........................SIGNATURE: ..........................DATE: .......................................DIVISION: ..........................",
+      "keywords": [
+        {
+          "term": "traffic",
+          "count": 27
+        },
+        {
+          "term": "road",
+          "count": 19
+        },
+        {
+          "term": "urban",
+          "count": 10
+        },
+        {
+          "term": "design",
+          "count": 10
+        },
+        {
+          "term": "contract",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "itisTables": {
+    "road_network_by_category": {
+      "title": "Uganda road network by category, FY 2022/23",
+      "source": "Ministry of Works and Transport. (2023). ITIS statistical abstract 2023; URF DUCAR network status report 2023.",
+      "columns": [
+        "Category",
+        "Length_km",
+        "DUCAR_scope"
+      ],
+      "rows": [
+        [
+          "National Roads",
+          21292,
+          "Reference only"
+        ],
+        [
+          "District Roads",
+          41194,
+          "DUCAR"
+        ],
+        [
+          "KCCA",
+          2103,
+          "DUCAR urban"
+        ],
+        [
+          "City Roads",
+          2830,
+          "DUCAR urban"
+        ],
+        [
+          "Community Access Roads",
+          75404,
+          "DUCAR"
+        ],
+        [
+          "Town Council Roads",
+          24269,
+          "DUCAR urban"
+        ],
+        [
+          "Municipal Roads",
+          6656,
+          "DUCAR urban"
+        ]
+      ]
+    },
+    "road_condition_by_category": {
+      "title": "Road condition by network category, FY 2022/23",
+      "source": "Ministry of Works and Transport. (2023). ITIS statistical abstract 2023; URF DUCAR network status report 2023.",
+      "columns": [
+        "Network category",
+        "Good_km",
+        "Fair_km",
+        "Poor_km",
+        "Total_km"
+      ],
+      "rows": [
+        [
+          "National (UNRA)",
+          12508,
+          7844,
+          848,
+          21200
+        ],
+        [
+          "KCCA",
+          184.9,
+          1019.5,
+          898.6,
+          2103
+        ],
+        [
+          "Community Access Roads",
+          3588.45,
+          1159.68,
+          70656,
+          75404
+        ],
+        [
+          "City Roads",
+          529.64,
+          200.14,
+          2099.83,
+          2830
+        ],
+        [
+          "District Roads",
+          4008.69,
+          1865.43,
+          35320,
+          41194
+        ],
+        [
+          "Municipal Roads",
+          505.09,
+          410.7,
+          5740.5,
+          6656
+        ],
+        [
+          "Town Council Roads",
+          673,
+          480.56,
+          23115,
+          24269
+        ]
+      ]
+    },
+    "paved_national_roads_trend": {
+      "title": "Paved national road network trend",
+      "source": "Ministry of Works and Transport. (2023). ITIS statistical abstract 2023; UNRA annual performance report 2022/23.",
+      "columns": [
+        "FY",
+        "Annual increase_km",
+        "Paved stock_km",
+        "Percent paved"
+      ],
+      "rows": [
+        [
+          "2018/19",
+          420,
+          4942,
+          23.5
+        ],
+        [
+          "2019/20",
+          428,
+          5370,
+          25.5
+        ],
+        [
+          "2020/21",
+          221,
+          5591,
+          26.6
+        ],
+        [
+          "2021/22",
+          287,
+          5878.5,
+          27.8
+        ],
+        [
+          "2022/23",
+          254.5,
+          6133,
+          29.18
+        ]
+      ]
+    },
+    "road_crashes_by_nature": {
+      "title": "Road traffic crashes by nature, CY 2019-2023",
+      "source": "Ministry of Works and Transport. (2023). ITIS statistical abstract 2023; Uganda Police Force annual crime report 2023.",
+      "columns": [
+        "Year",
+        "Fatal",
+        "Serious",
+        "Minor",
+        "Total"
+      ],
+      "rows": [
+        [
+          2019,
+          3407,
+          5992,
+          3459,
+          12858
+        ],
+        [
+          2020,
+          3269,
+          5803,
+          3177,
+          12249
+        ],
+        [
+          2021,
+          3757,
+          9070,
+          4616,
+          17443
+        ],
+        [
+          2022,
+          3901,
+          10776,
+          5717,
+          20394
+        ],
+        [
+          2023,
+          4179,
+          12487,
+          6942,
+          23608
+        ]
+      ]
+    },
+    "rail_network": {
+      "title": "Rail network operational status, 2023",
+      "source": "Ministry of Works and Transport. (2023). ITIS statistical abstract 2023; URC annual performance report 2022/23.",
+      "columns": [
+        "Status",
+        "Km",
+        "Share_percent"
+      ],
+      "rows": [
+        [
+          "Operational",
+          269,
+          21.2
+        ],
+        [
+          "Non-operational",
+          997,
+          78.8
+        ]
+      ]
+    },
+    "railway_accidents": {
+      "title": "Railway accidents by category",
+      "source": "Ministry of Works and Transport. (2023). ITIS statistical abstract 2023; URC annual performance report 2022/23.",
+      "columns": [
+        "Category",
+        "FY 2018/19",
+        "FY 2019/20",
+        "FY 2020/21",
+        "FY 2021/22",
+        "FY 2022/23"
+      ],
+      "rows": [
+        [
+          "Fatal",
+          0,
+          0,
+          1,
+          2,
+          2
+        ],
+        [
+          "Serious",
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        [
+          "Minor",
+          22,
+          19,
+          48,
+          30,
+          26
+        ]
+      ]
+    },
+    "air_passenger_and_cargo": {
+      "title": "SDG 9.1.2 passenger and freight indicators",
+      "source": "Ministry of Works and Transport. (2023). ITIS statistical abstract 2023.",
+      "columns": [
+        "Mode",
+        "Measure",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023"
+      ],
+      "rows": [
+        [
+          "Air transport",
+          "Cargo tonnes",
+          64731,
+          59720,
+          64172,
+          61255,
+          59072
+        ],
+        [
+          "Air transport",
+          "Passengers",
+          1802107,
+          565541,
+          941688,
+          1574405,
+          1932094
+        ],
+        [
+          "Railway transport",
+          "Cargo tonnes",
+          193693,
+          196935,
+          390628,
+          242686,
+          243634.18
+        ],
+        [
+          "Railway transport",
+          "Passengers",
+          619206,
+          180327,
+          799533,
+          155816,
+          216455
+        ],
+        [
+          "Water transport",
+          "Cargo tonnes",
+          1845.6,
+          2110.1,
+          2834.7,
+          null,
+          96922
+        ],
+        [
+          "Water transport",
+          "Passengers",
+          1155299,
+          3842092,
+          1623852,
+          3117791,
+          3518023
+        ]
+      ]
+    },
+    "ferry_operations_kis": {
+      "title": "KIS ferry crossings and traffic, CY 2019-2023",
+      "source": "Ministry of Works and Transport. (2023). ITIS statistical abstract 2023; KIS quarterly independent operations reports.",
+      "columns": [
+        "Year",
+        "Passengers",
+        "Pick-ups",
+        "Trucks",
+        "Cars",
+        "Buses",
+        "Motor bike",
+        "Total traffic"
+      ],
+      "rows": [
+        [
+          2019,
+          547104,
+          7016,
+          11714,
+          18934,
+          5337,
+          42157,
+          632262
+        ],
+        [
+          2020,
+          601815,
+          7718,
+          12886,
+          20827,
+          5870,
+          46373,
+          695489
+        ],
+        [
+          2021,
+          661997,
+          8489,
+          14174,
+          22910,
+          6457,
+          51010,
+          765037
+        ],
+        [
+          2022,
+          728375,
+          8923,
+          19012,
+          39227,
+          8505,
+          83721,
+          887763
+        ],
+        [
+          2023,
+          770925,
+          9462,
+          18496,
+          41539,
+          8706,
+          77588,
+          926716
+        ]
+      ]
+    },
+    "water_body_accidents": {
+      "title": "Recorded accidents on major water bodies",
+      "source": "Ministry of Works and Transport. (2023). ITIS statistical abstract 2023; Uganda Police Force annual crime report 2023.",
+      "columns": [
+        "Year",
+        "Passengers involved",
+        "Passengers rescued",
+        "Fatalities"
+      ],
+      "rows": [
+        [
+          2019,
+          1503,
+          1214,
+          289
+        ],
+        [
+          2020,
+          0,
+          0,
+          0
+        ],
+        [
+          2021,
+          456,
+          246,
+          210
+        ],
+        [
+          2022,
+          291,
+          67,
+          224
+        ],
+        [
+          2023,
+          566,
+          323,
+          243
+        ]
+      ]
+    },
+    "major_lakes": {
+      "title": "Major water bodies and transport setting",
+      "source": "Ministry of Works and Transport. (2023). ITIS statistical abstract 2023; ResearchGate lake characteristics.",
+      "columns": [
+        "Lake",
+        "Shoreline_km",
+        "Area_km2"
+      ],
+      "rows": [
+        [
+          "Victoria",
+          4828,
+          68800
+        ],
+        [
+          "Albert",
+          355,
+          2675
+        ],
+        [
+          "Kyoga",
+          200,
+          1720
+        ],
+        [
+          "Edward",
+          234,
+          2325
+        ],
+        [
+          "George",
+          63.2,
+          250
+        ],
+        [
+          "Bisina",
+          null,
+          308
+        ]
+      ]
+    }
+  },
+  "itisCharts": {
+    "kpis": [
+      {
+        "label": "Total road network",
+        "value": "173,748 km",
+        "note": "ITIS/URF FY 2022/23"
+      },
+      {
+        "label": "DUCAR focus",
+        "value": "152,456 km",
+        "note": "Non-national roads"
+      },
+      {
+        "label": "National reference",
+        "value": "21,292 km",
+        "note": "Excluded from DUCAR allocation unless delegated"
+      },
+      {
+        "label": "Roads in poor condition",
+        "value": "80%",
+        "note": "138,678 km reported poor"
+      },
+      {
+        "label": "Crash growth",
+        "value": "83.6%",
+        "note": "CY 2019 to CY 2023"
+      }
+    ],
+    "charts": {
+      "network": {
+        "title": "Uganda road network by category, FY 2022/23",
+        "source": "Ministry of Works and Transport. (2023). ITIS statistical abstract 2023; URF DUCAR network status report 2023.",
+        "columns": [
+          "Category",
+          "Length_km",
+          "DUCAR_scope"
+        ],
+        "rows": [
+          [
+            "National Roads",
+            21292,
+            "Reference only"
+          ],
+          [
+            "District Roads",
+            41194,
+            "DUCAR"
+          ],
+          [
+            "KCCA",
+            2103,
+            "DUCAR urban"
+          ],
+          [
+            "City Roads",
+            2830,
+            "DUCAR urban"
+          ],
+          [
+            "Community Access Roads",
+            75404,
+            "DUCAR"
+          ],
+          [
+            "Town Council Roads",
+            24269,
+            "DUCAR urban"
+          ],
+          [
+            "Municipal Roads",
+            6656,
+            "DUCAR urban"
+          ]
+        ]
+      },
+      "condition": {
+        "title": "Road condition by network category, FY 2022/23",
+        "source": "Ministry of Works and Transport. (2023). ITIS statistical abstract 2023; URF DUCAR network status report 2023.",
+        "columns": [
+          "Network category",
+          "Good_km",
+          "Fair_km",
+          "Poor_km",
+          "Total_km"
+        ],
+        "rows": [
+          [
+            "National (UNRA)",
+            12508,
+            7844,
+            848,
+            21200
+          ],
+          [
+            "KCCA",
+            184.9,
+            1019.5,
+            898.6,
+            2103
+          ],
+          [
+            "Community Access Roads",
+            3588.45,
+            1159.68,
+            70656,
+            75404
+          ],
+          [
+            "City Roads",
+            529.64,
+            200.14,
+            2099.83,
+            2830
+          ],
+          [
+            "District Roads",
+            4008.69,
+            1865.43,
+            35320,
+            41194
+          ],
+          [
+            "Municipal Roads",
+            505.09,
+            410.7,
+            5740.5,
+            6656
+          ],
+          [
+            "Town Council Roads",
+            673,
+            480.56,
+            23115,
+            24269
+          ]
+        ]
+      },
+      "crashes": {
+        "title": "Road traffic crashes by nature, CY 2019-2023",
+        "source": "Ministry of Works and Transport. (2023). ITIS statistical abstract 2023; Uganda Police Force annual crime report 2023.",
+        "columns": [
+          "Year",
+          "Fatal",
+          "Serious",
+          "Minor",
+          "Total"
+        ],
+        "rows": [
+          [
+            2019,
+            3407,
+            5992,
+            3459,
+            12858
+          ],
+          [
+            2020,
+            3269,
+            5803,
+            3177,
+            12249
+          ],
+          [
+            2021,
+            3757,
+            9070,
+            4616,
+            17443
+          ],
+          [
+            2022,
+            3901,
+            10776,
+            5717,
+            20394
+          ],
+          [
+            2023,
+            4179,
+            12487,
+            6942,
+            23608
+          ]
+        ]
+      },
+      "pavedTrend": {
+        "title": "Paved national road network trend",
+        "source": "Ministry of Works and Transport. (2023). ITIS statistical abstract 2023; UNRA annual performance report 2022/23.",
+        "columns": [
+          "FY",
+          "Annual increase_km",
+          "Paved stock_km",
+          "Percent paved"
+        ],
+        "rows": [
+          [
+            "2018/19",
+            420,
+            4942,
+            23.5
+          ],
+          [
+            "2019/20",
+            428,
+            5370,
+            25.5
+          ],
+          [
+            "2020/21",
+            221,
+            5591,
+            26.6
+          ],
+          [
+            "2021/22",
+            287,
+            5878.5,
+            27.8
+          ],
+          [
+            "2022/23",
+            254.5,
+            6133,
+            29.18
+          ]
+        ]
+      },
+      "multimodal": {
+        "title": "SDG 9.1.2 passenger and freight indicators",
+        "source": "Ministry of Works and Transport. (2023). ITIS statistical abstract 2023.",
+        "columns": [
+          "Mode",
+          "Measure",
+          "2019",
+          "2020",
+          "2021",
+          "2022",
+          "2023"
+        ],
+        "rows": [
+          [
+            "Air transport",
+            "Cargo tonnes",
+            64731,
+            59720,
+            64172,
+            61255,
+            59072
+          ],
+          [
+            "Air transport",
+            "Passengers",
+            1802107,
+            565541,
+            941688,
+            1574405,
+            1932094
+          ],
+          [
+            "Railway transport",
+            "Cargo tonnes",
+            193693,
+            196935,
+            390628,
+            242686,
+            243634.18
+          ],
+          [
+            "Railway transport",
+            "Passengers",
+            619206,
+            180327,
+            799533,
+            155816,
+            216455
+          ],
+          [
+            "Water transport",
+            "Cargo tonnes",
+            1845.6,
+            2110.1,
+            2834.7,
+            null,
+            96922
+          ],
+          [
+            "Water transport",
+            "Passengers",
+            1155299,
+            3842092,
+            1623852,
+            3117791,
+            3518023
+          ]
+        ]
+      },
+      "ferry": {
+        "title": "KIS ferry crossings and traffic, CY 2019-2023",
+        "source": "Ministry of Works and Transport. (2023). ITIS statistical abstract 2023; KIS quarterly independent operations reports.",
+        "columns": [
+          "Year",
+          "Passengers",
+          "Pick-ups",
+          "Trucks",
+          "Cars",
+          "Buses",
+          "Motor bike",
+          "Total traffic"
+        ],
+        "rows": [
+          [
+            2019,
+            547104,
+            7016,
+            11714,
+            18934,
+            5337,
+            42157,
+            632262
+          ],
+          [
+            2020,
+            601815,
+            7718,
+            12886,
+            20827,
+            5870,
+            46373,
+            695489
+          ],
+          [
+            2021,
+            661997,
+            8489,
+            14174,
+            22910,
+            6457,
+            51010,
+            765037
+          ],
+          [
+            2022,
+            728375,
+            8923,
+            19012,
+            39227,
+            8505,
+            83721,
+            887763
+          ],
+          [
+            2023,
+            770925,
+            9462,
+            18496,
+            41539,
+            8706,
+            77588,
+            926716
+          ]
+        ]
+      }
+    }
+  },
+  "onlineSources": [
+    {
+      "group": "Global RAM",
+      "title": "AfDB Road Asset Management Toolkit",
+      "agency": "African Development Bank",
+      "url": "https://www.afdb.org/en/documents/road-asset-management-study-accelerating-road-sector-reforms-part-ii-road-asset-management-toolkit",
+      "apa": "African Development Bank. (n.d.). Road asset management study: Road asset management toolkit.",
+      "status": "read",
+      "bytes": 88491,
+      "words": 2122,
+      "topic_counts": {
+        "PIMS appraisal": 3,
+        "Budget monitoring": 3,
+        "Road condition": 2,
+        "RAM and lifecycle": 4,
+        "Traffic and axle load": 1,
+        "GIS and network": 2,
+        "Construction QA": 0,
+        "Climate and drainage": 2,
+        "Safety and NMT": 1,
+        "Bridge and structures": 1,
+        "Procurement and contracts": 5
+      },
+      "evidence_score": 100,
+      "dominant_topic": "Procurement and contracts",
+      "summary_points": [
+        "The study focuses on the assessment of the performance of the road funds (RF) and road agencies (RA) of 11 countries in Sub Saharan Africa (SSA).",
+        "In Sub Saharan Africa countries, the condition of the road network is very much interrelated with its economy."
+      ]
+    },
+    {
+      "group": "Global RAM",
+      "title": "Austroads Guide to Asset Management",
+      "agency": "Austroads",
+      "url": "https://austroads.gov.au/infrastructure/asset-management/guide-to-asset-management",
+      "apa": "Austroads. (n.d.). Guide to asset management.",
+      "status": "unavailable: HTTPError",
+      "bytes": 0,
+      "words": 0,
+      "topic_counts": {
+        "PIMS appraisal": 0,
+        "Budget monitoring": 0,
+        "Road condition": 0,
+        "RAM and lifecycle": 0,
+        "Traffic and axle load": 0,
+        "GIS and network": 0,
+        "Construction QA": 0,
+        "Climate and drainage": 0,
+        "Safety and NMT": 0,
+        "Bridge and structures": 0,
+        "Procurement and contracts": 0
+      },
+      "evidence_score": 0
+    },
+    {
+      "group": "Global RAM",
+      "title": "FHWA Asset Management",
+      "agency": "Federal Highway Administration",
+      "url": "https://www.fhwa.dot.gov/asset/",
+      "apa": "Federal Highway Administration. (n.d.). Asset management.",
+      "status": "read",
+      "bytes": 11233,
+      "words": 349,
+      "topic_counts": {
+        "PIMS appraisal": 0,
+        "Budget monitoring": 0,
+        "Road condition": 0,
+        "RAM and lifecycle": 24,
+        "Traffic and axle load": 0,
+        "GIS and network": 1,
+        "Construction QA": 0,
+        "Climate and drainage": 2,
+        "Safety and NMT": 0,
+        "Bridge and structures": 1,
+        "Procurement and contracts": 0
+      },
+      "evidence_score": 57,
+      "dominant_topic": "RAM and lifecycle",
+      "summary_points": [
+        "DOT Home | USA.gov | WhiteHouse.gov Federal Highway Administration | 1200 New Jersey Avenue, SE | Washington, DC 20590 | 202-366-4000",
+        "Asset Management - Federal Highway Administration window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-Q04Q1DE1BS'); U.S."
+      ]
+    },
+    {
+      "group": "Global RAM",
+      "title": "PIARC Road Asset Management Manual case studies",
+      "agency": "World Road Association",
+      "url": "https://road-asset.piarc.org/en/management-asset-management-implementation/case-studies",
+      "apa": "World Road Association. (n.d.). Road asset management manual case studies.",
+      "status": "read",
+      "bytes": 82177,
+      "words": 1601,
+      "topic_counts": {
+        "PIMS appraisal": 0,
+        "Budget monitoring": 1,
+        "Road condition": 4,
+        "RAM and lifecycle": 22,
+        "Traffic and axle load": 0,
+        "GIS and network": 1,
+        "Construction QA": 2,
+        "Climate and drainage": 6,
+        "Safety and NMT": 1,
+        "Bridge and structures": 2,
+        "Procurement and contracts": 0
+      },
+      "evidence_score": 88,
+      "dominant_topic": "RAM and lifecycle",
+      "summary_points": [
+        "International standards Calculating asset value Asset classification Asset treatments Cost information Condition data Valuation steps Key aspects of the steps References Case studies Programming What is works programming?",
+        "Username Enter your Road Safety Manual - World Road Association (PIARC) username."
+      ]
+    },
+    {
+      "group": "Global RAM",
+      "title": "ReCAP effective road asset management baseline",
+      "agency": "GOV.UK / ReCAP",
+      "url": "https://www.gov.uk/research-for-development-outputs/economic-growth-through-effective-road-asset-management-consolidated-baseline-study-report",
+      "apa": "GOV.UK. (n.d.). Economic growth through effective road asset management consolidated baseline study report.",
+      "status": "read",
+      "bytes": 68507,
+      "words": 1170,
+      "topic_counts": {
+        "PIMS appraisal": 8,
+        "Budget monitoring": 2,
+        "Road condition": 0,
+        "RAM and lifecycle": 17,
+        "Traffic and axle load": 0,
+        "GIS and network": 2,
+        "Construction QA": 0,
+        "Climate and drainage": 0,
+        "Safety and NMT": 0,
+        "Bridge and structures": 1,
+        "Procurement and contracts": 0
+      },
+      "evidence_score": 69,
+      "dominant_topic": "RAM and lifecycle",
+      "summary_points": [
+        "Links Economic Growth through Effective Road Asset Management - Consolidated Baseline Study Report Updates to this page Published 10 March 2018 Contents Explore the topic International aid and development Is this page useful?",
+        "This report presents the consolidated baseline data in road asset management for each of the participating countries relative to a framework for assessing asset management performance covering external/political factors, institutional arrangements, management of the road network, financing, technical aspects and operations."
+      ]
+    },
+    {
+      "group": "Global RAM",
+      "title": "World Bank PBC review",
+      "agency": "World Bank",
+      "url": "https://blogs.worldbank.org/en/transport/performance-based-contracts-promoting-quality-road-maintenance-and-economic-efficiency",
+      "apa": "World Bank. (n.d.). Performance-based contracts: Promoting quality road maintenance and economic efficiency.",
+      "status": "read",
+      "bytes": 69881,
+      "words": 1929,
+      "topic_counts": {
+        "PIMS appraisal": 14,
+        "Budget monitoring": 4,
+        "Road condition": 0,
+        "RAM and lifecycle": 3,
+        "Traffic and axle load": 3,
+        "GIS and network": 0,
+        "Construction QA": 21,
+        "Climate and drainage": 1,
+        "Safety and NMT": 1,
+        "Bridge and structures": 0,
+        "Procurement and contracts": 6
+      },
+      "evidence_score": 91,
+      "dominant_topic": "Construction QA",
+      "summary_points": [
+        "First introduced in Canada in the 1980s, PBCs use fixed, lump-sum payments that encourage contractors to minimize the volume of work and take preventative steps to maintain good road conditions and minimize operating costs for road users.",
+        "In the 1990s, the World Bank found that PBCs could be used in developing countries to address the issue of sustainability of road infrastructure investments."
+      ]
+    },
+    {
+      "group": "Global RAM",
+      "title": "World Bank performance-based maintenance study",
+      "agency": "World Bank",
+      "url": "https://documents1.worldbank.org/curated/en/413451468336612648/pdf/689620ESW0P102002012000Final0Report.pdf",
+      "apa": "World Bank. (2012). Performance-based contracting for preservation and improvement of road assets.",
+      "status": "fetched",
+      "bytes": 1500000,
+      "words": 0,
+      "topic_counts": {
+        "PIMS appraisal": 0,
+        "Budget monitoring": 0,
+        "Road condition": 0,
+        "RAM and lifecycle": 0,
+        "Traffic and axle load": 0,
+        "GIS and network": 0,
+        "Construction QA": 0,
+        "Climate and drainage": 0,
+        "Safety and NMT": 0,
+        "Bridge and structures": 0,
+        "Procurement and contracts": 0
+      },
+      "evidence_score": 35,
+      "dominant_topic": "PIMS appraisal",
+      "summary_points": []
+    },
+    {
+      "group": "National planning and budget",
+      "title": "Approved Budget Estimates FY 2024/25",
+      "agency": "Ministry of Finance, Planning and Economic Development",
+      "url": "https://budget.finance.go.ug/content/approved-budget-estimates-1241",
+      "apa": "Ministry of Finance, Planning and Economic Development. (2024). Approved budget estimates, central governments FY 2024/25. The Republic of Uganda.",
+      "status": "unavailable: TimeoutError",
+      "bytes": 0,
+      "words": 0,
+      "topic_counts": {
+        "PIMS appraisal": 0,
+        "Budget monitoring": 0,
+        "Road condition": 0,
+        "RAM and lifecycle": 0,
+        "Traffic and axle load": 0,
+        "GIS and network": 0,
+        "Construction QA": 0,
+        "Climate and drainage": 0,
+        "Safety and NMT": 0,
+        "Bridge and structures": 0,
+        "Procurement and contracts": 0
+      },
+      "evidence_score": 0
+    },
+    {
+      "group": "National planning and budget",
+      "title": "Background to the Budget FY 2024/25",
+      "agency": "Ministry of Finance, Planning and Economic Development",
+      "url": "https://budget.finance.go.ug/content/background-budget-10",
+      "apa": "Ministry of Finance, Planning and Economic Development. (2024). Background to the Budget FY 2024/25. The Republic of Uganda.",
+      "status": "unavailable: TimeoutError",
+      "bytes": 0,
+      "words": 0,
+      "topic_counts": {
+        "PIMS appraisal": 0,
+        "Budget monitoring": 0,
+        "Road condition": 0,
+        "RAM and lifecycle": 0,
+        "Traffic and axle load": 0,
+        "GIS and network": 0,
+        "Construction QA": 0,
+        "Climate and drainage": 0,
+        "Safety and NMT": 0,
+        "Bridge and structures": 0,
+        "Procurement and contracts": 0
+      },
+      "evidence_score": 0
+    },
+    {
+      "group": "National planning and budget",
+      "title": "Budget Speech FY 2024/25",
+      "agency": "Ministry of Finance, Planning and Economic Development",
+      "url": "https://www.budget.finance.go.ug/content/budget-speech-12",
+      "apa": "Ministry of Finance, Planning and Economic Development. (2024). Budget Speech FY 2024/25. The Republic of Uganda.",
+      "status": "unavailable: URLError",
+      "bytes": 0,
+      "words": 0,
+      "topic_counts": {
+        "PIMS appraisal": 0,
+        "Budget monitoring": 0,
+        "Road condition": 0,
+        "RAM and lifecycle": 0,
+        "Traffic and axle load": 0,
+        "GIS and network": 0,
+        "Construction QA": 0,
+        "Climate and drainage": 0,
+        "Safety and NMT": 0,
+        "Bridge and structures": 0,
+        "Procurement and contracts": 0
+      },
+      "evidence_score": 0
+    },
+    {
+      "group": "National planning and budget",
+      "title": "Budget Speech FY 2025/26",
+      "agency": "Ministry of Finance, Planning and Economic Development",
+      "url": "https://budget.finance.go.ug/sites/default/files/National%20Budget%20docs/Budget%20Speech%20FY2025-26.pdf",
+      "apa": "Ministry of Finance, Planning and Economic Development. (2025). Budget Speech Financial Year 2025/26. The Republic of Uganda.",
+      "status": "fetched",
+      "bytes": 1500000,
+      "words": 0,
+      "topic_counts": {
+        "PIMS appraisal": 0,
+        "Budget monitoring": 0,
+        "Road condition": 0,
+        "RAM and lifecycle": 0,
+        "Traffic and axle load": 0,
+        "GIS and network": 0,
+        "Construction QA": 0,
+        "Climate and drainage": 0,
+        "Safety and NMT": 0,
+        "Bridge and structures": 0,
+        "Procurement and contracts": 0
+      },
+      "evidence_score": 35,
+      "dominant_topic": "PIMS appraisal",
+      "summary_points": []
+    },
+    {
+      "group": "National planning and budget",
+      "title": "National Budget Framework Paper FY 2024/25",
+      "agency": "Ministry of Finance, Planning and Economic Development",
+      "url": "https://www.budget.finance.go.ug/content/national-budget-framework-paper-15",
+      "apa": "Ministry of Finance, Planning and Economic Development. (2024). National budget framework paper FY 2024/25. The Republic of Uganda.",
+      "status": "unavailable: URLError",
+      "bytes": 0,
+      "words": 0,
+      "topic_counts": {
+        "PIMS appraisal": 0,
+        "Budget monitoring": 0,
+        "Road condition": 0,
+        "RAM and lifecycle": 0,
+        "Traffic and axle load": 0,
+        "GIS and network": 0,
+        "Construction QA": 0,
+        "Climate and drainage": 0,
+        "Safety and NMT": 0,
+        "Bridge and structures": 0,
+        "Procurement and contracts": 0
+      },
+      "evidence_score": 0
+    },
+    {
+      "group": "National planning and budget",
+      "title": "Uganda Vision 2040",
+      "agency": "National Planning Authority",
+      "url": "https://npa.go.ug/uganda-vision-2040/",
+      "apa": "National Planning Authority. (n.d.). Uganda Vision 2040. The Republic of Uganda.",
+      "status": "unavailable: URLError",
+      "bytes": 0,
+      "words": 0,
+      "topic_counts": {
+        "PIMS appraisal": 0,
+        "Budget monitoring": 0,
+        "Road condition": 0,
+        "RAM and lifecycle": 0,
+        "Traffic and axle load": 0,
+        "GIS and network": 0,
+        "Construction QA": 0,
+        "Climate and drainage": 0,
+        "Safety and NMT": 0,
+        "Bridge and structures": 0,
+        "Procurement and contracts": 0
+      },
+      "evidence_score": 0
+    },
+    {
+      "group": "Traffic and geospatial",
+      "title": "Uganda Road Network main roads",
+      "agency": "AmeriGEOSS / WFP OpenStreetMap extract",
+      "url": "https://data.amerigeoss.org/dataset/uganda-road-network-main-roads",
+      "apa": "AmeriGEOSS. (n.d.). Uganda road network main roads.",
+      "status": "read",
+      "bytes": 47112,
+      "words": 1718,
+      "topic_counts": {
+        "PIMS appraisal": 0,
+        "Budget monitoring": 0,
+        "Road condition": 0,
+        "RAM and lifecycle": 0,
+        "Traffic and axle load": 0,
+        "GIS and network": 39,
+        "Construction QA": 0,
+        "Climate and drainage": 0,
+        "Safety and NMT": 0,
+        "Bridge and structures": 0,
+        "Procurement and contracts": 0
+      },
+      "evidence_score": 54,
+      "dominant_topic": "GIS and network",
+      "summary_points": [
+        "More documentation on the whole process for extracting OpenStreetMap roads can be found here: http://geonode.wfp.org/documents/6823/download num_resources 6 num_tags 18 title Uganda Road Network (main roads) About AmeriGEOSS Community Platform DataHub.",
+        "read more Social Twitter Facebook License No License Provided Dataset Groups Activity Stream Uganda Road Network (main roads) This dataset is an extraction of roads from OpenStreetMap data made by WFP following UNSDI-T standards."
+      ]
+    },
+    {
+      "group": "Traffic and geospatial",
+      "title": "Uganda Roads",
+      "agency": "World Bank Transport Data",
+      "url": "https://datacatalog.worldbank.org/infrastructure-data/search/dataset/0041482/Uganda-Roads",
+      "apa": "World Bank. (n.d.). Uganda roads. World Bank Transport Data.",
+      "status": "read",
+      "bytes": 61187,
+      "words": 4518,
+      "topic_counts": {
+        "PIMS appraisal": 7,
+        "Budget monitoring": 2,
+        "Road condition": 4,
+        "RAM and lifecycle": 0,
+        "Traffic and axle load": 4,
+        "GIS and network": 9,
+        "Construction QA": 1,
+        "Climate and drainage": 3,
+        "Safety and NMT": 1,
+        "Bridge and structures": 0,
+        "Procurement and contracts": 1
+      },
+      "evidence_score": 100,
+      "dominant_topic": "GIS and network",
+      "summary_points": [
+        "Uganda Roads - World Bank Data Catalog {\"@context\":\"https://schema.org/\",\"@type\":\"Dataset\",\"name\":\"Uganda Roads\",\"description\":\"Data on road type, condition and traffic volume compiled by Africon for AICD study (2009), with input from the Roads Agency Formation Unit (RAFU) | This dataset contains important information and resources.",
+        "\\n\\u003c/p\\u003e\\n\\u003cp\\u003e\\nHowever, not every country GDB contains all 59 data layers, as this was dependent on the availability of open-source data in each SIDS."
+      ]
+    }
+  ],
+  "onlineEvidence": {
+    "sourceTable": {
+      "title": "Online national and global source read checks",
+      "columns": [
+        "Source group",
+        "Title",
+        "Agency",
+        "Status",
+        "Words read",
+        "Dominant topic",
+        "Evidence score"
+      ],
+      "rows": [
+        [
+          "Global RAM",
+          "AfDB Road Asset Management Toolkit",
+          "African Development Bank",
+          "read",
+          2122,
+          "Procurement and contracts",
+          100
+        ],
+        [
+          "Global RAM",
+          "Austroads Guide to Asset Management",
+          "Austroads",
+          "unavailable: HTTPError",
+          0,
+          "",
+          0
+        ],
+        [
+          "Global RAM",
+          "FHWA Asset Management",
+          "Federal Highway Administration",
+          "read",
+          349,
+          "RAM and lifecycle",
+          57
+        ],
+        [
+          "Global RAM",
+          "PIARC Road Asset Management Manual case studies",
+          "World Road Association",
+          "read",
+          1601,
+          "RAM and lifecycle",
+          88
+        ],
+        [
+          "Global RAM",
+          "ReCAP effective road asset management baseline",
+          "GOV.UK / ReCAP",
+          "read",
+          1170,
+          "RAM and lifecycle",
+          69
+        ],
+        [
+          "Global RAM",
+          "World Bank PBC review",
+          "World Bank",
+          "read",
+          1929,
+          "Construction QA",
+          91
+        ],
+        [
+          "Global RAM",
+          "World Bank performance-based maintenance study",
+          "World Bank",
+          "fetched",
+          0,
+          "PIMS appraisal",
+          35
+        ],
+        [
+          "National planning and budget",
+          "Approved Budget Estimates FY 2024/25",
+          "Ministry of Finance, Planning and Economic Development",
+          "unavailable: TimeoutError",
+          0,
+          "",
+          0
+        ],
+        [
+          "National planning and budget",
+          "Background to the Budget FY 2024/25",
+          "Ministry of Finance, Planning and Economic Development",
+          "unavailable: TimeoutError",
+          0,
+          "",
+          0
+        ],
+        [
+          "National planning and budget",
+          "Budget Speech FY 2024/25",
+          "Ministry of Finance, Planning and Economic Development",
+          "unavailable: URLError",
+          0,
+          "",
+          0
+        ],
+        [
+          "National planning and budget",
+          "Budget Speech FY 2025/26",
+          "Ministry of Finance, Planning and Economic Development",
+          "fetched",
+          0,
+          "PIMS appraisal",
+          35
+        ],
+        [
+          "National planning and budget",
+          "National Budget Framework Paper FY 2024/25",
+          "Ministry of Finance, Planning and Economic Development",
+          "unavailable: URLError",
+          0,
+          "",
+          0
+        ],
+        [
+          "National planning and budget",
+          "Uganda Vision 2040",
+          "National Planning Authority",
+          "unavailable: URLError",
+          0,
+          "",
+          0
+        ],
+        [
+          "Traffic and geospatial",
+          "Uganda Road Network main roads",
+          "AmeriGEOSS / WFP OpenStreetMap extract",
+          "read",
+          1718,
+          "GIS and network",
+          54
+        ],
+        [
+          "Traffic and geospatial",
+          "Uganda Roads",
+          "World Bank Transport Data",
+          "read",
+          4518,
+          "GIS and network",
+          100
+        ]
+      ]
+    },
+    "groupChart": {
+      "title": "Online source group evidence score",
+      "columns": [
+        "Source group",
+        "Sources",
+        "Average evidence score"
+      ],
+      "rows": [
+        [
+          "Global RAM",
+          7,
+          62.9
+        ],
+        [
+          "National planning and budget",
+          6,
+          5.8
+        ],
+        [
+          "Traffic and geospatial",
+          2,
+          77
+        ]
+      ]
+    }
+  }
+}

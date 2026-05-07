@@ -7,6 +7,7 @@
     "dev": "vite --host 127.0.0.1 --port 5173",
     "api": "python api/server.py",
     "test": "node tests/prioritisation.test.js",
+    "evidence": "python scripts/build_evidence_synthesis.py",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1 --port 4173"
   },
