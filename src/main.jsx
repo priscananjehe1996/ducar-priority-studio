@@ -192,7 +192,6 @@ const NAV_ITEMS = [
   { id: "hdm4", label: "HDM-4 Inputs", icon: Database },
   { id: "framework", label: "Framework Flow", icon: Network },
   { id: "gis", label: "GIS Surface", icon: MapIcon },
-  { id: "manuals", label: "Evidence Stats", icon: BookOpen },
   { id: "case-studies", label: "Global Stats", icon: Globe2 },
   { id: "sources", label: "Sources", icon: BookOpen },
   { id: "allocation", label: "Allocation", icon: GitBranch },
@@ -1164,7 +1163,7 @@ function EvidenceBotPanel({ compact = false }) {
         <div>
           <p className="eyebrow">Continuous evidence bot</p>
           <h3>Uganda infrastructure and budget evidence crawler</h3>
-          <span>Continuously tracks the official source register, APA references, refresh cadence and ingestion rules for Uganda infrastructure, planning and budget evidence.</span>
+          <span>Continuously tracks the official evidence register, APA references, refresh cadence and ingestion rules for Uganda infrastructure, planning and budget evidence.</span>
         </div>
         <strong>{totalScore}%</strong>
       </div>
@@ -1174,7 +1173,7 @@ function EvidenceBotPanel({ compact = false }) {
           <strong>{active.title}</strong>
           <p>{active.logic}</p>
           <em>{active.cadence}</em>
-          <a href="#sources">View source register</a>
+          <a href="#sources">View Sources</a>
         </article>
         <div className="bot-pulse-track">
           {UGANDA_EVIDENCE_STREAMS.map((item, index) => (
@@ -1306,7 +1305,7 @@ function TrafficAnalyticsPanel({ programme, grouped }) {
       </section>
       <section className="viz-card">
         <div className="viz-title">
-          <h3>Open-source data thinking</h3>
+          <h3>Data Integration Logic</h3>
           <span>provenance-first</span>
         </div>
         <div className="open-data-list">
@@ -1443,110 +1442,6 @@ function useMowtManualsCatalog() {
   return catalog;
 }
 
-function ManualsEvidencePanel({ analysis }) {
-  const catalog = useManualsCatalog();
-  const mowtCatalog = useMowtManualsCatalog();
-  const summary = catalog?.summary || {};
-  const topicCards = catalog?.topic_cards || [];
-  const roles = Object.entries(catalog?.by_evidence_role || {});
-  const topFolders = Object.entries(catalog?.by_folder || {}).slice(0, 10);
-  const selectedManuals = catalog?.logic_records?.slice(0, 24) || [];
-  const evidenceAverage = analysis.summary?.total
-    ? Math.round((analysis.summary.evidenceTotal || 0) / analysis.summary.total)
-    : 0;
-  const globalEvidence = getGlobalEvidenceSummary();
-  const mowtPages = (mowtCatalog.records || []).reduce((sum, item) => sum + Number(item.pages || 0), 0);
-
-  return (
-    <div className="manuals-page-grid">
-      <section className="traffic-command-card manual-hero">
-        <p className="eyebrow">Manual repository intelligence</p>
-        <strong>{(summary.all_files || 0).toLocaleString()}</strong>
-        <span>files indexed from Uganda National Road Network Repository / 0. Manuals</span>
-        <div className="index-scale"><i style={{ left: `${Math.min(100, evidenceAverage)}%` }} /></div>
-      </section>
-      <section className="metrics-grid">
-        <Metric icon={BookOpen} label="Logic-ready records" value={(summary.logic_records || 0).toLocaleString()} tone="green" />
-        <Metric icon={Database} label="Manual folders" value={summary.folders || 0} tone="gold" />
-        <Metric icon={FileSpreadsheet} label="File extensions" value={summary.extensions || 0} tone="red" />
-        <Metric icon={ClipboardCheck} label="Evidence readiness" value={`${evidenceAverage}%`} tone="cyan" />
-        <Metric icon={Database} label="MoWT downloaded pages" value={mowtPages.toLocaleString()} tone="green" />
-      </section>
-      <section className="viz-card wide-viz">
-        <div className="viz-title">
-          <h3>MoWT Manual Content Signals</h3>
-          <span>{(mowtCatalog.records || []).length} PDFs / {mowtPages.toLocaleString()} pages indexed</span>
-        </div>
-        <div className="manual-topic-grid">
-          {(mowtCatalog.records || []).map((item, index) => (
-            <article key={item.name} style={{ "--accent": ["#4258ff", "#12b981", "#f43f5e", "#ffb020"][index % 4] }}>
-              <span>{item.pages || 0}</span>
-              <strong>{item.name}</strong>
-              <p>{item.sample_text || "Text extraction pending."}</p>
-              <div><i style={{ width: `${Math.min(100, Number(item.pages || 0) / 5)}%` }} /></div>
-              <em>{(item.keywords || []).map((kw) => `${kw.term} ${kw.count}`).join(" / ")}</em>
-            </article>
-          ))}
-        </div>
-      </section>
-      <section className="viz-card wide-viz">
-        <div className="viz-title">
-          <h3>Manual Topics Feeding Tool Logic</h3>
-          <span>Repository evidence translated into scoring, monitoring and QA assumptions</span>
-        </div>
-        <div className="manual-topic-grid">
-          {(topicCards.length ? topicCards : MANUAL_LOGIC_WEIGHTS.map(([topic, decision_use, score]) => ({ topic, decision_use, logic_records: score, all_files: score }))).map((item, index) => (
-            <article key={item.topic} style={{ "--accent": ["#4258ff", "#12b981", "#f43f5e", "#ffb020", "#00a7c7"][index % 5] }}>
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              <strong>{item.topic}</strong>
-              <p>{item.decision_use}</p>
-              <div><i style={{ width: `${Math.min(100, (Number(item.logic_records || 0) / Math.max(1, Number(item.all_files || 1))) * 100)}%` }} /></div>
-              <em>{Number(item.logic_records || 0).toLocaleString()} logic records / {Number(item.all_files || 0).toLocaleString()} files</em>
-            </article>
-          ))}
-        </div>
-      </section>
-      <section className="viz-card">
-        <div className="viz-title">
-          <h3>Evidence Roles</h3>
-          <span>All files are counted; document-like records drive logic</span>
-        </div>
-        <div className="evidence-role-list">
-          {roles.map(([role, count]) => (
-            <p key={role}><strong>{Number(count).toLocaleString()}</strong><span>{role}</span></p>
-          ))}
-        </div>
-      </section>
-      <section className="viz-card">
-        <div className="viz-title">
-          <h3>Top Repository Folders</h3>
-          <span>Folder-level statistics</span>
-        </div>
-        <div className="evidence-role-list">
-          {topFolders.map(([folder, count]) => (
-            <p key={folder}><strong>{Number(count).toLocaleString()}</strong><span>{folder}</span></p>
-          ))}
-        </div>
-      </section>
-      <section className="viz-card wide-viz">
-        <div className="viz-title">
-          <h3>Sample Indexed Manuals and Templates</h3>
-          <span>Representative logic-ready records from the full catalogue</span>
-        </div>
-        <div className="manual-record-table">
-          {selectedManuals.map((item) => (
-            <article key={item.relative_path}>
-              <strong>{item.name}</strong>
-              <span>{item.topic} / {item.evidence_role}</span>
-              <em>{item.relative_path}</em>
-            </article>
-          ))}
-        </div>
-      </section>
-    </div>
-  );
-}
-
 function GlobalCaseStudyPanel() {
   const { regionCounts, averageScore, indicatorAverages, topFrameworks, sourceCount } = getGlobalEvidenceSummary();
 
@@ -1564,7 +1459,7 @@ function GlobalCaseStudyPanel() {
         <Metric icon={Globe2} label="Countries covered" value={GLOBAL_COUNTRY_REVIEWS.length} />
         <Metric icon={MapIcon} label="Regions covered" value={Object.keys(regionCounts).length} tone="green" />
         <Metric icon={ClipboardCheck} label="Transferability index" value={`${averageScore}%`} tone="gold" />
-        <Metric icon={BookOpen} label="Reference source groups" value={sourceCount} tone="red" />
+        <Metric icon={BookOpen} label="Reference groups" value={sourceCount} tone="red" />
       </section>
       <section className="literature-engine">
         <div className="viz-title">
@@ -1658,6 +1553,14 @@ function GlobalCaseStudyPanel() {
 }
 
 function SourcesPanel() {
+  const catalog = useManualsCatalog();
+  const mowtCatalog = useMowtManualsCatalog();
+  const summary = catalog?.summary || {};
+  const topicCards = catalog?.topic_cards || [];
+  const roles = Object.entries(catalog?.by_evidence_role || {});
+  const topFolders = Object.entries(catalog?.by_folder || {}).slice(0, 10);
+  const selectedManuals = catalog?.logic_records?.slice(0, 24) || [];
+  const mowtPages = (mowtCatalog.records || []).reduce((sum, item) => sum + Number(item.pages || 0), 0);
   const mowtSources = MOWT_CATALOGUE_MANUALS.map(([title, year, url, use]) => ({
     title,
     agency: "Ministry of Works and Transport",
@@ -1724,6 +1627,85 @@ function SourcesPanel() {
             <i><b style={{ width: `${Math.min(100, value * 8)}%` }} /></i>
           </article>
         ))}
+      </section>
+      <section className="metrics-grid">
+        <Metric icon={BookOpen} label="Manual files indexed" value={(summary.all_files || 0).toLocaleString()} />
+        <Metric icon={ClipboardCheck} label="Logic-ready records" value={(summary.logic_records || 0).toLocaleString()} tone="green" />
+        <Metric icon={Database} label="Manual folders" value={summary.folders || 0} tone="gold" />
+        <Metric icon={FileSpreadsheet} label="MoWT pages read" value={mowtPages.toLocaleString()} tone="red" />
+      </section>
+      <section className="viz-card wide-viz">
+        <div className="viz-title">
+          <h3>Evidence Statistics from Manuals and Budget Sources</h3>
+          <span>Content-derived summaries used by the tool logic</span>
+        </div>
+        <div className="manual-topic-grid">
+          {(topicCards.length ? topicCards : MANUAL_LOGIC_WEIGHTS.map(([topic, decision_use, score]) => ({ topic, decision_use, logic_records: score, all_files: score }))).map((item, index) => (
+            <article key={item.topic} style={{ "--accent": ["#4258ff", "#12b981", "#f43f5e", "#ffb020", "#00a7c7"][index % 5] }}>
+              <span>{Number(item.logic_records || 0).toLocaleString()}</span>
+              <strong>{item.topic}</strong>
+              <p>{item.decision_use}</p>
+              <div><i style={{ width: `${Math.min(100, (Number(item.logic_records || 0) / Math.max(1, Number(item.all_files || 1))) * 100)}%` }} /></div>
+              <em>{Number(item.all_files || 0).toLocaleString()} files checked</em>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="viz-card wide-viz">
+        <div className="viz-title">
+          <h3>MoWT Manual Content Signals</h3>
+          <span>{(mowtCatalog.records || []).length} PDFs / {mowtPages.toLocaleString()} pages indexed</span>
+        </div>
+        <div className="manual-topic-grid">
+          {(mowtCatalog.records || []).map((item, index) => (
+            <article key={item.name} style={{ "--accent": ["#4258ff", "#12b981", "#f43f5e", "#ffb020"][index % 4] }}>
+              <span>{item.pages || 0}</span>
+              <strong>{item.name}</strong>
+              <p>{item.sample_text || "Text extraction pending."}</p>
+              <div><i style={{ width: `${Math.min(100, Number(item.pages || 0) / 5)}%` }} /></div>
+              <em>{(item.keywords || []).map((kw) => `${kw.term} ${kw.count}`).join(" / ")}</em>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="analytics-viz-grid">
+        <section className="viz-card">
+          <div className="viz-title">
+            <h3>Evidence Roles</h3>
+            <span>Document-like records drive logic</span>
+          </div>
+          <div className="evidence-role-list">
+            {roles.map(([role, count]) => (
+              <p key={role}><strong>{Number(count).toLocaleString()}</strong><span>{role}</span></p>
+            ))}
+          </div>
+        </section>
+        <section className="viz-card">
+          <div className="viz-title">
+            <h3>Top Repository Folders</h3>
+            <span>Folder-level statistics</span>
+          </div>
+          <div className="evidence-role-list">
+            {topFolders.map(([folder, count]) => (
+              <p key={folder}><strong>{Number(count).toLocaleString()}</strong><span>{folder}</span></p>
+            ))}
+          </div>
+        </section>
+      </section>
+      <section className="viz-card wide-viz">
+        <div className="viz-title">
+          <h3>Sample Indexed Manuals and Templates</h3>
+          <span>Representative logic-ready records from the full catalogue</span>
+        </div>
+        <div className="manual-record-table">
+          {selectedManuals.map((item) => (
+            <article key={item.relative_path}>
+              <strong>{item.name}</strong>
+              <span>{item.topic} / {item.evidence_role}</span>
+              <em>{item.relative_path}</em>
+            </article>
+          ))}
+        </div>
       </section>
       <section className="viz-card wide-viz">
         <div className="viz-title">
@@ -2207,12 +2189,12 @@ function ProcessFlow({ analysis, grouped }) {
       </div>
 
       <div className="framework-logic-grid">
-        {FRAMEWORK_EVIDENCE_LOGIC.map(([label, detail, sourceIndex], index) => (
+        {FRAMEWORK_EVIDENCE_LOGIC.map(([label, detail], index) => (
           <article key={label} className={index === activeStep % FRAMEWORK_EVIDENCE_LOGIC.length ? "active" : ""}>
             <span>{String(index + 1).padStart(2, "0")}</span>
             <strong>{label}</strong>
             <p>{detail}</p>
-            <em>{sourceReferences[sourceIndex]}</em>
+            <a href="#sources">Evidence basis</a>
           </article>
         ))}
       </div>
@@ -2883,7 +2865,10 @@ function App() {
   const [filter, setFilter] = useState("All");
   const [programmeSortField, setProgrammeSortField] = useState("rank");
   const [programmeSortDirection, setProgrammeSortDirection] = useState("asc");
-  const [activeSection, setActiveSection] = useState(() => window.location.hash.replace("#", "") || "overview");
+  const [activeSection, setActiveSection] = useState(() => {
+    const hash = window.location.hash.replace("#", "") || "overview";
+    return hash === "manuals" ? "sources" : hash;
+  });
 
   async function runAnalysis(nextRecords = records) {
     try {
@@ -2913,7 +2898,9 @@ function App() {
   useEffect(() => {
     function syncPage() {
       const next = window.location.hash.replace("#", "") || "overview";
-      setActiveSection(NAV_ITEMS.some((item) => item.id === next) ? next : "overview");
+      const resolved = next === "manuals" ? "sources" : next;
+      if (next === "manuals") window.location.hash = "sources";
+      setActiveSection(NAV_ITEMS.some((item) => item.id === resolved) ? resolved : "overview");
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
     window.addEventListener("hashchange", syncPage);
@@ -3024,7 +3011,6 @@ function App() {
     hdm4: { ...activePage, title: "HDM-4 Data Inputs and Calibration Tables" },
     framework: { ...activePage, title: "Framework and Tool Process Flow" },
     gis: { ...activePage, title: "GIS Surface with National Reference Exemption" },
-    manuals: { ...activePage, title: "Evidence Statistics and Manual-Derived Signals" },
     "case-studies": { ...activePage, title: "Global Case Study Statistics" },
     sources: { ...activePage, title: "Sources and Data Register" },
     allocation: { ...activePage, title: "Budget Rationalisation by Region and Functional Class" },
@@ -3192,13 +3178,6 @@ function App() {
             <>
               <MapScene3D programme={programme} />
               <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} section="gis" limit={8} compact title="GIS and Network Intelligence" />
-            </>
-          )}
-          {activeSection === "manuals" && (
-            <>
-              <EvidenceBotPanel compact />
-              <ManualsEvidencePanel analysis={analysis} />
-              <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} section="pim" limit={8} compact title="Manual Evidence Intelligence" />
             </>
           )}
           {activeSection === "case-studies" && (
