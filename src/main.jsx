@@ -281,6 +281,98 @@ const OPEN_DATA_LOGIC = [
   "DUCAR TOR source evidence controls condition survey procedures, performance indicators, RAM framework gates, and monitoring frequency logic.",
   "Budget monitoring evidence separates financial absorption, physical progress, output delivery, and variance flags before final workplan export.",
   "MoWT road design, specifications, NMT, urban road and road-and-bridge manual catalogues feed geometric, drainage, pavement, safety, materials, quality and maintenance rules.",
+  "Vision 2040, MoFPED budget speeches, NBFPs, background-to-budget papers, approved estimates and budget catalogues are treated as live fiscal-policy evidence streams for infrastructure prioritisation.",
+];
+
+const UGANDA_EVIDENCE_STREAMS = [
+  {
+    title: "Uganda Vision 2040",
+    agency: "National Planning Authority",
+    type: "Long-term national vision",
+    cadence: "Reviewed as national planning evidence changes",
+    url: "https://npa.go.ug/uganda-vision-2040/",
+    apa: "National Planning Authority. (n.d.). Uganda Vision 2040. The Republic of Uganda. Retrieved May 7, 2026, from https://npa.go.ug/uganda-vision-2040/",
+    logic: "Tests whether DUCAR roads support infrastructure bottleneck removal, competitiveness and spatial transformation.",
+    indicators: ["Strategic bottlenecks", "Infrastructure backbone", "Market access", "Urbanisation", "Productivity"],
+    score: 92,
+  },
+  {
+    title: "Budget Speech FY 2024/25",
+    agency: "Ministry of Finance, Planning and Economic Development",
+    type: "Annual fiscal policy statement",
+    cadence: "Annual",
+    url: "https://www.budget.finance.go.ug/content/budget-speech-12",
+    apa: "Ministry of Finance, Planning and Economic Development. (2024). Budget Speech FY 2024/25. The Republic of Uganda.",
+    logic: "Reads priority spending areas, revenue assumptions, expenditure proposals and transport-sector commitments before scenario selection.",
+    indicators: ["Annual priorities", "Revenue measures", "Works envelope", "Programme commitments", "Fiscal constraints"],
+    score: 88,
+  },
+  {
+    title: "Budget Speech FY 2025/26",
+    agency: "Ministry of Finance, Planning and Economic Development",
+    type: "Annual fiscal policy statement",
+    cadence: "Annual",
+    url: "https://budget.finance.go.ug/sites/default/files/National%20Budget%20docs/Budget%20Speech%20FY2025-26.pdf",
+    apa: "Ministry of Finance, Planning and Economic Development. (2025). Budget Speech Financial Year 2025/26. The Republic of Uganda.",
+    logic: "Updates the medium-term expenditure signal for integrated transport infrastructure, works, road fund and local government allocations.",
+    indicators: ["MTEF", "Integrated transport", "Road Fund", "Local governments", "Urban roads"],
+    score: 90,
+  },
+  {
+    title: "Background to the Budget FY 2024/25",
+    agency: "Ministry of Finance, Planning and Economic Development",
+    type: "Economic and budget performance analysis",
+    cadence: "Annual",
+    url: "https://budget.finance.go.ug/content/background-budget-10",
+    apa: "Ministry of Finance, Planning and Economic Development. (2024). Background to the Budget FY 2024/25. The Republic of Uganda.",
+    logic: "Adds economic performance, budget performance, policy priorities and medium-term outlook signals to prioritisation assumptions.",
+    indicators: ["Economic performance", "Budget performance", "Policy priorities", "Medium-term outlook", "Implementation risks"],
+    score: 86,
+  },
+  {
+    title: "Approved Budget Estimates FY 2024/25",
+    agency: "Ministry of Finance, Planning and Economic Development",
+    type: "Approved expenditure estimates",
+    cadence: "Annual",
+    url: "https://budget.finance.go.ug/content/approved-budget-estimates-1241",
+    apa: "Ministry of Finance, Planning and Economic Development. (2024). Approved Budget Estimates, Central Governments FY 2024/25. The Republic of Uganda.",
+    logic: "Provides spending-agency allocations, recurrent/development splits, output lines and budget ceilings for realism checks.",
+    indicators: ["Agency allocations", "Development spending", "Outputs", "Expenditure items", "Budget ceilings"],
+    score: 89,
+  },
+  {
+    title: "National Budget Framework Paper FY 2024/25",
+    agency: "Ministry of Finance, Planning and Economic Development",
+    type: "Medium-term budget strategy",
+    cadence: "Annual before final budget",
+    url: "https://www.budget.finance.go.ug/content/national-budget-framework-paper-15",
+    apa: "Ministry of Finance, Planning and Economic Development. (2024). National Budget Framework Paper FY 2024/25. The Republic of Uganda.",
+    logic: "Connects NDP priorities, macro-fiscal strategy, resource envelope and sector expenditure plans to the DUCAR allocation model.",
+    indicators: ["Resource envelope", "Fiscal strategy", "Sector expenditure", "NDP link", "Priority interventions"],
+    score: 91,
+  },
+  {
+    title: "MoFPED All Documents Catalogue",
+    agency: "Ministry of Finance, Planning and Economic Development",
+    type: "Budget library catalogue",
+    cadence: "Continuous catalogue scan",
+    url: "https://budget.finance.go.ug/all-documents",
+    apa: "Ministry of Finance, Planning and Economic Development. (n.d.). All documents. The Republic of Uganda. Retrieved May 7, 2026, from https://budget.finance.go.ug/all-documents",
+    logic: "Acts as the bot discovery register for approved estimates, performance reports, workplans, BFPs and circulars.",
+    indicators: ["Document discovery", "Financial years", "Performance reports", "Local records", "Download links"],
+    score: 84,
+  },
+  {
+    title: "MoFPED Budget Documents Page",
+    agency: "Ministry of Finance, Planning and Economic Development",
+    type: "Publication feed",
+    cadence: "Continuous publication scan",
+    url: "https://finance.go.ug/publications/budget-documents",
+    apa: "Ministry of Finance, Planning and Economic Development. (n.d.). Budget documents. The Republic of Uganda. Retrieved May 7, 2026, from https://finance.go.ug/publications/budget-documents",
+    logic: "Extends the literature review with newer budget call circulars, budget execution circulars, NBFPs and fiscal guidance.",
+    indicators: ["Budget circulars", "NBFP updates", "Execution guidance", "Publication dates", "Fiscal controls"],
+    score: 82,
+  },
 ];
 
 const MANUAL_SOURCES = [
@@ -291,6 +383,22 @@ const MANUAL_SOURCES = [
     href: `${BASE}docs/Public-Investment-Manual-for-Project-Preparation-and-Appraisal.pdf`,
     apa: "Ministry of Finance, Planning and Economic Development. (2017). Public investment manual for project preparation and appraisal. The Republic of Uganda.",
     controls: ["Project identification", "Pre-feasibility and feasibility", "Financial and economic analysis", "Risk and distribution analysis", "Final investment decision"],
+  },
+  {
+    title: "Uganda Vision 2040",
+    agency: "National Planning Authority",
+    year: "2040 horizon",
+    href: "https://npa.go.ug/uganda-vision-2040/",
+    apa: "National Planning Authority. (n.d.). Uganda Vision 2040. The Republic of Uganda. Retrieved May 7, 2026, from https://npa.go.ug/uganda-vision-2040/",
+    controls: ["Infrastructure bottlenecks", "Market access", "Urbanisation", "Competitiveness", "Long-term transformation"],
+  },
+  {
+    title: "MoFPED Budget Evidence Stream",
+    agency: "Ministry of Finance, Planning and Economic Development",
+    year: "Continuous",
+    href: "https://budget.finance.go.ug/all-documents",
+    apa: "Ministry of Finance, Planning and Economic Development. (n.d.). All documents. The Republic of Uganda. Retrieved May 7, 2026, from https://budget.finance.go.ug/all-documents",
+    controls: ["Budget speeches", "National Budget Framework Papers", "Approved estimates", "Budget performance", "Execution circulars", "Local government records"],
   },
   {
     title: "Road Design and Construction Manual, Volume V: Low Volume Sealed Roads",
@@ -559,6 +667,12 @@ const LITERATURE_REVIEW_INDICATORS = [
 ];
 
 const GLOBAL_SOURCE_DOCUMENTS = [
+  ...UGANDA_EVIDENCE_STREAMS.map((item) => ({
+    title: item.title,
+    agency: item.agency,
+    type: item.type,
+    url: item.url,
+  })),
   {
     title: "PIARC Road Asset Management Manual case studies",
     agency: "World Road Association",
@@ -1026,6 +1140,143 @@ function InfographicPanel({ analysis, grouped, programme }) {
   );
 }
 
+function EvidenceBotPanel({ compact = false }) {
+  const [activeStream, setActiveStream] = useState(0);
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setActiveStream((current) => (current + 1) % UGANDA_EVIDENCE_STREAMS.length);
+    }, 2600);
+    return () => window.clearInterval(timer);
+  }, []);
+  const active = UGANDA_EVIDENCE_STREAMS[activeStream];
+  const totalScore = Math.round(UGANDA_EVIDENCE_STREAMS.reduce((sum, item) => sum + item.score, 0) / UGANDA_EVIDENCE_STREAMS.length);
+
+  return (
+    <section className={`evidence-bot-panel ${compact ? "compact" : ""}`}>
+      <div className="evidence-bot-hero">
+        <div className="bot-avatar-orbit">
+          <Bot size={38} />
+          <i />
+          <i />
+          <i />
+        </div>
+        <div>
+          <p className="eyebrow">Continuous evidence bot</p>
+          <h3>Uganda infrastructure and budget evidence crawler</h3>
+          <span>Continuously tracks the official source register, APA references, refresh cadence and ingestion rules for Uganda infrastructure, planning and budget evidence.</span>
+        </div>
+        <strong>{totalScore}%</strong>
+      </div>
+      <div className="bot-stream-stage">
+        <article>
+          <span>{active.type}</span>
+          <strong>{active.title}</strong>
+          <p>{active.logic}</p>
+          <em>{active.cadence}</em>
+          <a href={active.url} target="_blank" rel="noreferrer">Open source</a>
+        </article>
+        <div className="bot-pulse-track">
+          {UGANDA_EVIDENCE_STREAMS.map((item, index) => (
+            <button
+              key={item.title}
+              className={index === activeStream ? "active" : ""}
+              onClick={() => setActiveStream(index)}
+              title={item.title}
+              type="button"
+            >
+              <span style={{ "--score": `${item.score}%` }} />
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="bot-source-grid">
+        {UGANDA_EVIDENCE_STREAMS.map((item) => (
+          <article key={item.title} className={item.title === active.title ? "active" : ""}>
+            <strong>{item.title}</strong>
+            <span>{item.agency}</span>
+            <div>{item.indicators.map((indicator) => <em key={indicator}>{indicator}</em>)}</div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ReportingInfographicsPanel({ analysis, grouped, programme }) {
+  const [periodIndex, setPeriodIndex] = useState(0);
+  useEffect(() => {
+    const timer = window.setInterval(() => setPeriodIndex((index) => (index + 1) % 4), 3200);
+    return () => window.clearInterval(timer);
+  }, []);
+  const selected = analysis.summary?.selected || 0;
+  const deferred = programme.filter((p) => p.status === "Deferred").length;
+  const highRisk = analysis.summary?.highRisk || 0;
+  const budgetUse = analysis.netBudget ? Math.round(((analysis.summary?.selectedCost || 0) / analysis.netBudget) * 100) : 0;
+  const evidenceAverage = programme.length
+    ? Math.round(programme.reduce((sum, p) => sum + Number(p.evidenceScore || 0), 0) / programme.length)
+    : 0;
+  const timeline = [
+    { label: "Baseline", year: "FY 2023/24", value: Math.max(28, budgetUse - 18), note: "Budget and condition evidence assembled" },
+    { label: "Current", year: "FY 2024/25", value: Math.max(34, budgetUse), note: "Prioritised works balanced against net envelope" },
+    { label: "Pipeline", year: "FY 2025/26", value: Math.min(96, budgetUse + 9), note: "MoFPED and Vision 2040 signals update the pipeline" },
+    { label: "Horizon", year: "2040", value: Math.min(99, evidenceAverage), note: "Infrastructure bottlenecks reduced through lifecycle planning" },
+  ];
+  const active = timeline[periodIndex];
+  const flows = [
+    ["Budget absorption", budgetUse, "#4258ff"],
+    ["Evidence readiness", evidenceAverage, "#12b981"],
+    ["Selected works", Math.min(100, selected * 8), "#ffb020"],
+    ["High-risk pressure", Math.min(100, highRisk * 12), "#f43f5e"],
+  ];
+
+  return (
+    <section className="reporting-infographics">
+      <div className="reporting-stage">
+        <div>
+          <p className="eyebrow">Infographic reporting mode</p>
+          <h2>{active.label} transformation view</h2>
+          <span>{active.year} / {active.note}</span>
+        </div>
+        <div className="time-orb" style={{ "--value": `${active.value * 3.6}deg` }}>
+          <strong>{active.value}%</strong>
+          <em>{active.year}</em>
+        </div>
+      </div>
+      <div className="animated-road-demo">
+        <div className="road-line">
+          {timeline.map((item, index) => (
+            <button key={item.label} className={index === periodIndex ? "active" : ""} onClick={() => setPeriodIndex(index)} type="button">
+              <i />
+              <strong>{item.label}</strong>
+              <span>{item.year}</span>
+            </button>
+          ))}
+        </div>
+        <div className={`moving-budget-bot step-${periodIndex}`}><Bot size={18} /></div>
+      </div>
+      <div className="infographic-only-grid">
+        {flows.map(([label, value, color]) => (
+          <article key={label} style={{ "--accent": color }}>
+            <div className="mini-ring" style={{ "--value": `${value * 3.6}deg` }}><strong>{value}%</strong></div>
+            <span>{label}</span>
+            <i><b style={{ width: `${value}%` }} /></i>
+          </article>
+        ))}
+        <article style={{ "--accent": "#00a7c7" }}>
+          <div className="mini-ring" style={{ "--value": `${Math.min(100, grouped.length * 8) * 3.6}deg` }}><strong>{grouped.length}</strong></div>
+          <span>Region/class allocation lanes</span>
+          <i><b style={{ width: `${Math.min(100, grouped.length * 8)}%` }} /></i>
+        </article>
+        <article style={{ "--accent": "#7c3aed" }}>
+          <div className="mini-ring" style={{ "--value": `${Math.min(100, deferred * 10) * 3.6}deg` }}><strong>{deferred}</strong></div>
+          <span>Deferred works awaiting fiscal space</span>
+          <i><b style={{ width: `${Math.min(100, deferred * 10)}%` }} /></i>
+        </article>
+      </div>
+    </section>
+  );
+}
+
 function TrafficAnalyticsPanel({ programme, grouped }) {
   const trafficIndex = Math.round(
     Math.min(100, 18 + programme.reduce((sum, p) => sum + Number(p.traffic || 0) + Number(p.safety || 0), 0) * 2.4)
@@ -1252,10 +1503,28 @@ function ManualsEvidencePanel({ analysis }) {
       <section className="manual-reference-note">
         <strong>APA source assumptions</strong>
         {MANUAL_SOURCES.map((source) => <p key={source.apa}>{source.apa}</p>)}
+        {UGANDA_EVIDENCE_STREAMS.map((source) => <p key={source.apa}>{source.apa}</p>)}
         {MOWT_CATALOGUE_MANUALS.map(([title, year, url]) => (
           <p key={title}>Ministry of Works and Transport. ({year}). {title}. The Republic of Uganda. Catalogue record retrieved May 7, 2026, from {url}</p>
         ))}
         {sourceReferences.map((source) => <p key={source}>{source}</p>)}
+      </section>
+      <section className="viz-card wide-viz">
+        <div className="viz-title">
+          <h3>Uganda Fiscal and Infrastructure Evidence Streams</h3>
+          <span>Vision 2040 and MoFPED documents feeding the literature-review engine</span>
+        </div>
+        <div className="bot-source-grid full">
+          {UGANDA_EVIDENCE_STREAMS.map((item) => (
+            <article key={item.title}>
+              <strong>{item.title}</strong>
+              <span>{item.agency} / {item.type}</span>
+              <p>{item.logic}</p>
+              <div>{item.indicators.map((indicator) => <em key={indicator}>{indicator}</em>)}</div>
+              <a href={item.url} target="_blank" rel="noreferrer">Open source</a>
+            </article>
+          ))}
+        </div>
       </section>
       <section className="viz-card wide-viz">
         <div className="viz-title">
@@ -2896,6 +3165,8 @@ function App() {
                 </div>
               </header>
               <MediaRibbon />
+              <EvidenceBotPanel />
+              <ReportingInfographicsPanel analysis={analysis} grouped={grouped} programme={programme} />
               <section className="metrics-grid">
                 <Metric icon={CircleDollarSign} label="Net budget" value={`UGX ${currency.format(analysis.netBudget || 0)}`} />
                 <Metric icon={Activity} label="Selected cost" value={`UGX ${currency.format(analysis.summary?.selectedCost || 0)}`} tone="green" />
@@ -2987,18 +3258,10 @@ function App() {
 
           {activeSection === "analytics" && (
             <>
-              <section className="metrics-grid">
-                <Metric icon={CircleDollarSign} label="Net budget" value={`UGX ${currency.format(analysis.netBudget || 0)}`} />
-                <Metric icon={Activity} label="Selected cost" value={`UGX ${currency.format(analysis.summary?.selectedCost || 0)}`} tone="green" />
-                <Metric icon={ShieldAlert} label="High ML risk assets" value={analysis.summary?.highRisk || 0} tone="red" />
-                <Metric icon={Layers} label="Regions / classes" value={grouped.length} tone="gold" />
-              </section>
-              <div className="analytics-viz-grid">
-                <AllocationBarChart grouped={grouped} />
-                <RiskHeatmap programme={programme} />
-                <ProgrammeDonut programme={programme} />
-              </div>
-              <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} section="all" limit={50} title="Linked Decision Intelligence Views" />
+              <EvidenceBotPanel compact />
+              <ReportingInfographicsPanel analysis={analysis} grouped={grouped} programme={programme} />
+              <InfographicPanel analysis={analysis} grouped={grouped} programme={programme} />
+              <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} section="all" limit={12} compact title="Supporting Decision Signals" />
             </>
           )}
 
@@ -3034,12 +3297,14 @@ function App() {
           )}
           {activeSection === "manuals" && (
             <>
+              <EvidenceBotPanel compact />
               <ManualsEvidencePanel analysis={analysis} />
               <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} section="pim" limit={8} compact title="Manual Evidence Intelligence" />
             </>
           )}
           {activeSection === "case-studies" && (
             <>
+              <EvidenceBotPanel compact />
               <GlobalCaseStudyPanel />
               <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} section="framework" limit={6} compact title="Case Study Transfer Intelligence" />
             </>

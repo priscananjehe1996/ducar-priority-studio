@@ -311,6 +311,410 @@ button.secondary:hover {
   gap: 16px;
 }
 
+.evidence-bot-panel,
+.reporting-infographics {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 84% 8%, rgba(66, 88, 255, 0.16), transparent 30%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(238, 244, 255, 0.88));
+  border: 1px solid rgba(255, 255, 255, 0.86);
+  box-shadow: 0 24px 60px rgba(30, 38, 64, 0.11);
+}
+
+.evidence-bot-panel.compact {
+  padding: 14px;
+}
+
+.evidence-bot-hero,
+.reporting-stage {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+}
+
+.evidence-bot-hero h3,
+.reporting-stage h2 {
+  margin: 0;
+  color: #0d1324;
+  font-size: clamp(24px, 3vw, 42px);
+  line-height: 1;
+  font-weight: 950;
+}
+
+.evidence-bot-hero span,
+.reporting-stage span {
+  display: block;
+  max-width: 760px;
+  margin-top: 8px;
+  color: #52657c;
+  font-weight: 850;
+}
+
+.evidence-bot-hero > strong {
+  width: 92px;
+  height: 92px;
+  display: grid;
+  place-items: center;
+  border-radius: 28px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #4258ff, #00a7c7);
+  font-size: 26px;
+  font-weight: 950;
+}
+
+.bot-avatar-orbit {
+  position: relative;
+  width: 94px;
+  height: 94px;
+  display: grid;
+  place-items: center;
+  border-radius: 30px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #0d1324, #4258ff);
+  box-shadow: 0 18px 36px rgba(66, 88, 255, 0.26);
+}
+
+.bot-avatar-orbit i {
+  position: absolute;
+  inset: -7px;
+  border-radius: inherit;
+  border: 2px solid rgba(66, 88, 255, 0.22);
+  animation: botOrbit 2.4s ease-in-out infinite;
+}
+
+.bot-avatar-orbit i:nth-child(3) { animation-delay: 0.35s; }
+.bot-avatar-orbit i:nth-child(4) { animation-delay: 0.7s; }
+
+@keyframes botOrbit {
+  0%, 100% { transform: scale(0.92); opacity: 0.25; }
+  50% { transform: scale(1.12); opacity: 0.72; }
+}
+
+.bot-stream-stage {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.9fr) minmax(280px, 1.1fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.bot-stream-stage article,
+.bot-source-grid article,
+.infographic-only-grid article {
+  display: grid;
+  gap: 9px;
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(18, 24, 38, 0.08);
+}
+
+.bot-stream-stage article span,
+.bot-source-grid article span {
+  color: #4258ff;
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.bot-stream-stage article strong,
+.bot-source-grid article strong {
+  color: #0d1324;
+  font-size: 17px;
+  line-height: 1.15;
+  font-weight: 950;
+}
+
+.bot-stream-stage article p,
+.bot-source-grid article p {
+  margin: 0;
+  color: #52657c;
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 820;
+}
+
+.bot-stream-stage article em {
+  color: #0d1324;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 950;
+}
+
+.bot-stream-stage article a,
+.bot-source-grid article a {
+  color: #ffffff;
+  width: max-content;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #4258ff;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.bot-pulse-track {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 8px;
+  align-content: end;
+  padding: 16px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #0d1324, #17213a);
+}
+
+.bot-pulse-track button {
+  position: relative;
+  height: 142px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.bot-pulse-track span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--score);
+  border-radius: inherit;
+  background: linear-gradient(180deg, #ffb020, #12b981, #4258ff);
+  animation: evidenceRise 1.2s ease both;
+}
+
+.bot-pulse-track button.active {
+  outline: 3px solid rgba(255, 255, 255, 0.8);
+  transform: translateY(-4px);
+}
+
+@keyframes evidenceRise {
+  from { height: 10%; }
+}
+
+.bot-source-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+}
+
+.bot-source-grid.full {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.bot-source-grid article.active {
+  border-color: rgba(66, 88, 255, 0.38);
+  box-shadow: 0 18px 40px rgba(66, 88, 255, 0.14);
+}
+
+.bot-source-grid div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.bot-source-grid em {
+  padding: 5px 8px;
+  border-radius: 999px;
+  color: #0d1324;
+  background: #edf2ff;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.reporting-infographics {
+  background:
+    radial-gradient(circle at 18% 10%, rgba(255, 176, 32, 0.22), transparent 28%),
+    linear-gradient(145deg, #ffffff, #eef4ff);
+}
+
+.time-orb,
+.mini-ring {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background:
+    conic-gradient(#4258ff var(--value), rgba(66, 88, 255, 0.12) 0),
+    #ffffff;
+}
+
+.time-orb {
+  width: 138px;
+  height: 138px;
+  color: #0d1324;
+  box-shadow: inset 0 0 0 14px #ffffff, 0 20px 45px rgba(66, 88, 255, 0.18);
+}
+
+.time-orb strong {
+  font-size: 30px;
+  font-weight: 950;
+}
+
+.time-orb em {
+  color: #52657c;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 950;
+}
+
+.animated-road-demo {
+  position: relative;
+  min-height: 142px;
+  padding: 20px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #0d1324, #263657);
+  overflow: hidden;
+}
+
+.road-line {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.road-line::before {
+  content: "";
+  position: absolute;
+  top: 25px;
+  left: 8%;
+  right: 8%;
+  height: 5px;
+  border-radius: 999px;
+  background: repeating-linear-gradient(90deg, #ffffff 0 28px, transparent 28px 48px);
+  opacity: 0.55;
+}
+
+.road-line button {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 900;
+}
+
+.road-line i {
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 2px solid rgba(255, 255, 255, 0.34);
+}
+
+.road-line button.active i {
+  background: linear-gradient(135deg, #ffb020, #12b981);
+  box-shadow: 0 0 0 10px rgba(255, 176, 32, 0.18);
+}
+
+.road-line span {
+  font-size: 11px;
+}
+
+.moving-budget-bot {
+  position: absolute;
+  z-index: 3;
+  top: 34px;
+  left: 11%;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  color: #0d1324;
+  background: #ffffff;
+  transition: left 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.24);
+}
+
+.moving-budget-bot.step-1 { left: 36%; }
+.moving-budget-bot.step-2 { left: 61%; }
+.moving-budget-bot.step-3 { left: 86%; }
+
+.infographic-only-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+}
+
+.infographic-only-grid article {
+  align-items: center;
+  justify-items: center;
+  text-align: center;
+}
+
+.mini-ring {
+  width: 86px;
+  height: 86px;
+  color: #0d1324;
+  background:
+    conic-gradient(var(--accent) var(--value), rgba(18, 24, 38, 0.08) 0),
+    #ffffff;
+  box-shadow: inset 0 0 0 10px #ffffff;
+}
+
+.mini-ring strong {
+  font-size: 18px;
+  font-weight: 950;
+}
+
+.infographic-only-grid span {
+  color: #0d1324;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.infographic-only-grid i {
+  width: 100%;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e5e7ef;
+}
+
+.infographic-only-grid b {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  animation: growAcross 0.8s ease both;
+}
+
+@media (max-width: 900px) {
+  .evidence-bot-hero,
+  .reporting-stage,
+  .bot-stream-stage {
+    grid-template-columns: 1fr;
+  }
+
+  .evidence-bot-hero > strong,
+  .time-orb {
+    justify-self: start;
+  }
+
+  .bot-pulse-track {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .road-line {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 18px;
+  }
+
+  .road-line::before,
+  .moving-budget-bot {
+    display: none;
+  }
+}
+
 .traffic-hero-card,
 .signal-tile,
 .viz-card {
