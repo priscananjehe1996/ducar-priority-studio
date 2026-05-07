@@ -375,6 +375,44 @@ const UGANDA_EVIDENCE_STREAMS = [
   },
 ];
 
+const TRAFFIC_EVIDENCE_SOURCES = [
+  {
+    title: "Uganda Roads",
+    agency: "World Bank Transport Data",
+    type: "Open road network and traffic-volume dataset",
+    url: "https://datacatalog.worldbank.org/infrastructure-data/search/dataset/0041482/Uganda-Roads",
+    use: "Corroborates road type, condition and traffic-volume attributes against the local unified road layer.",
+  },
+  {
+    title: "Uganda Road Network (main roads)",
+    agency: "AmeriGEOSS / WFP OpenStreetMap extract",
+    type: "Open shapefile road network",
+    url: "https://data.amerigeoss.org/dataset/uganda-road-network-main-roads",
+    use: "Supports open-source road geometry checks, naming confidence and missing-link review.",
+  },
+  {
+    title: "Integrated Transport Infrastructure Services Annual Monitoring FY2024/25 Report",
+    agency: "Ministry of Finance, Planning and Economic Development",
+    type: "Transport budget and performance monitoring report",
+    url: "https://www.finance.go.ug/sites/default/files/reports/Integrated%20Transport%20Infrastructure%20Services%20Annual%20Monitoring%20FY2024-25%20Report.pdf",
+    use: "Adds national and DUCAR maintenance-budget, implementation and performance context to traffic pressure interpretation.",
+  },
+  {
+    title: "Integrated Transport Infrastructure Services Annual Budget Monitoring Report FY2023/24",
+    agency: "Ministry of Finance, Planning and Economic Development",
+    type: "Transport budget monitoring report",
+    url: "https://www.finance.go.ug/sites/default/files/reports/Integrated%20Transport%20Infrastructure%20Services%20Annual%20Budget%20Monitoring%20report%20FY%202023-24.pdf",
+    use: "Links traffic and access pressure to monitored road works, releases, absorption and physical progress.",
+  },
+  {
+    title: "Manuals and Specifications for Road Works",
+    agency: "Ministry of Works and Transport",
+    type: "Road design, pavement, bridge, drainage and maintenance standards catalogue",
+    url: "https://www.works.go.ug/index.php/policies-regulations/manuals-for-road-bridge-works",
+    use: "Controls classification, geometric, pavement, drainage, maintenance and road-user analysis assumptions.",
+  },
+];
+
 const MANUAL_SOURCES = [
   {
     title: "Public Investment Manual for Project Preparation and Appraisal",
@@ -1268,49 +1306,322 @@ function ReportingInfographicsPanel({ analysis, grouped, programme }) {
   );
 }
 
-function TrafficAnalyticsPanel({ programme, grouped }) {
-  const trafficIndex = Math.round(
-    Math.min(100, 18 + programme.reduce((sum, p) => sum + Number(p.traffic || 0) + Number(p.safety || 0), 0) * 2.4)
-  );
-  const climateIndex = Math.round(
-    Math.min(100, 12 + programme.reduce((sum, p) => sum + Number(p.climate || 0), 0) * 4.6)
-  );
+function TrafficAnalyticsPanel() {
+  const mapRef = useRef(null);
+  const mapInstance = useRef(null);
+  const mapLoaded = useRef(false);
+  const [mapReady, setMapReady] = useState(false);
+  const [roads, setRoads] = useState({ type: "FeatureCollection", features: [] });
+  const [flows, setFlows] = useState({ type: "FeatureCollection", features: [] });
+  const [routeMatrix, setRouteMatrix] = useState(null);
+  const [selectedRegion, setSelectedRegion] = useState("All");
+  const [selectedTraffic, setSelectedTraffic] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadTrafficLayers() {
+      const manifest = await fetchUgandaLayersManifest();
+      const [roadData, flowData, matrixData] = await Promise.all([
+        fetch(manifestDataUrl(manifest, "unified_roads_geojson", "uganda_unified_roads_web.geojson")).then((r) => r.json()),
+        fetch(manifestDataUrl(manifest, "traffic_flows_geojson", "uganda_traffic_flows_web.geojson")).then((r) => r.json()),
+        fetch(manifestDataUrl(manifest, "route_matrix_json", "uganda_route_matrix.json")).then((r) => r.json()),
+      ]);
+      if (cancelled) return;
+      setRoads(roadData);
+      setFlows(flowData);
+      setRouteMatrix(matrixData);
+    }
+    loadTrafficLayers().catch(() => {
+      setRoads({ type: "FeatureCollection", features: [] });
+      setFlows({ type: "FeatureCollection", features: [] });
+      setRouteMatrix(null);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  const regionOptions = useMemo(() => {
+    const values = new Set();
+    for (const feature of flows.features || []) {
+      const region = feature.properties?.region;
+      if (region) values.add(region);
+    }
+    return ["All", ...Array.from(values).sort()];
+  }, [flows]);
+
+  const filteredFlows = useMemo(() => {
+    const features = flows.features || [];
+    return selectedRegion === "All" ? features : features.filter((feature) => feature.properties?.region === selectedRegion);
+  }, [flows, selectedRegion]);
+
+  const filteredRoads = useMemo(() => {
+    const features = roads.features || [];
+    return selectedRegion === "All" ? features : features.filter((feature) => feature.properties?.region === selectedRegion);
+  }, [roads, selectedRegion]);
+
+  const trafficStats = useMemo(() => {
+    const flowCount = filteredFlows.length;
+    const length = filteredFlows.reduce((sum, feature) => sum + Number(feature.properties?.length_km || 0), 0);
+    const avgFlow = flowCount
+      ? Math.round(filteredFlows.reduce((sum, feature) => sum + Number(feature.properties?.traffic_flow_index || 0), 0) / flowCount)
+      : 0;
+    const highPressure = filteredFlows.filter((feature) => Number(feature.properties?.traffic_flow_index || 0) >= 75).length;
+    const selected = selectedTraffic?.properties;
+    return {
+      flowCount,
+      length,
+      avgFlow,
+      highPressure,
+      title: selected?.road_name || (selectedRegion === "All" ? "Uganda traffic network" : `${selectedRegion} region`),
+      flowIndex: Math.round(Number(selected?.traffic_flow_index ?? avgFlow ?? 0)),
+      selectedLength: Number(selected?.length_km || length || 0),
+      selectedDistrict: selected?.district || (selectedRegion === "All" ? "All districts" : selectedRegion),
+      selectedClass: selected?.network_category || selected?.road_class || "Regional aggregate",
+      selectedSurface: selected?.surface || "Mixed surfaces",
+    };
+  }, [filteredFlows, selectedTraffic, selectedRegion]);
+
+  const categoryStats = useMemo(() => {
+    const groupsByCategory = new Map();
+    for (const feature of filteredFlows) {
+      const category = feature.properties?.network_category || feature.properties?.road_system || "Unclassified";
+      const item = groupsByCategory.get(category) || { category, count: 0, length: 0, flow: 0 };
+      item.count += 1;
+      item.length += Number(feature.properties?.length_km || 0);
+      item.flow += Number(feature.properties?.traffic_flow_index || 0);
+      groupsByCategory.set(category, item);
+    }
+    return Array.from(groupsByCategory.values())
+      .map((item) => ({ ...item, avgFlow: item.count ? Math.round(item.flow / item.count) : 0 }))
+      .sort((a, b) => b.avgFlow - a.avgFlow)
+      .slice(0, 8);
+  }, [filteredFlows]);
+
+  const topRoutes = useMemo(() => (
+    filteredFlows
+      .slice()
+      .sort((a, b) => Number(b.properties?.traffic_flow_index || 0) - Number(a.properties?.traffic_flow_index || 0))
+      .slice(0, 8)
+  ), [filteredFlows]);
+
+  const odRoutes = useMemo(() => (
+    (routeMatrix?.routes || [])
+      .sort((a, b) => Number(b.traffic_flow_index || 0) - Number(a.traffic_flow_index || 0))
+      .slice(0, 5)
+  ), [routeMatrix]);
+
+  useEffect(() => {
+    if (mapInstance.current || !mapRef.current) return;
+    const map = new maplibregl.Map({
+      container: mapRef.current,
+      style: {
+        version: 8,
+        sources: {
+          darkBase: {
+            type: "raster",
+            tiles: ["https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"],
+            tileSize: 256,
+            attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
+          },
+        },
+        layers: [{ id: "dark-base", type: "raster", source: "darkBase" }],
+      },
+      center: [32.4, 1.35],
+      zoom: 6,
+      pitch: 0,
+      bearing: 0,
+      attributionControl: true,
+    });
+    mapInstance.current = map;
+    map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), "top-left");
+    map.on("load", () => {
+      mapLoaded.current = true;
+      setMapReady(true);
+      map.addSource("traffic-roads", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+      map.addSource("traffic-flow-lines", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+      map.addSource("selected-traffic-line", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+      map.addLayer({
+        id: "traffic-road-network",
+        type: "line",
+        source: "traffic-roads",
+        paint: {
+          "line-color": ["case", ["==", ["get", "network_category"], "National Roads"], "#94a3b8", "#64748b"],
+          "line-width": ["case", ["==", ["get", "network_category"], "National Roads"], 2.4, 1.05],
+          "line-opacity": ["case", ["==", ["get", "network_category"], "National Roads"], 0.55, 0.25],
+        },
+      });
+      map.addLayer({
+        id: "traffic-flow-casing-live",
+        type: "line",
+        source: "traffic-flow-lines",
+        paint: {
+          "line-color": "#020617",
+          "line-width": ["interpolate", ["linear"], ["get", "traffic_flow_index"], 30, 3, 60, 6, 100, 11],
+          "line-opacity": 0.7,
+          "line-blur": 0.4,
+        },
+      });
+      map.addLayer({
+        id: "traffic-flow-live",
+        type: "line",
+        source: "traffic-flow-lines",
+        paint: {
+          "line-color": ["interpolate", ["linear"], ["get", "traffic_flow_index"], 30, "#22c55e", 55, "#06b6d4", 75, "#f59e0b", 100, "#ef4444"],
+          "line-width": ["interpolate", ["linear"], ["get", "traffic_flow_index"], 30, 1.8, 60, 4.2, 100, 8.8],
+          "line-opacity": 0.92,
+        },
+      });
+      map.addLayer({
+        id: "selected-traffic-halo",
+        type: "line",
+        source: "selected-traffic-line",
+        paint: { "line-color": "#ffffff", "line-width": 13, "line-opacity": 0.96, "line-blur": 0.35 },
+      });
+      map.addLayer({
+        id: "selected-traffic",
+        type: "line",
+        source: "selected-traffic-line",
+        paint: { "line-color": "#111827", "line-width": 7.5, "line-opacity": 1 },
+      });
+      map.on("click", "traffic-flow-live", (event) => {
+        const raw = event.features?.[0];
+        if (!raw) return;
+        const feature = JSON.parse(JSON.stringify(raw));
+        setSelectedTraffic(feature);
+        map.getSource("selected-traffic-line")?.setData({ type: "FeatureCollection", features: [feature] });
+      });
+      map.on("mouseenter", "traffic-flow-live", () => { map.getCanvas().style.cursor = "pointer"; });
+      map.on("mouseleave", "traffic-flow-live", () => { map.getCanvas().style.cursor = ""; });
+    });
+    return () => { map.remove(); mapInstance.current = null; mapLoaded.current = false; setMapReady(false); };
+  }, []);
+
+  useEffect(() => {
+    const map = mapInstance.current;
+    if (!mapReady || !mapLoaded.current || !map?.getSource("traffic-flow-lines")) return;
+    map.getSource("traffic-roads").setData({ type: "FeatureCollection", features: filteredRoads });
+    map.getSource("traffic-flow-lines").setData({ type: "FeatureCollection", features: filteredFlows });
+    if (!selectedTraffic) {
+      map.getSource("selected-traffic-line").setData({ type: "FeatureCollection", features: [] });
+    }
+    const bounds = new maplibregl.LngLatBounds();
+    let hasBounds = false;
+    const includeCoords = (coords) => {
+      if (!coords) return;
+      if (typeof coords[0] === "number" && typeof coords[1] === "number") {
+        bounds.extend(coords);
+        hasBounds = true;
+        return;
+      }
+      coords.forEach(includeCoords);
+    };
+    filteredFlows.slice(0, 900).forEach((feature) => includeCoords(feature.geometry?.coordinates));
+    if (hasBounds) {
+      map.fitBounds(bounds, { padding: 72, duration: 650, maxZoom: 10 });
+    }
+  }, [filteredRoads, filteredFlows, mapReady, selectedRegion]);
+
+  function clearSelectedTraffic() {
+    setSelectedTraffic(null);
+    mapInstance.current?.getSource("selected-traffic-line")?.setData({ type: "FeatureCollection", features: [] });
+  }
+
   return (
-    <div className="traffic-page-grid">
-      <section className="traffic-command-card">
-        <p className="eyebrow">Traffic and economic engine</p>
-        <strong>{trafficIndex}</strong>
-        <span>DUCAR non-national network pressure score from traffic, safety, surface and risk inputs</span>
-        <div className="index-scale"><i style={{ left: `${trafficIndex}%` }} /></div>
-        <p className="exemption-text">{DUCAR_EXEMPTION_TEXT}</p>
+    <div className="traffic-map-page">
+      <section className="traffic-map-toolbar">
+        <div>
+          <p className="eyebrow">Traffic flow map</p>
+          <h2>Observed and modelled traffic pressure on the Uganda road network</h2>
+          <span>Road network geometry, available route-flow indices, OD route matrix and DUCAR road classifications are fused into one traffic analytics surface.</span>
+        </div>
+        <label>
+          Region
+          <select value={selectedRegion} onChange={(event) => { setSelectedRegion(event.target.value); clearSelectedTraffic(); }}>
+            {regionOptions.map((region) => <option key={region}>{region}</option>)}
+          </select>
+        </label>
       </section>
-      <section className="signal-grid">
-        <SignalTile label="Climate stress" value={`${climateIndex}%`} sublabel="screening placeholder" tone="cyan" />
-        <SignalTile label="Analysis groups" value={grouped.length} sublabel="region/class budget groups" tone="green" />
-        <SignalTile label="Open data logic" value={OPEN_DATA_LOGIC.length} sublabel="linked evidence streams" tone="red" />
-      </section>
-      <section className="viz-card traffic-model-card">
-        <div className="viz-title">
-          <h3>Required analytical considerations</h3>
-          <span>HDM-style parameter library</span>
+      <section className="traffic-map-layout">
+        <div className="traffic-map-shell">
+          <div className="traffic-map-container" ref={mapRef} />
+          <div className="traffic-map-legend">
+            <strong>Traffic flow index</strong>
+            <span><i className="flow-low" /> Low</span>
+            <span><i className="flow-mid" /> Moderate</span>
+            <span><i className="flow-high" /> High</span>
+            <span><i className="flow-severe" /> Severe</span>
+          </div>
         </div>
-        <div className="consideration-grid">
-          {TRAFFIC_CONSIDERATIONS.map(([label, detail]) => (
-            <article key={label}>
-              <strong>{label}</strong>
-              <p>{detail}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-      <section className="viz-card">
-        <div className="viz-title">
-          <h3>Data Integration Logic</h3>
-          <span>provenance-first</span>
-        </div>
-        <div className="open-data-list">
-          {OPEN_DATA_LOGIC.map((item) => <p key={item}>{item}</p>)}
-        </div>
+        <aside className="traffic-insight-pane">
+          <div className="traffic-pane-head">
+            <div>
+              <p className="eyebrow">{selectedTraffic ? "Selected road" : "Selected region"}</p>
+              <h3>{trafficStats.title}</h3>
+            </div>
+            {selectedTraffic && <button className="pane-close" onClick={clearSelectedTraffic} aria-label="Clear selected traffic road">x</button>}
+          </div>
+          <div className="traffic-gauge-card" style={{ "--value": `${trafficStats.flowIndex * 3.6}deg` }}>
+            <strong>{trafficStats.flowIndex}%</strong>
+            <span>Traffic flow pressure</span>
+          </div>
+          <div className="traffic-fact-grid">
+            <article><strong>{trafficStats.selectedLength.toLocaleString(undefined, { maximumFractionDigits: 1 })}</strong><span>km analysed</span></article>
+            <article><strong>{trafficStats.flowCount.toLocaleString()}</strong><span>flow links</span></article>
+            <article><strong>{trafficStats.highPressure.toLocaleString()}</strong><span>high pressure links</span></article>
+            <article><strong>{trafficStats.selectedDistrict}</strong><span>district/region</span></article>
+          </div>
+          <div className="traffic-selected-meta">
+            <span>{trafficStats.selectedClass}</span>
+            <span>{trafficStats.selectedSurface}</span>
+            <a href="#sources">Traffic evidence basis</a>
+          </div>
+          <div className="traffic-chart-card">
+            <div className="viz-title">
+              <h3>Traffic by road category</h3>
+              <span>Average flow index</span>
+            </div>
+            <div className="traffic-bars">
+              {categoryStats.map((item) => (
+                <article key={item.category}>
+                  <span>{item.category}</span>
+                  <i><b style={{ width: `${item.avgFlow}%` }} /></i>
+                  <strong>{item.avgFlow}%</strong>
+                </article>
+              ))}
+            </div>
+          </div>
+          <div className="traffic-chart-card">
+            <div className="viz-title">
+              <h3>Highest pressure road links</h3>
+              <span>{selectedRegion === "All" ? "National view" : selectedRegion}</span>
+            </div>
+            <div className="traffic-route-list">
+              {topRoutes.map((feature) => (
+                <article key={feature.properties?.route_id || feature.properties?.route_key}>
+                  <strong>{feature.properties?.road_name || "Unnamed road"}</strong>
+                  <span>{feature.properties?.district || "District pending"} / {feature.properties?.network_category || "Network pending"}</span>
+                  <i><b style={{ width: `${Number(feature.properties?.traffic_flow_index || 0)}%` }} /></i>
+                  <em>{Math.round(Number(feature.properties?.traffic_flow_index || 0))}%</em>
+                </article>
+              ))}
+            </div>
+          </div>
+          <div className="traffic-chart-card">
+            <div className="viz-title">
+              <h3>OD flow routes</h3>
+              <span>Route matrix</span>
+            </div>
+            <div className="traffic-route-list compact">
+              {odRoutes.map((route) => (
+                <article key={`${route.origin}-${route.destination}`}>
+                  <strong>{route.origin} to {route.destination}</strong>
+                  <span>{route.network_impedance_km} km impedance</span>
+                  <i><b style={{ width: `${route.traffic_flow_index}%` }} /></i>
+                  <em>{route.traffic_flow_index}%</em>
+                </article>
+              ))}
+            </div>
+          </div>
+        </aside>
       </section>
     </div>
   );
@@ -1585,6 +1896,14 @@ function SourcesPanel() {
     use: source.logic,
     apa: source.apa,
   }));
+  const trafficSources = TRAFFIC_EVIDENCE_SOURCES.map((source) => ({
+    title: source.title,
+    agency: source.agency,
+    type: source.type,
+    url: source.url,
+    use: source.use,
+    apa: `${source.agency}. (n.d.). ${source.title}. Retrieved May 7, 2026, from ${source.url}`,
+  }));
   const globalSources = GLOBAL_SOURCE_DOCUMENTS.map((source) => ({
     title: source.title,
     agency: source.agency,
@@ -1601,10 +1920,11 @@ function SourcesPanel() {
     use: source,
     apa: source,
   }));
-  const allSources = [...manualSources, ...ugandaSources, ...mowtSources, ...globalSources, ...localAssumptions];
+  const allSources = [...manualSources, ...ugandaSources, ...trafficSources, ...mowtSources, ...globalSources, ...localAssumptions];
   const groups = [
     ["Uganda manuals and local evidence", manualSources.length + localAssumptions.length, "#4258ff"],
     ["Uganda planning and budget evidence", ugandaSources.length, "#12b981"],
+    ["Traffic and network evidence", trafficSources.length, "#00a7c7"],
     ["MoWT catalogue records", mowtSources.length, "#ffb020"],
     ["Global comparison sources", globalSources.length, "#f43f5e"],
   ];
@@ -3163,10 +3483,7 @@ function App() {
             </>
           )}
           {activeSection === "traffic" && (
-            <>
-              <TrafficAnalyticsPanel programme={programme} grouped={grouped} />
-              <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} section="traffic" limit={10} compact title="Traffic and Economic Intelligence" />
-            </>
+            <TrafficAnalyticsPanel />
           )}
           {activeSection === "hdm4" && (
             <>
@@ -3295,4 +3612,7 @@ function App() {
   );
 }
 
-createRoot(document.getElementById("root")).render(<App />);
+const rootElement = document.getElementById("root");
+const appRoot = window.__DUCAR_PRIORITY_ROOT || createRoot(rootElement);
+window.__DUCAR_PRIORITY_ROOT = appRoot;
+appRoot.render(<App />);
