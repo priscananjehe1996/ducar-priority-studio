@@ -192,8 +192,9 @@ const NAV_ITEMS = [
   { id: "hdm4", label: "HDM-4 Inputs", icon: Database },
   { id: "framework", label: "Framework Flow", icon: Network },
   { id: "gis", label: "GIS Surface", icon: MapIcon },
-  { id: "manuals", label: "Manuals & Evidence", icon: BookOpen },
-  { id: "case-studies", label: "Global Cases", icon: Globe2 },
+  { id: "manuals", label: "Evidence Stats", icon: BookOpen },
+  { id: "case-studies", label: "Global Stats", icon: Globe2 },
+  { id: "sources", label: "Sources", icon: BookOpen },
   { id: "allocation", label: "Allocation", icon: GitBranch },
   { id: "programme", label: "Programme", icon: FileSpreadsheet },
 ];
@@ -1173,7 +1174,7 @@ function EvidenceBotPanel({ compact = false }) {
           <strong>{active.title}</strong>
           <p>{active.logic}</p>
           <em>{active.cadence}</em>
-          <a href={active.url} target="_blank" rel="noreferrer">Open source</a>
+          <a href="#sources">View source register</a>
         </article>
         <div className="bot-pulse-track">
           {UGANDA_EVIDENCE_STREAMS.map((item, index) => (
@@ -1188,15 +1189,6 @@ function EvidenceBotPanel({ compact = false }) {
             </button>
           ))}
         </div>
-      </div>
-      <div className="bot-source-grid">
-        {UGANDA_EVIDENCE_STREAMS.map((item) => (
-          <article key={item.title} className={item.title === active.title ? "active" : ""}>
-            <strong>{item.title}</strong>
-            <span>{item.agency}</span>
-            <div>{item.indicators.map((indicator) => <em key={indicator}>{indicator}</em>)}</div>
-          </article>
-        ))}
       </div>
     </section>
   );
@@ -1482,69 +1474,7 @@ function ManualsEvidencePanel({ analysis }) {
       </section>
       <section className="viz-card wide-viz">
         <div className="viz-title">
-          <h3>Manual Evidence Library</h3>
-          <span>Source documents, TORs, manuals and reference files</span>
-        </div>
-        <div className="manual-source-grid">
-          {MANUAL_SOURCES.map((source) => (
-            <article key={source.title}>
-              <div>
-                <strong>{source.title}</strong>
-                <span>{source.agency} / {source.year}</span>
-              </div>
-              <a href={source.href} target="_blank" rel="noreferrer">Open source</a>
-              <ul>
-                {source.controls.map((control) => <li key={control}>{control}</li>)}
-              </ul>
-            </article>
-          ))}
-        </div>
-      </section>
-      <section className="manual-reference-note">
-        <strong>APA source assumptions</strong>
-        {MANUAL_SOURCES.map((source) => <p key={source.apa}>{source.apa}</p>)}
-        {UGANDA_EVIDENCE_STREAMS.map((source) => <p key={source.apa}>{source.apa}</p>)}
-        {MOWT_CATALOGUE_MANUALS.map(([title, year, url]) => (
-          <p key={title}>Ministry of Works and Transport. ({year}). {title}. The Republic of Uganda. Catalogue record retrieved May 7, 2026, from {url}</p>
-        ))}
-        {sourceReferences.map((source) => <p key={source}>{source}</p>)}
-      </section>
-      <section className="viz-card wide-viz">
-        <div className="viz-title">
-          <h3>Uganda Fiscal and Infrastructure Evidence Streams</h3>
-          <span>Vision 2040 and MoFPED documents feeding the literature-review engine</span>
-        </div>
-        <div className="bot-source-grid full">
-          {UGANDA_EVIDENCE_STREAMS.map((item) => (
-            <article key={item.title}>
-              <strong>{item.title}</strong>
-              <span>{item.agency} / {item.type}</span>
-              <p>{item.logic}</p>
-              <div>{item.indicators.map((indicator) => <em key={indicator}>{indicator}</em>)}</div>
-              <a href={item.url} target="_blank" rel="noreferrer">Open source</a>
-            </article>
-          ))}
-        </div>
-      </section>
-      <section className="viz-card wide-viz">
-        <div className="viz-title">
-          <h3>MoWT Road Manual Catalogue</h3>
-          <span>Public downloads plus official catalogue records used in the thought engine</span>
-        </div>
-        <div className="manual-record-table">
-          {MOWT_CATALOGUE_MANUALS.map(([title, year, url, use]) => (
-            <article key={title}>
-              <strong>{title}</strong>
-              <span>Ministry of Works and Transport / {year}</span>
-              <em>{use}</em>
-              <a href={url} target="_blank" rel="noreferrer">Open catalogue record</a>
-            </article>
-          ))}
-        </div>
-      </section>
-      <section className="viz-card wide-viz">
-        <div className="viz-title">
-          <h3>Downloaded MoWT Manual Content Signals</h3>
+          <h3>MoWT Manual Content Signals</h3>
           <span>{(mowtCatalog.records || []).length} PDFs / {mowtPages.toLocaleString()} pages indexed</span>
         </div>
         <div className="manual-topic-grid">
@@ -1555,111 +1485,6 @@ function ManualsEvidencePanel({ analysis }) {
               <p>{item.sample_text || "Text extraction pending."}</p>
               <div><i style={{ width: `${Math.min(100, Number(item.pages || 0) / 5)}%` }} /></div>
               <em>{(item.keywords || []).map((kw) => `${kw.term} ${kw.count}`).join(" / ")}</em>
-            </article>
-          ))}
-        </div>
-      </section>
-      <section className="global-source-library">
-        <div className="viz-title">
-          <h3>Global Case Evidence Sources</h3>
-          <span>International manuals, framework portals, country groupings and case-study references</span>
-        </div>
-        <div className="source-download-grid">
-          {GLOBAL_SOURCE_DOCUMENTS.map((source) => (
-            <article key={`manuals-${source.url}`}>
-              <div>
-                <strong>{source.title}</strong>
-                <span>{source.agency} / {source.type}</span>
-              </div>
-              <div className="source-actions">
-                <a href={source.url} target="_blank" rel="noreferrer">Open</a>
-                <a href={source.url} download target="_blank" rel="noreferrer"><Download size={14} /> Download</a>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-      <section className="literature-engine">
-        <div className="viz-title">
-          <h3>Global Literature Review Evidence</h3>
-          <span>195-country framework comparison embedded in the evidence library</span>
-        </div>
-        <section className="metrics-grid">
-          <Metric icon={Globe2} label="Countries covered" value={GLOBAL_COUNTRY_REVIEWS.length} />
-          <Metric icon={MapIcon} label="Regions covered" value={Object.keys(globalEvidence.regionCounts).length} tone="green" />
-          <Metric icon={ClipboardCheck} label="Transferability index" value={`${globalEvidence.averageScore}%`} tone="gold" />
-          <Metric icon={BookOpen} label="Global source groups" value={globalEvidence.sourceCount} tone="red" />
-        </section>
-        <div className="literature-actions">
-          <button onClick={() => downloadLiteratureReviewFile("csv")}><Download size={15} /> Download CSV</button>
-          <button className="secondary" onClick={() => downloadLiteratureReviewFile("json")}><FileSpreadsheet size={15} /> Download JSON</button>
-        </div>
-        <div className="indicator-score-grid">
-          {globalEvidence.indicatorAverages.map((item, index) => (
-            <article key={`manuals-${item.key}`} style={{ "--accent": ["#4258ff", "#12b981", "#f43f5e", "#ffb020", "#00a7c7", "#7c3aed", "#10b981", "#ef4444"][index % 8] }}>
-              <div>
-                <strong>{item.label}</strong>
-                <span>{Math.round(item.weight * 100)}% model weight</span>
-              </div>
-              <em>{item.value}%</em>
-              <i><b style={{ width: `${item.value}%` }} /></i>
-              <p>{item.detail}</p>
-            </article>
-          ))}
-        </div>
-        <div className="framework-rank-table">
-          {globalEvidence.topFrameworks.slice(0, 8).map((item, index) => (
-            <article key={`manuals-${item.country}-${item.pattern}`}>
-              <strong>{index + 1}</strong>
-              <span>{item.country}<small>{item.region} / {item.pattern}</small></span>
-              <em>{item.score}%</em>
-            </article>
-          ))}
-        </div>
-      </section>
-      <section className="viz-card wide-viz">
-        <div className="viz-title">
-          <h3>Benchmark Global Cases</h3>
-          <span>Documented cases now indexed inside Manuals & Evidence</span>
-        </div>
-        <div className="global-case-grid">
-          {GLOBAL_CASE_STUDIES.map((item, index) => (
-            <article key={`manuals-${item.region}-${item.place}`} style={{ "--accent": ["#4258ff", "#12b981", "#f43f5e", "#ffb020", "#00a7c7", "#7c3aed"][index % 6] }}>
-              <div className="case-card-head">
-                <span>{item.region}</span>
-                <strong>{item.score}%</strong>
-              </div>
-              <h3>{item.place}</h3>
-              <p>{item.lesson}</p>
-              <div className="case-metric-row">
-                {item.metrics.map((metric) => <i key={metric}>{metric}</i>)}
-              </div>
-              <em>{item.ducarUse}</em>
-              <a href={item.url} target="_blank" rel="noreferrer">{item.source}</a>
-            </article>
-          ))}
-        </div>
-      </section>
-      <section className="viz-card wide-viz">
-        <div className="viz-title">
-          <h3>Global Country Evidence Matrix</h3>
-          <span>All 195 country records available inside the evidence tab</span>
-        </div>
-        <div className="country-review-grid">
-          {GLOBAL_COUNTRY_REVIEWS.map((item, index) => (
-            <article key={`manuals-${item.region}-${item.country}`} style={{ "--accent": ["#4258ff", "#12b981", "#f43f5e", "#ffb020", "#00a7c7"][index % 5] }}>
-              <div>
-                <strong>{item.country}</strong>
-                <span>{item.region}</span>
-              </div>
-              <em>{item.score}%</em>
-              <b>{item.pattern}</b>
-              <div className="country-indicator-strip">
-                {LITERATURE_REVIEW_INDICATORS.slice(0, 4).map(([key, label]) => (
-                  <span key={key}>{label}: {item.indicators[key]}%</span>
-                ))}
-              </div>
-              <p>{item.ducarUse}</p>
             </article>
           ))}
         </div>
@@ -1741,26 +1566,6 @@ function GlobalCaseStudyPanel() {
         <Metric icon={ClipboardCheck} label="Transferability index" value={`${averageScore}%`} tone="gold" />
         <Metric icon={BookOpen} label="Reference source groups" value={sourceCount} tone="red" />
       </section>
-      <section className="global-source-library">
-        <div className="viz-title">
-          <h3>Download Source Documents</h3>
-          <span>Official references used by the global comparison engine</span>
-        </div>
-        <div className="source-download-grid">
-          {GLOBAL_SOURCE_DOCUMENTS.map((source) => (
-            <article key={source.url}>
-              <div>
-                <strong>{source.title}</strong>
-                <span>{source.agency} / {source.type}</span>
-              </div>
-              <div className="source-actions">
-                <a href={source.url} target="_blank" rel="noreferrer">Open</a>
-                <a href={source.url} download target="_blank" rel="noreferrer"><Download size={14} /> Download</a>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
       <section className="literature-engine">
         <div className="viz-title">
           <h3>Literature Review Comparison Engine</h3>
@@ -1821,7 +1626,6 @@ function GlobalCaseStudyPanel() {
               {item.metrics.map((metric) => <i key={metric}>{metric}</i>)}
             </div>
             <em>{item.ducarUse}</em>
-            <a href={item.url} target="_blank" rel="noreferrer">{item.source}</a>
           </article>
         ))}
       </section>
@@ -1849,13 +1653,101 @@ function GlobalCaseStudyPanel() {
           ))}
         </div>
       </section>
-      <section className="manual-reference-note">
-        <strong>APA-style online source assumptions</strong>
-        <p>United Nations. (2026). Member States and Permanent Observers. Used as the 195-country coverage frame: 193 Member States and two non-member observer states.</p>
-        <p>World Bank. (2026). Country and lending groups. Used for regional comparison logic and country/economy grouping assumptions.</p>
-        {GLOBAL_CASE_STUDIES.map((item) => (
-          <p key={`${item.place}-${item.source}`}>{item.source}. ({item.region}). {item.place}: {item.lesson} Retrieved May 6, 2026, from {item.url}</p>
+    </div>
+  );
+}
+
+function SourcesPanel() {
+  const mowtSources = MOWT_CATALOGUE_MANUALS.map(([title, year, url, use]) => ({
+    title,
+    agency: "Ministry of Works and Transport",
+    type: `Catalogue / ${year}`,
+    url,
+    use,
+    apa: `Ministry of Works and Transport. (${year}). ${title}. The Republic of Uganda. Retrieved May 7, 2026, from ${url}`,
+  }));
+  const manualSources = MANUAL_SOURCES.map((source) => ({
+    title: source.title,
+    agency: source.agency,
+    type: `Manual / ${source.year}`,
+    url: source.href,
+    use: source.controls.join(", "),
+    apa: source.apa,
+  }));
+  const ugandaSources = UGANDA_EVIDENCE_STREAMS.map((source) => ({
+    title: source.title,
+    agency: source.agency,
+    type: source.type,
+    url: source.url,
+    use: source.logic,
+    apa: source.apa,
+  }));
+  const globalSources = GLOBAL_SOURCE_DOCUMENTS.map((source) => ({
+    title: source.title,
+    agency: source.agency,
+    type: source.type,
+    url: source.url,
+    use: "Global comparison, benchmarking, literature review and framework transfer scoring.",
+    apa: `${source.agency}. (n.d.). ${source.title}. Retrieved May 7, 2026, from ${source.url}`,
+  }));
+  const localAssumptions = sourceReferences.map((source, index) => ({
+    title: `DUCAR local model assumption ${index + 1}`,
+    agency: "DUCAR Priority Studio",
+    type: "Model assumption",
+    url: "#sources",
+    use: source,
+    apa: source,
+  }));
+  const allSources = [...manualSources, ...ugandaSources, ...mowtSources, ...globalSources, ...localAssumptions];
+  const groups = [
+    ["Uganda manuals and local evidence", manualSources.length + localAssumptions.length, "#4258ff"],
+    ["Uganda planning and budget evidence", ugandaSources.length, "#12b981"],
+    ["MoWT catalogue records", mowtSources.length, "#ffb020"],
+    ["Global comparison sources", globalSources.length, "#f43f5e"],
+  ];
+
+  return (
+    <div className="sources-page">
+      <section className="case-study-hero sources-hero">
+        <div>
+          <p className="eyebrow">Source register</p>
+          <h2>One reference library for every dataset, manual, policy and literature source in the tool</h2>
+          <span>Main reporting pages use summaries and infographics; this tab keeps the traceability, hyperlinks and APA assumptions.</span>
+        </div>
+        <strong>{allSources.length}</strong>
+      </section>
+      <section className="infographic-only-grid">
+        {groups.map(([label, value, color]) => (
+          <article key={label} style={{ "--accent": color }}>
+            <div className="mini-ring" style={{ "--value": `${Math.min(100, value * 8) * 3.6}deg` }}><strong>{value}</strong></div>
+            <span>{label}</span>
+            <i><b style={{ width: `${Math.min(100, value * 8)}%` }} /></i>
+          </article>
         ))}
+      </section>
+      <section className="viz-card wide-viz">
+        <div className="viz-title">
+          <h3>Source Data Register</h3>
+          <span>Hyperlinks, download targets, model use and APA-style reference text</span>
+        </div>
+        <div className="source-register-table">
+          {allSources.map((source) => (
+            <article key={`${source.title}-${source.url}`}>
+              <div>
+                <strong>{source.title}</strong>
+                <span>{source.agency} / {source.type}</span>
+              </div>
+              <p>{source.use}</p>
+              <em>{source.apa}</em>
+              {source.url !== "#sources" && (
+                <div className="source-actions">
+                  <a href={source.url} target="_blank" rel="noreferrer">Open</a>
+                  <a href={source.url} download target="_blank" rel="noreferrer"><Download size={14} /> Download</a>
+                </div>
+              )}
+            </article>
+          ))}
+        </div>
       </section>
     </div>
   );
@@ -2241,6 +2133,12 @@ function PageChrome({ page, onBack, children }) {
             <h1>{page.title}</h1>
           </div>
         </div>
+        {page.id !== "sources" && (
+          <a className="source-tab-link" href="#sources">
+            <BookOpen size={16} />
+            <span>Sources</span>
+          </a>
+        )}
       </div>
       {children}
     </section>
@@ -3126,8 +3024,9 @@ function App() {
     hdm4: { ...activePage, title: "HDM-4 Data Inputs and Calibration Tables" },
     framework: { ...activePage, title: "Framework and Tool Process Flow" },
     gis: { ...activePage, title: "GIS Surface with National Reference Exemption" },
-    manuals: { ...activePage, title: "Manuals Repository Evidence and Statistics" },
-    "case-studies": { ...activePage, title: "Global Case Study Review" },
+    manuals: { ...activePage, title: "Evidence Statistics and Manual-Derived Signals" },
+    "case-studies": { ...activePage, title: "Global Case Study Statistics" },
+    sources: { ...activePage, title: "Sources and Data Register" },
     allocation: { ...activePage, title: "Budget Rationalisation by Region and Functional Class" },
     programme: { ...activePage, title: "Editable Prioritised Programme Table" },
   }[activePage.id];
@@ -3304,10 +3203,12 @@ function App() {
           )}
           {activeSection === "case-studies" && (
             <>
-              <EvidenceBotPanel compact />
               <GlobalCaseStudyPanel />
               <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} section="framework" limit={6} compact title="Case Study Transfer Intelligence" />
             </>
+          )}
+          {activeSection === "sources" && (
+            <SourcesPanel />
           )}
 
           {activeSection === "allocation" && (

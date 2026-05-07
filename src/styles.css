@@ -221,6 +221,21 @@ button.secondary:hover {
   box-shadow: var(--shadow);
 }
 
+.source-tab-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  padding: 10px 13px;
+  border-radius: 999px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #0d1324, #4258ff);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 950;
+  box-shadow: 0 12px 26px rgba(66, 88, 255, 0.18);
+}
+
 .back-link {
   display: inline-flex;
   align-items: center;
@@ -712,6 +727,10 @@ button.secondary:hover {
   .road-line::before,
   .moving-budget-bot {
     display: none;
+  }
+
+  .source-register-table article {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -2974,6 +2993,55 @@ td .range-value {
   border-radius: 16px;
   background: linear-gradient(145deg, #ffffff, #f6f8ff);
   border: 1px solid rgba(18, 24, 38, 0.08);
+}
+
+.sources-page {
+  display: grid;
+  gap: 18px;
+}
+
+.sources-hero {
+  background:
+    radial-gradient(circle at 86% 10%, rgba(255, 255, 255, 0.22), transparent 26%),
+    linear-gradient(135deg, #0d1324, #4258ff 52%, #12b981);
+}
+
+.source-register-table {
+  display: grid;
+  gap: 10px;
+}
+
+.source-register-table article {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.8fr) minmax(260px, 1fr) minmax(260px, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid rgba(18, 24, 38, 0.08);
+}
+
+.source-register-table strong {
+  color: #0d1324;
+  font-size: 13px;
+  line-height: 1.25;
+  font-weight: 950;
+}
+
+.source-register-table span,
+.source-register-table p,
+.source-register-table em {
+  margin: 0;
+  color: #52657c;
+  font-size: 11px;
+  line-height: 1.35;
+  font-style: normal;
+  font-weight: 820;
+}
+
+.source-register-table em {
+  color: #0d1324;
 }
 
 .source-download-grid strong,
