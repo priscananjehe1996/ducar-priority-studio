@@ -14,7 +14,7 @@ from pathlib import Path
 import geopandas as gpd
 import pandas as pd
 
-from uganda_layers_manifest import load_manifest, update_manifest
+from uganda_layers_manifest import load_manifest, resolve_manifest_path, update_manifest
 
 ROOT = Path(__file__).resolve().parents[1]
 PUBLIC = ROOT / "public" / "data"
@@ -60,7 +60,7 @@ def district_roads() -> gpd.GeoDataFrame:
 
 def national_roads(manifest: dict | None = None) -> gpd.GeoDataFrame:
     manifest = manifest or {}
-    src = Path(manifest.get("national_roads_geojson") or (PUBLIC / "uganda_national_roads_fy25_26.geojson"))
+    src = resolve_manifest_path(ROOT, manifest.get("national_roads_geojson"), PUBLIC / "uganda_national_roads_fy25_26.geojson")
     gdf = read_layer(src)
     out = gdf.copy()
     out["road_uid"] = out["national_uid"].map(lambda x: safe(x)) if "national_uid" in out else [f"NAT-{i + 1:05d}" for i in range(len(out))]
@@ -84,7 +84,7 @@ def national_roads(manifest: dict | None = None) -> gpd.GeoDataFrame:
 
 def osm_roads(manifest: dict | None = None) -> gpd.GeoDataFrame:
     manifest = manifest or {}
-    src = Path(manifest.get("osm_major_roads_geojson") or (PUBLIC / "uganda_osm_major_roads_web.geojson"))
+    src = resolve_manifest_path(ROOT, manifest.get("osm_major_roads_geojson"), PUBLIC / "uganda_osm_major_roads_web.geojson")
     gdf = read_layer(src)
     out = gdf.copy()
     out["road_uid"] = out.apply(lambda r: f"OSM-{safe(r.get('osm_id'), 'unknown')}-{r.name}", axis=1)

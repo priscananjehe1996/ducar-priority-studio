@@ -704,6 +704,10 @@ button.secondary:hover {
 }
 
 @media (max-width: 900px) {
+  .layer-status-summary {
+    grid-template-columns: 1fr;
+  }
+
   .evidence-bot-hero,
   .reporting-stage,
   .bot-stream-stage {
@@ -1387,6 +1391,108 @@ input[type="range"]::-webkit-slider-runnable-track {
   font-size: 13px;
   color: var(--muted);
   font-weight: 900;
+}
+
+.layer-status-panel {
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+  border: 1px solid rgba(8, 145, 178, 0.18);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: var(--shadow);
+}
+
+.layer-status-panel.compact {
+  padding: 18px;
+}
+
+.layer-status-summary,
+.layer-status-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.layer-status-summary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.layer-status-summary article,
+.layer-status-grid article {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(239, 246, 255, 0.96), rgba(255, 255, 255, 0.92));
+}
+
+.layer-status-summary article {
+  display: grid;
+  gap: 5px;
+  padding: 16px;
+}
+
+.layer-status-summary span,
+.layer-status-grid span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.layer-status-summary strong {
+  color: var(--ink);
+  font-size: 28px;
+  line-height: 1;
+  font-weight: 950;
+}
+
+.layer-status-summary em,
+.layer-status-grid em {
+  color: #047857;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.layer-status-grid {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.layer-status-grid article {
+  display: grid;
+  gap: 10px;
+  min-height: 178px;
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.layer-status-grid article::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: linear-gradient(180deg, #2563eb, #059669);
+}
+
+.layer-status-grid strong {
+  display: block;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 950;
+}
+
+.layer-status-grid b {
+  color: #2563eb;
+  font-size: 30px;
+  line-height: 1;
+}
+
+.layer-status-grid p {
+  margin: 0;
+  color: #42526a;
+  font-size: 13px;
+  line-height: 1.45;
+  font-weight: 750;
 }
 
 .dashboard-grid {

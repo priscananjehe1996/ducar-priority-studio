@@ -8,6 +8,7 @@
     "api": "python api/server.py",
     "test": "node tests/prioritisation.test.js",
     "evidence": "python scripts/build_evidence_synthesis.py",
+    "layer-status": "python scripts/build_layer_status.py",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1 --port 4173"
   },

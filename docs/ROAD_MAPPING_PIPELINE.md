@@ -12,6 +12,7 @@ This pipeline builds an enriched Uganda road master layer for DUCAR planning. It
 - `public/data/uganda_roads_district_summary.geojson`: district-level all-road statistics derived from the full master layer.
 - `public/data/uganda_national_roads_fy25_26.geojson`: national road network FY25/26 reference layer from the provided local shapefile.
 - `public/data/uganda_unified_roads_web.geojson`: one growing web road layer merging DUCAR, National, KCCA/Urban, and OSM/Open mapping road features.
+- `public/data/uganda_layers_status.json`: compact browser status feed with record counts, kilometres, generation dates, and refresh assumptions.
 - `../gis/DUCAR_OSM_Road_Classification_Rules.csv`: transparent OSM-to-DUCAR classification rule table.
 
 ## Classification Logic
@@ -48,6 +49,7 @@ Run from `github_app`:
 python scripts\build_uganda_road_master.py
 python scripts\build_national_roads_layer.py
 python scripts\build_unified_road_layer.py
+python scripts\build_layer_status.py
 ```
 
 ## APA-Style References

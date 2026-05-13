@@ -54,10 +54,38 @@ async function fetchUgandaLayersManifest() {
 function manifestDataUrl(manifest, key, fallbackFile) {
   const raw = manifest?.[key];
   if (typeof raw === "string" && raw.trim()) {
-    const filename = raw.replaceAll("\\", "/").split("/").pop();
+    const path = raw.replaceAll("\\", "/").trim();
+    if (/^https?:\/\//i.test(path)) return path;
+    if (path.startsWith("data/")) return `${BASE}${path}`;
+    if (path.startsWith("/")) return path;
+    const filename = path.split("/").pop();
     if (filename) return `${BASE}data/${filename}`;
   }
   return `${BASE}data/${fallbackFile}`;
+}
+
+async function fetchManifestJson(manifest, key, fallbackFile) {
+  const res = await fetch(manifestDataUrl(manifest, key, fallbackFile), { cache: "no-store" });
+  if (!res.ok) throw new Error(`Unable to load ${key}`);
+  return res.json();
+}
+
+function formatCompactDate(value) {
+  if (!value) return "Date pending";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Date pending";
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "UTC",
+  }).format(date) + " UTC";
+}
+
+function formatKm(value) {
+  return `${Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} km`;
 }
 const currency = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 
@@ -1028,6 +1056,24 @@ const ROAD_CATEGORY_WIDTHS = [
   1.05,
 ];
 
+function classifyRoadCategory(properties = {}) {
+  const roadClass = String(properties.road_class || "");
+  if (properties.road_system === "National") return "National Roads";
+  if (properties.road_source === "KCCA roads") return "KCCA";
+  if (properties.road_system === "CBD Selected") return "City Roads";
+  if (["Community Access Road", "Community Access Roads", "CAR"].includes(roadClass)) return "Community Access Roads";
+  if (["Municipal Road", "Municipal Roads", "M"].includes(roadClass)) return "Municipal Roads";
+  if (["Town Council Road", "Town Council Roads", "TC"].includes(roadClass)) return "Town Council Roads";
+  if (["Urban Road", "Urban CBD Priority Link"].includes(roadClass) || properties.road_system === "Urban") return "City Roads";
+  if (properties.road_system === "DUCAR" || roadClass === "District Road") return "District Roads";
+  return properties.network_category || "District Roads";
+}
+
+function formatRoadClassLabel(value) {
+  const text = String(value || "");
+  return /^\d+$/.test(text) ? `DUCAR class ${text}` : text;
+}
+
 /* ─── Metric card ─── */
 function Metric({ icon: Icon, label, value, tone = "blue" }) {
   return (
@@ -1961,6 +2007,72 @@ function useEvidenceSynthesis() {
   return synthesis;
 }
 
+function useLayerStatus() {
+  const [status, setStatus] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetchUgandaLayersManifest()
+      .then((manifest) => fetchManifestJson(manifest, "layers_status_json", "uganda_layers_status.json"))
+      .then((data) => {
+        if (!cancelled) setStatus(data);
+      })
+      .catch(() => {
+        if (!cancelled) setStatus(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  return status;
+}
+
+function LayerStatusPanel({ compact = false }) {
+  const status = useLayerStatus();
+  if (!status?.layers?.length) return null;
+
+  const layers = compact ? status.layers.slice(0, 2) : status.layers;
+  const unified = status.layers.find((layer) => layer.id === "unified-roads") || status.layers[0];
+
+  return (
+    <section className={`layer-status-panel ${compact ? "compact" : ""}`}>
+      <div className="viz-title">
+        <h3>Road Layer Build Status</h3>
+        <span>Latest manifest refresh: {formatCompactDate(status.updated_at_utc)}</span>
+      </div>
+      <div className="layer-status-summary">
+        <article>
+          <span>Unified road records</span>
+          <strong>{Number(unified.record_count || 0).toLocaleString()}</strong>
+          <em>{formatKm(unified.total_length_km)} mapped</em>
+        </article>
+        <article>
+          <span>DUCAR analysis scope</span>
+          <strong>{Number(unified.ducar_analysis_record_count || 0).toLocaleString()}</strong>
+          <em>{formatKm(unified.ducar_analysis_length_km)} candidate scope</em>
+        </article>
+        <article>
+          <span>Reference excluded</span>
+          <strong>{Number(unified.reference_exempt_record_count || 0).toLocaleString()}</strong>
+          <em>National and exemption checks</em>
+        </article>
+      </div>
+      <div className="layer-status-grid">
+        {layers.map((layer) => (
+          <article key={layer.id}>
+            <div>
+              <strong>{layer.label}</strong>
+              <span>{layer.file || "File pending"}</span>
+            </div>
+            <b>{Number(layer.record_count || 0).toLocaleString()}</b>
+            <em>{formatKm(layer.total_length_km)}</em>
+            <p>{layer.detail}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function useMowtManualsCatalog() {
   const [catalog, setCatalog] = useState({ records: [] });
   useEffect(() => {
@@ -2293,10 +2405,11 @@ function MapScene3D({ programme }) {
     map.on("load", async () => {
       const manifest = await fetchUgandaLayersManifest();
       const [roadData, nodeData, flowData, matrixData] = await Promise.all([
-        fetch(manifestDataUrl(manifest, "cartographic_roads_geojson", "uganda_clean_road_routes_web.geojson")).then((r) => r.json()),
-        fetch(manifestDataUrl(manifest, "network_nodes_geojson", "uganda_network_nodes_web.geojson")).then((r) => r.json()),
-        fetch(manifestDataUrl(manifest, "traffic_flows_geojson", "uganda_traffic_flows_web.geojson")).then((r) => r.json()),
-        fetch(manifestDataUrl(manifest, "route_matrix_json", "uganda_route_matrix.json")).then((r) => r.json()),
+        fetchManifestJson(manifest, "unified_roads_geojson", "uganda_unified_roads_web.geojson")
+          .catch(() => fetchManifestJson(manifest, "cartographic_roads_geojson", "uganda_clean_road_routes_web.geojson")),
+        fetchManifestJson(manifest, "network_nodes_geojson", "uganda_network_nodes_web.geojson"),
+        fetchManifestJson(manifest, "traffic_flows_geojson", "uganda_traffic_flows_web.geojson"),
+        fetchManifestJson(manifest, "route_matrix_json", "uganda_route_matrix.json"),
       ]);
       setRoads(roadData);
       setFlows(flowData);
@@ -2412,18 +2525,21 @@ function MapScene3D({ programme }) {
   }, [routeMatrix]);
   const mapStats = useMemo(() => {
     const features = roads?.features || [];
-    const national = features.filter((f) => f.properties?.network_category === "National Roads").length;
-    const ducar = Math.max(0, features.length - national);
-    const avgFlow = features.length
-      ? Math.round(features.reduce((sum, f) => sum + Number(f.properties?.traffic_flow_index || 0), 0) / features.length)
+    const national = features.filter((f) => classifyRoadCategory(f.properties) === "National Roads").length;
+    const ducar = features.filter((f) => !String(f.properties?.ducar_analysis_scope || "").startsWith("Reference")).length;
+    const needsValidation = features.filter((f) => String(f.properties?.ducar_analysis_scope || "").toLowerCase().includes("validation")).length;
+    const flowFeatures = flows?.features || [];
+    const avgFlow = flowFeatures.length
+      ? Math.round(flowFeatures.reduce((sum, f) => sum + Number(f.properties?.traffic_flow_index || 0), 0) / flowFeatures.length)
       : 0;
     return [
-      { label: "Clean routes", value: filteredRoads.length.toLocaleString(), tone: "blue" },
-      { label: "DUCAR focus", value: ducar.toLocaleString(), tone: "green" },
+      { label: "Road records", value: filteredRoads.length.toLocaleString(), tone: "blue" },
+      { label: "DUCAR scope", value: ducar.toLocaleString(), tone: "green" },
       { label: "National reference", value: national.toLocaleString(), tone: "dark" },
-      { label: "Mean flow index", value: `${avgFlow}%`, tone: "red" },
+      { label: "Needs validation", value: needsValidation.toLocaleString(), tone: "red" },
+      { label: "Mean flow index", value: `${avgFlow}%`, tone: "dark" },
     ];
-  }, [roads, filteredRoads.length]);
+  }, [roads, flows, filteredRoads.length]);
 
   return (
     <section className="panel map-panel map3d-panel" id="gis">
@@ -2440,10 +2556,10 @@ function MapScene3D({ programme }) {
       <div className="road-filter-bar">
         <p className="scope-note">{DUCAR_EXEMPTION_TEXT}</p>
         <label><ListFilter size={16} /> System<select value={roadSystemFilter} onChange={(e) => setRoadSystemFilter(e.target.value)}>{roadOptions.systems.map((x) => <option key={x}>{x}</option>)}</select></label>
-        <label>Class<select value={roadClassFilter} onChange={(e) => setRoadClassFilter(e.target.value)}>{roadOptions.classes.map((x) => <option key={x}>{x}</option>)}</select></label>
+        <label>Class<select value={roadClassFilter} onChange={(e) => setRoadClassFilter(e.target.value)}>{roadOptions.classes.map((x) => <option key={x} value={x}>{formatRoadClassLabel(x)}</option>)}</select></label>
         <label>Surface<select value={surfaceFilter} onChange={(e) => setSurfaceFilter(e.target.value)}>{roadOptions.surfaces.map((x) => <option key={x}>{x}</option>)}</select></label>
         <label>Sort<select value={roadSort} onChange={(e) => setRoadSort(e.target.value)}>{["length_km", "road_name", "road_class", "region", "district", "quality_flag"].map((x) => <option key={x}>{x}</option>)}</select></label>
-        <strong>{filteredRoads.length.toLocaleString()} clean routes</strong>
+        <strong>{filteredRoads.length.toLocaleString()} road records</strong>
       </div>
       <div className="map-stat-strip">
         {mapStats.map((item) => (
@@ -2457,7 +2573,7 @@ function MapScene3D({ programme }) {
         <div className="maplibre-container" ref={mapRef} />
         <div className="scene-hud">
           <strong>2D joined road network</strong>
-          <span>{filteredRoads.length.toLocaleString()} dissolved visible routes</span>
+          <span>{filteredRoads.length.toLocaleString()} visible road records</span>
           <span>{(nodes?.features?.length || 0).toLocaleString()} analysis nodes</span>
           <span>{(routeMatrix?.routes?.length || 0).toLocaleString()} OD route pairs</span>
           <span>ESRI World Imagery with labels. Flat 2D view.</span>
@@ -3680,6 +3796,7 @@ function App() {
                 </div>
               </header>
               <MediaRibbon />
+              <LayerStatusPanel />
               <DucarNetworkOverview onNavigate={navigateToSection} />
               <EvidenceBotPanel />
               <ReportingInfographicsPanel analysis={analysis} grouped={grouped} programme={programme} />
@@ -3804,6 +3921,7 @@ function App() {
           )}
           {activeSection === "gis" && (
             <>
+              <LayerStatusPanel compact />
               <MapScene3D programme={programme} />
               <IntelligenceGallery programme={programme} analysis={analysis} grouped={grouped} onNavigate={navigateToSection} section="gis" limit={8} compact title="GIS and Network Intelligence" />
             </>

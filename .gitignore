@@ -6,5 +6,8 @@ __pycache__/
 *.pyc
 data_sources/
 data/*.gpkg
+data/*.gpkg-journal
 data/uganda_roads_master.geojson
+public/data/_write_test.tmp
+public/data/_manifest_write_test.json
 public/data/uganda_osm_roads_web.geojson
