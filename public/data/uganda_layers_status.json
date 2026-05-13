@@ -1,5 +1,5 @@
 {
-  "updated_at_utc": "2026-05-13T07:20:59.996720+00:00",
+  "updated_at_utc": "2026-05-13T13:25:25.569641+00:00",
   "layers": [
     {
       "id": "unified-roads",
@@ -11,6 +11,12 @@
       "ducar_analysis_record_count": 13500,
       "ducar_analysis_length_km": 67551.55,
       "reference_exempt_record_count": 2819,
+      "by_ducar_analysis_scope": {
+        "Included": 345,
+        "Included pending urban mandate confirmation": 139,
+        "Included pending validation": 13016,
+        "Reference only - excluded": 2819
+      },
       "by_source": {
         "DUCAR district roads": 345,
         "KCCA roads": 80,
@@ -36,6 +42,7 @@
       "ducar_analysis_record_count": null,
       "ducar_analysis_length_km": null,
       "reference_exempt_record_count": null,
+      "by_ducar_analysis_scope": {},
       "by_source": {},
       "by_quality_flag": {},
       "detail": "FY25/26 national road network shown for coordination and DUCAR double-counting checks."

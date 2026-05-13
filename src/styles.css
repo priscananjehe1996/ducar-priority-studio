@@ -2108,6 +2108,12 @@ input[type="range"]::-webkit-slider-runnable-track {
   outline: 1px solid rgba(66, 88, 255, 0.12);
 }
 
+.road-filter-bar select:disabled {
+  cursor: wait;
+  color: #64748b;
+  background: #f1f5f9;
+}
+
 .road-filter-bar strong,
 .table-toolbar strong {
   display: grid;
@@ -2209,6 +2215,47 @@ input[type="range"]::-webkit-slider-runnable-track {
   font-weight: 600;
   z-index: 1000;
   backdrop-filter: blur(4px);
+}
+
+.map-loading-card {
+  inset: 24px auto auto 24px;
+  right: auto;
+  bottom: auto;
+  align-items: center;
+  justify-content: flex-start;
+  width: min(420px, calc(100% - 48px));
+  padding: 18px;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #0f172a;
+  box-shadow: 18px 22px 54px rgba(15, 23, 42, 0.16);
+  z-index: 5;
+}
+
+.map-loading-card div:not(.spinner) {
+  display: grid;
+  gap: 4px;
+}
+
+.map-loading-card strong {
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 950;
+}
+
+.map-loading-card span,
+.map-loading-card em {
+  color: #475569;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 850;
+}
+
+.map-loading-card.error {
+  border-color: rgba(220, 38, 38, 0.22);
+  color: #7f1d1d;
+  background: rgba(255, 241, 242, 0.96);
 }
 
 .spinner {

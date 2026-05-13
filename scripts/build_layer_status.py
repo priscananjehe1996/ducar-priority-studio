@@ -41,6 +41,7 @@ def layer_record(
         "ducar_analysis_record_count": summary.get("ducar_analysis_record_count"),
         "ducar_analysis_length_km": summary.get("ducar_analysis_length_km"),
         "reference_exempt_record_count": summary.get("reference_exempt_record_count"),
+        "by_ducar_analysis_scope": summary.get("by_ducar_analysis_scope") or {},
         "by_source": summary.get("by_source") or {},
         "by_quality_flag": summary.get("by_quality_flag") or {},
         "detail": detail,
