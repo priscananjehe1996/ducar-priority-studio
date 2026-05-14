@@ -8,14 +8,22 @@
     "online_sources": 15,
     "spatial_layers": 43,
     "map_surface_features": 815,
+    "uganda_network_kpis": 5,
+    "uganda_network_categories": 7,
+    "uganda_road_condition": 7,
+    "pims_framework_steps": 6,
+    "hdm4_indicators": 6,
     "file_inventory": 345,
     "programme_assets": 8
   },
-  "size_bytes": 1417216,
+  "size_bytes": 1490944,
   "sql_examples": {
     "executive": "SELECT title, metric, story FROM story_cards ORDER BY title;",
     "spatial": "SELECT layer_name, feature_count, line_length_km FROM spatial_layers WHERE status = 'read' ORDER BY feature_count DESC LIMIT 8;",
     "map": "SELECT feature_group, geometry_type, coordinates_json FROM map_surface_features ORDER BY feature_group, feature_id;",
+    "network": "SELECT category, length_km, ducar_scope FROM uganda_network_categories ORDER BY length_km DESC;",
+    "pims": "SELECT title, phase, readiness_score FROM pims_framework_steps ORDER BY step_order;",
+    "hdm4": "SELECT indicator, readiness_score FROM hdm4_indicators ORDER BY readiness_score DESC;",
     "raw_tables": "SELECT table_group, table_name, COUNT(*) AS cells FROM raw_table_cells GROUP BY table_group, table_name ORDER BY cells DESC;"
   }
 }

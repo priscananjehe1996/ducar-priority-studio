@@ -4008,6 +4008,15 @@ FROM map_surface_features
 WHERE feature_group IN ('district', 'route', 'national', 'flow', 'node')
 ORDER BY feature_group, feature_id
 LIMIT 815;`,
+  network: `SELECT category, length_km, ducar_scope
+FROM uganda_network_categories
+ORDER BY length_km DESC;`,
+  pims: `SELECT title, phase, readiness_score
+FROM pims_framework_steps
+ORDER BY step_order;`,
+  hdm4: `SELECT indicator, readiness_score
+FROM hdm4_indicators
+ORDER BY readiness_score DESC;`,
 };
 
 function runSqlRows(db, sql, params = []) {
@@ -4081,6 +4090,19 @@ function useUnifiedDatabase() {
           "table_name",
           "cells",
         );
+        const networkKpis = runSqlRows(db, "SELECT label, value, note FROM uganda_network_kpis ORDER BY sort_order")
+          .map((row, index) => ({ label: row.label, value: row.value, note: row.note, tone: ["blue", "green", "cyan", "red", "gold"][index % 5] }));
+        const networkCategoryRows = runSqlRows(db, "SELECT category, length_km, ducar_scope FROM uganda_network_categories ORDER BY length_km DESC");
+        const networkCategoryChart = networkCategoryRows.map((row) => [row.category, Number(row.length_km || 0), row.ducar_scope]);
+        const roadConditionRows = runSqlRows(db, "SELECT category, good_km, fair_km, poor_km, total_km, poor_share FROM uganda_road_condition ORDER BY total_km DESC");
+        const crashTrendRows = runSqlRows(db, "SELECT year, fatal, serious, minor, total FROM uganda_crash_trend ORDER BY year");
+        const pavedTrendRows = runSqlRows(db, "SELECT fy, annual_increase_km, paved_stock_km, percent_paved FROM uganda_paved_trend ORDER BY fy");
+        const pimsFlow = runSqlRows(db, "SELECT title, phase, description, readiness_score, discipline FROM pims_framework_steps ORDER BY step_order");
+        const pimsGateRows = runSqlRows(db, "SELECT gate, required_evidence, decision_use, readiness_score FROM pims_gate_controls ORDER BY readiness_score DESC")
+          .map((row) => [row.gate, row.required_evidence, row.decision_use, `${Math.round(Number(row.readiness_score || 0))}%`]);
+        const hdm4Indicators = runSqlRows(db, "SELECT indicator, description, readiness_score FROM hdm4_indicators ORDER BY readiness_score DESC");
+        const hdm4InputRows = runSqlRows(db, "SELECT model_input, unit, assumption, evidence_topic FROM hdm4_model_inputs ORDER BY model_input")
+          .map((row) => [row.model_input, row.unit, row.assumption, row.evidence_topic]);
         const storyCards = runSqlRows(db, "SELECT title, metric, label, story, evidence, tone FROM story_cards ORDER BY rowid")
           .map((row) => ({ title: row.title, metric: row.metric, label: row.label, story: row.story, evidence: row.evidence, tone: row.tone }));
         const spatialLayerTableRows = runSqlRows(db, `
@@ -4139,6 +4161,39 @@ function useUnifiedDatabase() {
               title: "SQLite table row counts",
               columns: ["Table", "Rows"],
               rows: manifestRows,
+            },
+          },
+          ugandaNetwork: {
+            kpis: networkKpis,
+            categoryChart: { rows: networkCategoryChart },
+            conditionRows: roadConditionRows,
+            crashTrend: crashTrendRows,
+            pavedTrend: pavedTrendRows,
+            categoryTable: {
+              title: "Uganda road network by category",
+              columns: ["Category", "Length km", "DUCAR scope"],
+              rows: networkCategoryRows.map((row) => [row.category, row.length_km, row.ducar_scope]),
+            },
+            conditionTable: {
+              title: "Road condition by network category",
+              columns: ["Category", "Good km", "Fair km", "Poor km", "Poor share"],
+              rows: roadConditionRows.map((row) => [row.category, row.good_km, row.fair_km, row.poor_km, `${Math.round(Number(row.poor_share || 0) * 100)}%`]),
+            },
+          },
+          frameworkFlow: pimsFlow,
+          pims: {
+            gates: {
+              title: "PIMS gate controls",
+              columns: ["Gate", "Required evidence", "Decision use", "Readiness"],
+              rows: pimsGateRows,
+            },
+          },
+          hdm4: {
+            indicators: hdm4Indicators,
+            inputs: {
+              title: "HDM-4 model input register",
+              columns: ["Input", "Unit", "Assumption", "Evidence topic"],
+              rows: hdm4InputRows,
             },
           },
         };
@@ -4242,6 +4297,7 @@ function buildProductInsights(analysis, evidence) {
       topics: topicRows,
       spatial: spatialRows,
       geometry: geometryRows,
+      networkCategory: evidence?.ugandaNetwork?.categoryChart?.rows || [],
     },
     tables: {
       selected: {
@@ -4261,6 +4317,10 @@ function buildProductInsights(analysis, evidence) {
     stories,
     rawTables: evidence?.rawTables || {},
     spatialEvidence: evidence?.spatialEvidence || {},
+    ugandaNetwork: evidence?.ugandaNetwork || {},
+    frameworkFlow: evidence?.frameworkFlow || [],
+    pims: evidence?.pims || {},
+    hdm4: evidence?.hdm4 || {},
     databaseLoaded: Boolean(evidence?.loadedFromDatabase),
   };
 }
@@ -4353,6 +4413,128 @@ function QueryBadge({ label, sql }) {
       <summary>{label}</summary>
       <pre>{sql}</pre>
     </details>
+  );
+}
+
+function FrameworkFlow({ steps = [] }) {
+  if (!steps.length) return null;
+  return (
+    <section className="framework-flow-panel">
+      <div className="product-panel-head">
+        <h3>Framework Animation Flow</h3>
+        <span>PIMS, HDM-4, RAM, budget and monitoring gates as a light decision chain</span>
+      </div>
+      <div className="framework-flow-track">
+        {steps.map((step, index) => (
+          <article key={`${step.title}-${index}`} style={{ "--delay": `${index * 120}ms` }}>
+            <em>{String(index + 1).padStart(2, "0")}</em>
+            <span>{step.discipline}</span>
+            <strong>{step.title}</strong>
+            <p>{step.phase}</p>
+            <i><b style={{ width: `${Math.max(12, Number(step.readiness_score || 0))}%` }} /></i>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ConditionStackChart({ rows = [] }) {
+  const visible = rows.slice(0, 7);
+  if (!visible.length) return null;
+  return (
+    <section className="query-panel condition-stack-panel">
+      <div className="product-panel-head">
+        <h3>Road Condition Pressure</h3>
+        <span>Good, fair and poor kilometres by network category</span>
+      </div>
+      <div className="condition-stack-list">
+        {visible.map((row) => {
+          const total = Math.max(1, Number(row.total_km || 0));
+          const good = (Number(row.good_km || 0) / total) * 100;
+          const fair = (Number(row.fair_km || 0) / total) * 100;
+          const poor = Math.max(0, 100 - good - fair);
+          return (
+            <article key={row.category}>
+              <div>
+                <strong>{row.category}</strong>
+                <span>{formatKm(total)} total</span>
+              </div>
+              <i>
+                <b className="good" style={{ width: `${good}%` }} />
+                <b className="fair" style={{ width: `${fair}%` }} />
+                <b className="poor" style={{ width: `${poor}%` }} />
+              </i>
+              <em>{Math.round(Number(row.poor_share || 0) * 100)}% poor</em>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function TrendLinePanel({ title, subtitle, rows = [], labelKey, valueKey, formatValue = formatCount, tone = "blue" }) {
+  const visible = rows.filter((row) => Number.isFinite(Number(row[valueKey])));
+  if (visible.length < 2) return null;
+  const values = visible.map((row) => Number(row[valueKey]));
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = Math.max(1, max - min);
+  const points = visible.map((row, index) => {
+    const x = 24 + (index / Math.max(1, visible.length - 1)) * 472;
+    const y = 142 - ((Number(row[valueKey]) - min) / range) * 104;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(" ");
+  const last = visible.at(-1);
+  return (
+    <section className={`query-panel trend-line-panel ${tone}`}>
+      <div className="product-panel-head">
+        <h3>{title}</h3>
+        <span>{subtitle}</span>
+      </div>
+      <div className="trend-line-grid">
+        <svg viewBox="0 0 520 170" role="img" aria-label={title}>
+          <path d="M24 142 H496" />
+          <path d="M24 38 H496" />
+          <polyline points={points} />
+          {visible.map((row, index) => {
+            const [x, y] = points.split(" ")[index].split(",");
+            return <circle key={`${title}-${row[labelKey]}`} cx={x} cy={y} r="5"><title>{`${row[labelKey]}: ${formatValue(row[valueKey])}`}</title></circle>;
+          })}
+        </svg>
+        <div>
+          <strong>{formatValue(last[valueKey])}</strong>
+          <span>{last[labelKey]}</span>
+          <em>{formatValue(values[0])} at start</em>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ReadinessBars({ title, subtitle, items = [] }) {
+  const visible = items.slice(0, 7);
+  if (!visible.length) return null;
+  return (
+    <section className="query-panel readiness-panel">
+      <div className="product-panel-head">
+        <h3>{title}</h3>
+        <span>{subtitle}</span>
+      </div>
+      <div className="readiness-list">
+        {visible.map((item, index) => (
+          <article key={item.indicator || item.title || index} style={{ "--accent": ["#2563eb", "#059669", "#f59e0b", "#dc2626", "#0891b2", "#7c3aed"][index % 6] }}>
+            <div>
+              <strong>{item.indicator || item.title}</strong>
+              <span>{item.description || item.phase}</span>
+            </div>
+            <i><b style={{ width: `${Math.max(8, Number(item.readiness_score || 0))}%` }} /></i>
+            <em>{Math.round(Number(item.readiness_score || 0))}%</em>
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -4542,6 +4724,7 @@ function CommandView({ insights }) {
           </article>
         ))}
       </section>
+      <FrameworkFlow steps={insights.frameworkFlow} />
       <div className="product-grid two">
         <ProductBarChart title="Budget by Region" subtitle="Selected assets only" rows={insights.charts.regionAllocation} formatValue={(value) => `UGX ${currency.format(value)}`} />
         <ProductBarChart title="Decision Topics" subtitle="Materialized from extracted evidence text" rows={insights.charts.topics} />
@@ -4584,6 +4767,10 @@ function PortfolioView({ insights, budget, reservePercent, onBudgetChange, onRes
         ))}
       </section>
       <div className="product-grid two">
+        <ReadinessBars title="PIMS Gate Readiness" subtitle="Project admission to final investment decision" items={insights.frameworkFlow} />
+        <ReadinessBars title="HDM-4 Model Readiness" subtitle="Economic and pavement model inputs retained from the evidence store" items={insights.hdm4?.indicators || []} />
+      </div>
+      <div className="product-grid two">
         <ProductBarChart title="Allocation by Road Class" subtitle="Selected programme cost" rows={insights.charts.classAllocation} formatValue={(value) => `UGX ${currency.format(value)}`} />
         <ProductBarChart title="Treatment Demand" subtitle="All candidate costs by intervention" rows={insights.charts.interventions} formatValue={(value) => `UGX ${currency.format(value)}`} />
       </div>
@@ -4591,8 +4778,14 @@ function PortfolioView({ insights, budget, reservePercent, onBudgetChange, onRes
         <ProductTable table={insights.tables.selected} />
         <ProductBarChart title="Programme Split" subtitle="Status counts after fiscal gate" rows={insights.charts.statusSplit} />
       </div>
+      <div className="product-grid two">
+        <ProductTable table={insights.pims?.gates} />
+        <ProductTable table={insights.hdm4?.inputs} />
+      </div>
       <section className="query-strip">
         <QueryBadge label="portfolio query" sql={insights.sql.portfolio} />
+        <QueryBadge label="pims query" sql={insights.sql.pims} />
+        <QueryBadge label="hdm4 query" sql={insights.sql.hdm4} />
       </section>
     </div>
   );
@@ -4604,12 +4797,23 @@ function NetworkView({ insights, programme }) {
       <section className="network-brief">
         <div>
           <p className="product-eyebrow">Network intelligence</p>
-          <h2>Spatial proof without a heavy map wall.</h2>
-          <span>The product surfaces coverage, geometry and layer confidence; raw GIS tables stay in the data store.</span>
+          <h2>Road network proof, lightly.</h2>
+          <span>Coverage, condition, traffic and GIS signals are queried from SQLite; raw source tables stay behind the interface.</span>
         </div>
         <ProductStat label="Features read" value={formatCount(insights.spatialSummary.feature_count)} note={`${formatCount(insights.spatialSummary.layers_read)} layers queried`} tone="cyan" />
         <ProductStat label="Line evidence" value={formatKm(insights.spatialSummary.line_length_km)} note="includes retained dated layer copies" tone="green" />
       </section>
+      <section className="product-stat-grid network-kpis">
+        {(insights.ugandaNetwork?.kpis || []).map((item) => <ProductStat key={item.label} {...item} />)}
+      </section>
+      <div className="product-grid two">
+        <ProductBarChart title="Uganda Road Network" subtitle="ITIS/URF FY 2022/23 length by category" rows={insights.charts.networkCategory} formatValue={(value) => formatKm(value)} />
+        <ConditionStackChart rows={insights.ugandaNetwork?.conditionRows || []} />
+      </div>
+      <div className="product-grid two">
+        <TrendLinePanel title="Crash Trend" subtitle="Road traffic crashes by nature, CY 2019-2023" rows={insights.ugandaNetwork?.crashTrend || []} labelKey="year" valueKey="total" />
+        <TrendLinePanel title="Paved National Stock" subtitle="Paved national road network trend" rows={insights.ugandaNetwork?.pavedTrend || []} labelKey="fy" valueKey="paved_stock_km" formatValue={(value) => formatKm(value)} tone="green" />
+      </div>
       <div className="product-grid two">
         <ProductBarChart title="Largest GIS Layers" subtitle="Feature count by materialized spatial layer" rows={insights.charts.spatial} />
         <ProductBarChart title="Geometry Mix" subtitle="Feature types found in local spatial evidence" rows={insights.charts.geometry} />
@@ -4621,10 +4825,11 @@ function NetworkView({ insights, programme }) {
       </div>
       <div className="product-grid two">
         <ProductTable table={insights.spatialEvidence?.layerTable || insights.rawTables?.catalog} />
-        <ProductTable table={insights.tables.risk} />
+        <ProductTable table={insights.ugandaNetwork?.conditionTable} />
       </div>
       <section className="query-strip">
         <QueryBadge label="spatial query" sql={insights.sql.spatial} />
+        <QueryBadge label="network query" sql={insights.sql.network} />
       </section>
     </div>
   );

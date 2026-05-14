@@ -20,6 +20,7 @@ body {
   background: #f5f7fb;
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-weight: 650;
+  overflow-x: hidden;
 }
 
 button,
@@ -37,6 +38,7 @@ button {
   display: grid;
   grid-template-columns: 96px minmax(0, 1fr);
   background: linear-gradient(180deg, #f8fafc 0%, #eef3f8 100%);
+  overflow-x: hidden;
 }
 
 .product-nav {
@@ -103,6 +105,7 @@ button {
   width: min(1480px, 100%);
   margin: 0 auto;
   padding: 24px clamp(18px, 3vw, 42px) 48px;
+  min-width: 0;
 }
 
 .product-topbar {
@@ -175,6 +178,7 @@ button {
   display: grid;
   gap: 16px;
   animation: productIn 0.42s ease both;
+  min-width: 0;
 }
 
 .command-hero,
@@ -189,6 +193,7 @@ button {
   border-radius: 22px;
   background: #ffffff;
   box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+  min-width: 0;
 }
 
 .command-hero {
@@ -379,6 +384,7 @@ button {
   position: relative;
   display: grid;
   gap: 16px;
+  min-width: 0;
   min-height: 260px;
   padding: 18px;
   border-radius: 18px;
@@ -766,6 +772,267 @@ button {
   background: var(--green);
 }
 
+.framework-flow-panel {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  box-shadow: 0 16px 38px rgba(15, 23, 42, 0.08);
+}
+
+.framework-flow-track {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.framework-flow-track::before {
+  content: "";
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  top: 31px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--blue), var(--green), var(--gold), var(--red), var(--cyan), var(--purple));
+  opacity: 0.28;
+}
+
+.framework-flow-track article {
+  position: relative;
+  display: grid;
+  gap: 7px;
+  min-height: 152px;
+  padding: 12px;
+  border-radius: 14px;
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  animation: productIn 0.45s ease both;
+  animation-delay: var(--delay);
+}
+
+.framework-flow-track article::before {
+  content: "";
+  position: absolute;
+  top: 24px;
+  left: 14px;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 4px solid var(--blue);
+  box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.24);
+  animation: flowPulse 2.4s ease-in-out infinite;
+  animation-delay: var(--delay);
+}
+
+.framework-flow-track em {
+  justify-self: end;
+  color: var(--muted);
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 950;
+}
+
+.framework-flow-track span {
+  margin-top: 20px;
+  color: var(--cyan);
+  font-size: 10px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.framework-flow-track strong {
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.1;
+}
+
+.framework-flow-track p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.framework-flow-track i,
+.readiness-list i {
+  height: 7px;
+  display: block;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e5e7eb;
+}
+
+.framework-flow-track b,
+.readiness-list b {
+  height: 100%;
+  display: block;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--blue), var(--cyan));
+}
+
+.network-kpis {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.condition-stack-list,
+.readiness-list {
+  display: grid;
+  gap: 10px;
+}
+
+.condition-stack-list article,
+.readiness-list article {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) minmax(180px, 1.2fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 11px;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.condition-stack-list strong,
+.readiness-list strong {
+  display: block;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.15;
+}
+
+.condition-stack-list span,
+.readiness-list span {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.condition-stack-list i {
+  height: 12px;
+  display: flex;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e5e7eb;
+}
+
+.condition-stack-list b {
+  min-width: 2px;
+  height: 100%;
+}
+
+.condition-stack-list .good {
+  background: var(--green);
+}
+
+.condition-stack-list .fair {
+  background: var(--gold);
+}
+
+.condition-stack-list .poor {
+  background: var(--red);
+}
+
+.condition-stack-list em,
+.readiness-list em {
+  color: var(--ink);
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 950;
+  text-align: right;
+}
+
+.readiness-list article {
+  grid-template-columns: minmax(210px, 1fr) minmax(160px, 0.9fr) 44px;
+}
+
+.readiness-list b {
+  background: var(--accent);
+}
+
+.trend-line-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px;
+  gap: 16px;
+  align-items: center;
+}
+
+.trend-line-grid svg {
+  width: 100%;
+  min-height: 170px;
+  overflow: visible;
+}
+
+.trend-line-grid path {
+  fill: none;
+  stroke: rgba(148, 163, 184, 0.28);
+  stroke-width: 1.5;
+}
+
+.trend-line-grid polyline {
+  fill: none;
+  stroke: var(--blue);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 8px 12px rgba(37, 99, 235, 0.18));
+  stroke-dasharray: 720;
+  animation: trendDraw 1.2s ease both;
+}
+
+.trend-line-panel.green .trend-line-grid polyline {
+  stroke: var(--green);
+}
+
+.trend-line-grid circle {
+  fill: #ffffff;
+  stroke: var(--blue);
+  stroke-width: 4;
+}
+
+.trend-line-panel.green .trend-line-grid circle {
+  stroke: var(--green);
+}
+
+.trend-line-grid strong {
+  display: block;
+  color: var(--ink);
+  font-size: 28px;
+  line-height: 1;
+}
+
+.trend-line-grid span,
+.trend-line-grid em {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+@keyframes flowPulse {
+  50% {
+    box-shadow: 0 0 0 10px rgba(37, 99, 235, 0);
+    transform: scale(1.08);
+  }
+}
+
+@keyframes trendDraw {
+  from {
+    stroke-dashoffset: 720;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
 @keyframes productIn {
   from { opacity: 0; transform: translateY(14px); }
   to { opacity: 1; transform: translateY(0); }
@@ -777,6 +1044,12 @@ button {
 
 @media (max-width: 1180px) {
   .product-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .network-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .framework-flow-track {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .command-hero,
@@ -799,25 +1072,63 @@ button {
   }
   .product-nav {
     position: sticky;
+    max-width: 100vw;
     height: auto;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: 72px minmax(0, 1fr);
     grid-template-rows: auto;
     padding: 10px;
     border-right: 0;
     border-bottom: 1px solid var(--line);
+    overflow: hidden;
   }
   .product-nav nav {
     display: flex;
     overflow-x: auto;
     gap: 8px;
+    min-width: 0;
+    scrollbar-width: none;
+  }
+  .product-nav nav::-webkit-scrollbar {
+    display: none;
   }
   .product-brand,
   .product-nav nav a {
-    min-width: 72px;
+    min-width: 66px;
     min-height: 50px;
   }
   .product-main {
+    width: 100%;
+    max-width: 100vw;
+    overflow: hidden;
     padding: 18px 12px 34px;
+  }
+  .product-view,
+  .product-grid.two,
+  .product-stat-grid,
+  .decision-grid,
+  .story-row,
+  .scenario-row {
+    width: min(342px, calc(100vw - 24px));
+    max-width: min(342px, calc(100vw - 24px));
+    justify-items: stretch;
+  }
+  .command-hero,
+  .network-brief,
+  .evidence-backend,
+  .control-surface,
+  .query-panel,
+  .framework-flow-panel,
+  .geo-command-map,
+  .product-stat {
+    width: 100%;
+    max-width: min(342px, calc(100vw - 24px));
+  }
+  .command-hero > div,
+  .network-brief > div,
+  .evidence-backend > div,
+  .control-surface > div {
+    min-width: 0;
+    max-width: calc(100vw - 64px);
   }
   .product-topbar,
   .product-topbar-actions,
@@ -834,8 +1145,34 @@ button {
   .command-hero h1 {
     font-size: 42px;
   }
+  .network-brief h2,
+  .evidence-backend h2,
+  .control-surface h2 {
+    max-width: calc(100vw - 88px);
+    font-size: 26px;
+    line-height: 1.05;
+    overflow-wrap: anywhere;
+  }
+  .network-brief > div > span,
+  .evidence-backend > div > span,
+  .command-hero > div:first-child > span {
+    max-width: 100%;
+    font-size: 14px;
+    overflow-wrap: anywhere;
+  }
   .product-bars article {
     grid-template-columns: 1fr;
+  }
+  .network-kpis,
+  .framework-flow-track,
+  .condition-stack-list article,
+  .readiness-list article,
+  .trend-line-grid {
+    grid-template-columns: 1fr;
+  }
+  .condition-stack-list em,
+  .readiness-list em {
+    text-align: left;
   }
   .product-bars strong {
     text-align: left;

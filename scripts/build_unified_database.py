@@ -26,6 +26,44 @@ OUT_PUBLIC = PUBLIC_DATA / "ducar_unified.sqlite"
 MANIFEST_PUBLIC = PUBLIC_DATA / "ducar_unified_manifest.json"
 MANIFEST_DATA = DATA / "ducar_unified_manifest.json"
 
+PIMS_FLOW_STEPS = [
+    (1, "Concept profile", "Admission", "Project profile, logical framework and options are checked before budget competition.", 78, "PIMS"),
+    (2, "Feasibility screen", "Appraisal", "Technical, financial, economic, risk and distribution analysis controls shape readiness.", 66, "PIMS"),
+    (3, "HDM-4 economics", "Economic case", "Traffic, roughness, treatment effect, user cost and EIRR assumptions convert needs into benefits.", 72, "HDM-4"),
+    (4, "RAM planning", "Network plan", "Condition, lifecycle need, GIS traceability and work standards become investment packages.", 84, "RAM"),
+    (5, "Budget gate", "Fiscal control", "Reserve, affordability, selected cost and deferred demand decide what enters the workplan.", 69, "PIMS"),
+    (6, "Monitoring loop", "Delivery", "PIMS, QA, field condition and budget absorption data feed the next condition cycle.", 76, "PIMS"),
+]
+
+PIMS_GATE_CONTROLS = [
+    ("Concept", "Need statement, location, beneficiary logic and candidate option set", "Stops unnamed or unsupported assets entering the pipeline", 78),
+    ("Feasibility", "Engineering scope, safeguard risk, implementation capacity and cost basis", "Separates maintenance-ready work from design referrals", 66),
+    ("Economic appraisal", "NPV, EIRR, sensitivity, traffic growth and user-benefit assumptions", "Connects HDM-4 style benefits to PIMS investment logic", 72),
+    ("Risk screen", "Climate, safety, maintainability, procurement and data-quality risk", "Moves weak candidates into clarification before funding", 81),
+    ("Final investment decision", "Budget envelope, reserve, workplan packaging and monitoring indicators", "Keeps the selected programme affordable and auditable", 88),
+]
+
+HDM4_INDICATORS = [
+    ("Fleet loading", "Representative vehicle and ESAL inputs", 84),
+    ("Climate stress", "Rainfall, temperature and drainage exposure", 76),
+    ("Deterioration readiness", "Roughness, cracking, rutting and pothole models", 81),
+    ("Work effects", "Treatment reset, service life and unit-cost assumptions", 79),
+    ("Road user effects", "VOC, time, safety and emissions benefit streams", 73),
+    ("Economic parameters", "Discount, period, contingency and threshold settings", 88),
+]
+
+HDM4_MODEL_INPUTS = [
+    ("Representative vehicles", "Fleet class parameters", "Motorcycle to articulated truck classes, GVW, ESAL and fleet shares", "Traffic and axle loading"),
+    ("Climate zones", "Screening assumptions", "Rainfall, moisture class and temperature bands for Ugandan climate risk", "Climate and drainage"),
+    ("Axle loading", "Vehicle mass and overloading", "Legal limit, observed loading and overload share by vehicle type", "Traffic and axle loading"),
+    ("Road deterioration", "Calibration placeholders", "Cracking, ravelling, rutting, roughness, potholing and edge-break factors", "Road condition"),
+    ("Work effects", "Treatment response", "IRI reset, service life and planning-cost ranges by treatment", "Maintenance planning"),
+    ("Road user effects", "Economic effects", "VOC, time, safety and emissions benefit channels", "PIMS appraisal"),
+    ("Unit costs", "Planning cost range", "Construction, periodic and routine costs by surface type", "Budget monitoring"),
+    ("Traffic flow and speed", "Capacity assumptions", "Free-flow speed, capacity, peak-hour share and seasonal factors", "Traffic and axle loading"),
+    ("Economic parameters", "Appraisal defaults", "Discount rate, analysis period, contingency and EIRR threshold", "PIMS appraisal"),
+]
+
 
 def load_json(path: Path, fallback: Any) -> Any:
     if not path.exists():
@@ -295,6 +333,72 @@ def create_schema(conn: sqlite3.Connection) -> None:
           metric REAL
         );
 
+        CREATE TABLE uganda_network_kpis (
+          label TEXT PRIMARY KEY,
+          value TEXT,
+          note TEXT,
+          sort_order INTEGER
+        );
+
+        CREATE TABLE uganda_network_categories (
+          category TEXT PRIMARY KEY,
+          length_km REAL,
+          ducar_scope TEXT
+        );
+
+        CREATE TABLE uganda_road_condition (
+          category TEXT PRIMARY KEY,
+          good_km REAL,
+          fair_km REAL,
+          poor_km REAL,
+          total_km REAL,
+          poor_share REAL
+        );
+
+        CREATE TABLE uganda_crash_trend (
+          year INTEGER PRIMARY KEY,
+          fatal INTEGER,
+          serious INTEGER,
+          minor INTEGER,
+          total INTEGER
+        );
+
+        CREATE TABLE uganda_paved_trend (
+          fy TEXT PRIMARY KEY,
+          annual_increase_km REAL,
+          paved_stock_km REAL,
+          percent_paved REAL
+        );
+
+        CREATE TABLE pims_framework_steps (
+          step_order INTEGER PRIMARY KEY,
+          title TEXT,
+          phase TEXT,
+          description TEXT,
+          readiness_score REAL,
+          discipline TEXT
+        );
+
+        CREATE TABLE pims_gate_controls (
+          gate TEXT PRIMARY KEY,
+          required_evidence TEXT,
+          decision_use TEXT,
+          readiness_score REAL
+        );
+
+        CREATE TABLE hdm4_indicators (
+          indicator TEXT PRIMARY KEY,
+          description TEXT,
+          readiness_score REAL
+        );
+
+        CREATE TABLE hdm4_model_inputs (
+          model_input TEXT PRIMARY KEY,
+          unit TEXT,
+          assumption TEXT,
+          evidence_topic TEXT
+        );
+
         CREATE TABLE file_inventory (
           file_id INTEGER PRIMARY KEY,
           name TEXT,
@@ -334,6 +438,7 @@ def create_schema(conn: sqlite3.Connection) -> None:
         CREATE INDEX idx_cells_table ON raw_table_cells(table_group, table_name);
         CREATE INDEX idx_spatial_feature_count ON spatial_layers(feature_count DESC);
         CREATE INDEX idx_map_surface_group ON map_surface_features(feature_group);
+        CREATE INDEX idx_condition_poor_share ON uganda_road_condition(poor_share DESC);
         CREATE INDEX idx_inventory_kind ON file_inventory(kind);
         CREATE INDEX idx_assets_region ON programme_assets(region);
         """
@@ -450,6 +555,53 @@ def build_database() -> dict[str, Any]:
         for index, table in enumerate(evidence.get("tabularExtracts", [])):
             cell_count += insert_table(conn, "local_extract", f"extract_{index}", table)
 
+        itis_charts = evidence.get("itisCharts") or {}
+        itis_tables = itis_charts.get("charts") or {}
+        execute_many(
+            conn,
+            "INSERT INTO uganda_network_kpis VALUES (?, ?, ?, ?)",
+            [
+                (item.get("label"), item.get("value"), item.get("note"), index)
+                for index, item in enumerate(itis_charts.get("kpis", []), start=1)
+            ],
+        )
+        execute_many(
+            conn,
+            "INSERT INTO uganda_network_categories VALUES (?, ?, ?)",
+            [
+                (row[0], number(row[1]), row[2] if len(row) > 2 else None)
+                for row in (itis_tables.get("network") or {}).get("rows", [])
+            ],
+        )
+        execute_many(
+            conn,
+            "INSERT INTO uganda_road_condition VALUES (?, ?, ?, ?, ?, ?)",
+            [
+                (row[0], number(row[1]), number(row[2]), number(row[3]), number(row[4]), number(row[3]) / max(1, number(row[4])))
+                for row in (itis_tables.get("condition") or {}).get("rows", [])
+            ],
+        )
+        execute_many(
+            conn,
+            "INSERT INTO uganda_crash_trend VALUES (?, ?, ?, ?, ?)",
+            [
+                (int(row[0]), int(row[1] or 0), int(row[2] or 0), int(row[3] or 0), int(row[4] or 0))
+                for row in (itis_tables.get("crashes") or {}).get("rows", [])
+            ],
+        )
+        execute_many(
+            conn,
+            "INSERT INTO uganda_paved_trend VALUES (?, ?, ?, ?)",
+            [
+                (row[0], number(row[1]), number(row[2]), number(row[3]))
+                for row in (itis_tables.get("pavedTrend") or {}).get("rows", [])
+            ],
+        )
+        execute_many(conn, "INSERT INTO pims_framework_steps VALUES (?, ?, ?, ?, ?, ?)", PIMS_FLOW_STEPS)
+        execute_many(conn, "INSERT INTO pims_gate_controls VALUES (?, ?, ?, ?)", PIMS_GATE_CONTROLS)
+        execute_many(conn, "INSERT INTO hdm4_indicators VALUES (?, ?, ?)", HDM4_INDICATORS)
+        execute_many(conn, "INSERT INTO hdm4_model_inputs VALUES (?, ?, ?, ?)", HDM4_MODEL_INPUTS)
+
         execute_many(
             conn,
             "INSERT INTO online_sources VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -555,6 +707,11 @@ def build_database() -> dict[str, Any]:
             "online_sources": len(evidence.get("onlineSources", [])),
             "spatial_layers": len((evidence.get("spatialEvidence") or {}).get("records", [])),
             "map_surface_features": len(map_rows),
+            "uganda_network_kpis": len((evidence.get("itisCharts") or {}).get("kpis", [])),
+            "uganda_network_categories": len(((evidence.get("itisCharts") or {}).get("charts") or {}).get("network", {}).get("rows", [])),
+            "uganda_road_condition": len(((evidence.get("itisCharts") or {}).get("charts") or {}).get("condition", {}).get("rows", [])),
+            "pims_framework_steps": len(PIMS_FLOW_STEPS),
+            "hdm4_indicators": len(HDM4_INDICATORS),
             "file_inventory": len(inventory_rows),
             "programme_assets": len(asset_rows),
         },
@@ -563,6 +720,9 @@ def build_database() -> dict[str, Any]:
             "executive": "SELECT title, metric, story FROM story_cards ORDER BY title;",
             "spatial": "SELECT layer_name, feature_count, line_length_km FROM spatial_layers WHERE status = 'read' ORDER BY feature_count DESC LIMIT 8;",
             "map": "SELECT feature_group, geometry_type, coordinates_json FROM map_surface_features ORDER BY feature_group, feature_id;",
+            "network": "SELECT category, length_km, ducar_scope FROM uganda_network_categories ORDER BY length_km DESC;",
+            "pims": "SELECT title, phase, readiness_score FROM pims_framework_steps ORDER BY step_order;",
+            "hdm4": "SELECT indicator, readiness_score FROM hdm4_indicators ORDER BY readiness_score DESC;",
             "raw_tables": "SELECT table_group, table_name, COUNT(*) AS cells FROM raw_table_cells GROUP BY table_group, table_name ORDER BY cells DESC;",
         },
     }
