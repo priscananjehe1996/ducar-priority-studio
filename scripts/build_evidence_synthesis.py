@@ -58,6 +58,14 @@ EXCLUDED_FILE_NAMES = {
     "tsconfig.app.json",
     "tsconfig.node.json",
     "_manifest_write_test.json",
+    "evidence_synthesis.json",
+}
+
+EXCLUDED_PATH_FRAGMENTS = {
+    "/scratch/react-bits/",
+    "/dist/",
+    "/node_modules/",
+    "/.git/",
 }
 
 TOPIC_KEYWORDS = {
@@ -425,6 +433,8 @@ def source_area(path: Path) -> str:
         return "Global case evidence package"
     if "/road transport data/" in text:
         return "Road transport data"
+    if "/scratch/uganda_atc/" in text:
+        return "Traffic count scratch dataset"
     if "/workbooks/" in text:
         return "Generated DUCAR workbooks"
     if "/manuals/" in text or "/policies/" in text:
@@ -504,9 +514,12 @@ def iter_core_documents() -> list[Path]:
     if not TOR_ROOT.exists():
         return []
     for path in TOR_ROOT.rglob("*"):
+        normalised = path.resolve().as_posix().lower()
         if not path.is_file() or path.name.startswith("~$"):
             continue
         if path.suffix.lower() not in SUPPORTED_LOCAL_EXTENSIONS:
+            continue
+        if any(fragment in normalised for fragment in EXCLUDED_PATH_FRAGMENTS):
             continue
         if path.name.lower() in EXCLUDED_FILE_NAMES:
             continue
@@ -515,7 +528,7 @@ def iter_core_documents() -> list[Path]:
             continue
         if any(part.lower().startswith(EXCLUDED_DIR_PREFIXES) for part in path.parts):
             continue
-        candidates[path.resolve().as_posix().lower()] = path
+        candidates[normalised] = path
     return sorted(candidates.values(), key=lambda item: item.name.lower())
 
 

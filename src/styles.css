@@ -4737,6 +4737,31 @@ td .range-value {
   font-weight: 900;
 }
 
+.source-evidence-panel {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 92% 8%, rgba(66, 88, 255, 0.12), transparent 28%),
+    rgba(255, 255, 255, 0.74);
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  box-shadow: 18px 20px 44px rgba(30, 38, 64, 0.1);
+}
+
+.source-evidence-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.source-evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
 .case-package-panel {
   display: grid;
   gap: 16px;
@@ -5998,12 +6023,14 @@ button:disabled {
   .evidence-synthesis-hero,
   .evidence-chart-grid,
   .evidence-table-grid,
+  .source-evidence-grid,
   .case-package-grid {
     grid-template-columns: 1fr;
   }
   .ducar-kpi-grid,
   .mode-signal-grid,
-  .evidence-read-grid {
+  .evidence-read-grid,
+  .source-evidence-kpis {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .network-category-bars article {
@@ -6095,6 +6122,7 @@ td:last-child {
   .network-category-bars article,
   .safety-timeline,
   .evidence-read-grid,
+  .source-evidence-kpis,
   .evidence-story-grid,
   .evidence-bar-list article,
   .evidence-topic-bars article,

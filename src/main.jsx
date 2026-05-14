@@ -2232,8 +2232,17 @@ function GlobalCaseStudyPanel() {
 
 function SourcesPanel() {
   const catalog = useManualsCatalog();
+  const evidence = useEvidenceSynthesis();
   const summary = catalog?.summary || {};
+  const evidenceSummary = evidence?.summary || {};
   const topicCards = catalog?.topic_cards || [];
+  const localSourceArea = evidence?.sourceCoverage?.sourceAreaChart;
+  const localFileTypes = evidence?.sourceCoverage?.fileTypeChart;
+  const localExtractionStatus = evidence?.sourceCoverage?.extractionStatusChart;
+  const localDocumentTable = evidence?.documentTable;
+  const caseStudyTable = evidence?.casePackageTables?.countryCaseStudies;
+  const decisionAssumptionTable = evidence?.casePackageTables?.decisionAssumptions;
+  const onlineReadTable = evidence?.onlineEvidence?.sourceTable;
   const mowtPages = 1425;
   const mowtSources = MOWT_CATALOGUE_MANUALS.map(([title, year, url, use]) => ({
     title,
@@ -2319,6 +2328,49 @@ function SourcesPanel() {
         <Metric icon={ClipboardCheck} label="Logic-ready records" value={(summary.logic_records || 0).toLocaleString()} tone="green" />
         <Metric icon={Database} label="Manual folders" value={summary.folders || 0} tone="gold" />
         <Metric icon={FileSpreadsheet} label="MoWT manual pages read" value={mowtPages.toLocaleString()} tone="red" />
+      </section>
+      <section className="source-evidence-panel">
+        <div className="viz-title">
+          <h3>Local Evidence Extraction Register</h3>
+          <span>Cleaned recursive read from D:\OneDrive\Procurements\TOR - DUCACR</span>
+        </div>
+        <div className="source-evidence-kpis">
+          <Metric icon={Database} label="Evidence files read" value={(evidenceSummary.core_documents_read || 0).toLocaleString()} />
+          <Metric icon={BookOpen} label="Words extracted" value={(evidenceSummary.core_words_read || 0).toLocaleString()} tone="green" />
+          <Metric icon={FileSpreadsheet} label="Local tables read" value={(evidenceSummary.local_tables_read || 0).toLocaleString()} tone="gold" />
+          <Metric icon={Globe2} label="Global case rows" value={(evidenceSummary.global_case_records || 0).toLocaleString()} tone="red" />
+        </div>
+        <div className="source-evidence-grid">
+          <section className="viz-card">
+            <div className="viz-title">
+              <h3>Source Areas</h3>
+              <span>Where the extracted local evidence came from</span>
+            </div>
+            <EvidenceBarList table={localSourceArea} maxRows={9} />
+          </section>
+          <section className="viz-card">
+            <div className="viz-title">
+              <h3>File Types</h3>
+              <span>Document, spreadsheet, feed and text formats included</span>
+            </div>
+            <EvidenceBarList table={localFileTypes} maxRows={8} />
+          </section>
+        </div>
+        <div className="source-evidence-grid">
+          <section className="viz-card">
+            <div className="viz-title">
+              <h3>Extraction Status</h3>
+              <span>Read outcomes after filtering generated and non-evidence artifacts</span>
+            </div>
+            <EvidenceBarList table={localExtractionStatus} maxRows={5} />
+          </section>
+          <EvidenceMiniTable table={caseStudyTable} maxRows={5} />
+        </div>
+        <div className="evidence-table-grid">
+          <EvidenceMiniTable table={decisionAssumptionTable} maxRows={6} />
+          <EvidenceMiniTable table={localDocumentTable} maxRows={10} />
+        </div>
+        <EvidenceMiniTable table={onlineReadTable} maxRows={10} />
       </section>
       <section className="viz-card wide-viz">
         <div className="viz-title">
