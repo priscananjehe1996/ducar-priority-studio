@@ -1021,6 +1021,13 @@ const ROAD_SAFETY_TREND = [
 
 const ROAD_CATEGORY_EXPRESSION = [
   "case",
+  ["==", ["get", "network_category"], "National Roads"], "National Roads",
+  ["==", ["get", "network_category"], "District Roads"], "District Roads",
+  ["==", ["get", "network_category"], "KCCA"], "KCCA",
+  ["==", ["get", "network_category"], "City Roads"], "City Roads",
+  ["==", ["get", "network_category"], "Community Access Roads"], "Community Access Roads",
+  ["==", ["get", "network_category"], "Town Council Roads"], "Town Council Roads",
+  ["==", ["get", "network_category"], "Municipal Roads"], "Municipal Roads",
   ["==", ["get", "road_system"], "National"], "National Roads",
   ["==", ["get", "road_source"], "KCCA roads"], "KCCA",
   ["==", ["get", "road_system"], "CBD Selected"], "City Roads",
@@ -1062,6 +1069,7 @@ const ROAD_CATEGORY_WIDTHS = [
 
 function classifyRoadCategory(properties = {}) {
   const roadClass = String(properties.road_class || "");
+  if (properties.network_category) return properties.network_category;
   if (properties.road_system === "National") return "National Roads";
   if (properties.road_source === "KCCA roads") return "KCCA";
   if (properties.road_system === "CBD Selected") return "City Roads";
@@ -1444,9 +1452,10 @@ function TrafficAnalyticsPanel() {
     async function loadTrafficLayers() {
       const manifest = await fetchUgandaLayersManifest();
       const [roadData, flowData, matrixData] = await Promise.all([
-        fetch(manifestDataUrl(manifest, "unified_roads_geojson", "uganda_unified_roads_web.geojson")).then((r) => r.json()),
-        fetch(manifestDataUrl(manifest, "traffic_flows_geojson", "uganda_traffic_flows_web.geojson")).then((r) => r.json()),
-        fetch(manifestDataUrl(manifest, "route_matrix_json", "uganda_route_matrix.json")).then((r) => r.json()),
+        fetchManifestJson(manifest, "cartographic_roads_geojson", "uganda_clean_road_routes_web.geojson")
+          .catch(() => fetchManifestJson(manifest, "unified_roads_geojson", "uganda_unified_roads_web.geojson")),
+        fetchManifestJson(manifest, "traffic_flows_geojson", "uganda_traffic_flows_web.geojson"),
+        fetchManifestJson(manifest, "route_matrix_json", "uganda_route_matrix.json"),
       ]);
       if (cancelled) return;
       setRoads(roadData);
@@ -2350,6 +2359,7 @@ function MapScene3D({ programme }) {
   const [mapLoadState, setMapLoadState] = useState({ stage: "loading", message: "Preparing Uganda imagery map" });
 
   const unifiedLayerStatus = useMemo(() => layerStatus?.layers?.find((layer) => layer.id === "unified-roads") || null, [layerStatus]);
+  const cartographicLayerStatus = useMemo(() => layerStatus?.layers?.find((layer) => layer.id === "cartographic-routes") || null, [layerStatus]);
   const nationalLayerStatus = useMemo(() => layerStatus?.layers?.find((layer) => layer.id === "national-roads") || null, [layerStatus]);
   const roadsReady = Boolean(roads?.features?.length);
   const flowsReady = Boolean(flows?.features?.length);
@@ -2413,22 +2423,28 @@ function MapScene3D({ programme }) {
     });
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), "top-right");
     mapInstance.current = map;
-    map.on("load", async () => {
+    let cancelled = false;
+    let roadLayersStarted = false;
+    async function initialiseRoadLayers() {
+      if (cancelled || roadLayersStarted || !map.isStyleLoaded()) return;
+      roadLayersStarted = true;
       try {
         setMapLoadState({ stage: "loading", message: "Reading road layer manifest" });
         const emptyFeatureCollection = { type: "FeatureCollection", features: [] };
         const manifest = await fetchUgandaLayersManifest();
-        const roadPromise = fetchManifestJson(manifest, "unified_roads_geojson", "uganda_unified_roads_web.geojson")
-          .catch(() => fetchManifestJson(manifest, "cartographic_roads_geojson", "uganda_clean_road_routes_web.geojson"));
+        const roadPromise = fetchManifestJson(manifest, "cartographic_roads_geojson", "uganda_clean_road_routes_web.geojson")
+          .catch(() => fetchManifestJson(manifest, "unified_roads_geojson", "uganda_unified_roads_web.geojson"));
         const nodePromise = fetchManifestJson(manifest, "network_nodes_geojson", "uganda_network_nodes_web.geojson").catch(() => emptyFeatureCollection);
         const flowPromise = fetchManifestJson(manifest, "traffic_flows_geojson", "uganda_traffic_flows_web.geojson").catch(() => emptyFeatureCollection);
         const matrixPromise = fetchManifestJson(manifest, "route_matrix_json", "uganda_route_matrix.json").catch(() => ({ routes: [] }));
 
-        setMapLoadState({ stage: "loading", message: "Loading unified road geometry" });
+        setMapLoadState({ stage: "loading", message: "Loading route-level road geometry" });
         const roadData = await roadPromise;
+        if (cancelled) return;
         setRoads(roadData);
-        setMapLoadState({ stage: "loading", message: `Preparing ${formatCount(roadData.features?.length)} road records` });
+        setMapLoadState({ stage: "loading", message: `Preparing ${formatCount(roadData.features?.length)} visual routes` });
         const [nodeData, flowData, matrixData] = await Promise.all([nodePromise, flowPromise, matrixPromise]);
+        if (cancelled) return;
 
         setFlows(flowData);
         setNodes(nodeData);
@@ -2505,12 +2521,26 @@ function MapScene3D({ programme }) {
           map.on("mouseenter", layerId, () => { map.getCanvas().style.cursor = "pointer"; });
           map.on("mouseleave", layerId, () => { map.getCanvas().style.cursor = ""; });
         }
-        setMapLoadState({ stage: "ready", message: `${formatCount(roadData.features?.length)} road records ready` });
+        setMapLoadState({ stage: "ready", message: `${formatCount(roadData.features?.length)} visual routes ready` });
       } catch (error) {
+        if (cancelled) return;
         setMapLoadState({ stage: "error", message: error.message || "Unable to load road layers" });
       }
-    });
-    return () => { map.remove(); mapInstance.current = null; };
+    }
+    const startRoadLayers = () => {
+      if (!roadLayersStarted && map.isStyleLoaded()) initialiseRoadLayers();
+    };
+    map.on("load", startRoadLayers);
+    map.on("styledata", startRoadLayers);
+    const styleReadyTimer = window.setTimeout(startRoadLayers, 1200);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(styleReadyTimer);
+      map.off("load", startRoadLayers);
+      map.off("styledata", startRoadLayers);
+      map.remove();
+      mapInstance.current = null;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -2545,39 +2575,38 @@ function MapScene3D({ programme }) {
     const routes = routeMatrix?.routes || [];
     return routes.slice().sort((a, b) => (b.traffic_flow_index || 0) - (a.traffic_flow_index || 0)).slice(0, 8);
   }, [routeMatrix]);
+  const routeLayerRecordCount = Number(cartographicLayerStatus?.record_count || 0);
+  const unifiedAuditRecordCount = Number(unifiedLayerStatus?.record_count || 0);
   const mapStats = useMemo(() => {
     const features = roads?.features || [];
     const statusScope = unifiedLayerStatus?.by_ducar_analysis_scope || {};
     const fallbackNeedsValidation = Object.entries(statusScope)
       .filter(([key]) => key.toLowerCase().includes("validation"))
       .reduce((sum, [, value]) => sum + Number(value || 0), 0);
-    const national = roadsReady
+    const nationalRoutes = roadsReady
       ? features.filter((f) => classifyRoadCategory(f.properties) === "National Roads").length
-      : Number(nationalLayerStatus?.record_count || unifiedLayerStatus?.reference_exempt_record_count || 0);
-    const ducar = roadsReady
-      ? features.filter((f) => !String(f.properties?.ducar_analysis_scope || "").startsWith("Reference")).length
-      : Number(unifiedLayerStatus?.ducar_analysis_record_count || 0);
-    const needsValidation = roadsReady
-      ? features.filter((f) => String(f.properties?.ducar_analysis_scope || "").toLowerCase().includes("validation")).length
-      : fallbackNeedsValidation;
+      : Number(cartographicLayerStatus?.by_network_category?.["National Roads"] || nationalLayerStatus?.record_count || 0);
+    const ducar = Number(unifiedLayerStatus?.ducar_analysis_record_count || 0);
+    const needsValidation = fallbackNeedsValidation;
     const flowFeatures = flows?.features || [];
     const avgFlow = flowFeatures.length
       ? Math.round(flowFeatures.reduce((sum, f) => sum + Number(f.properties?.traffic_flow_index || 0), 0) / flowFeatures.length)
       : null;
-    const displayRoadCount = roadsReady ? filteredRoads.length : Number(unifiedLayerStatus?.record_count || 0);
+    const displayRoadCount = roadsReady ? filteredRoads.length : routeLayerRecordCount || unifiedAuditRecordCount;
     return [
-      { label: "Road records", value: formatCount(displayRoadCount), tone: "blue" },
+      { label: "Visible routes", value: formatCount(displayRoadCount), tone: "blue" },
+      { label: "Unified audit records", value: formatCount(unifiedAuditRecordCount || displayRoadCount), tone: "dark" },
       { label: "DUCAR scope", value: ducar.toLocaleString(), tone: "green" },
-      { label: "National reference", value: national.toLocaleString(), tone: "dark" },
+      { label: "National routes", value: nationalRoutes.toLocaleString(), tone: "dark" },
       { label: "Needs validation", value: needsValidation.toLocaleString(), tone: "red" },
       { label: "Mean flow index", value: avgFlow === null ? "Loading" : `${avgFlow}%`, tone: "dark" },
     ];
-  }, [roads, flows, filteredRoads.length, nationalLayerStatus, roadsReady, unifiedLayerStatus]);
+  }, [cartographicLayerStatus, flows, filteredRoads.length, nationalLayerStatus, roads, roadsReady, routeLayerRecordCount, unifiedAuditRecordCount, unifiedLayerStatus]);
 
-  const displayedRoadCount = roadsReady ? filteredRoads.length : Number(unifiedLayerStatus?.record_count || 0);
+  const displayedRoadCount = roadsReady ? filteredRoads.length : routeLayerRecordCount || unifiedAuditRecordCount;
   const hudRoadText = roadsReady
-    ? `${formatCount(filteredRoads.length)} visible road records`
-    : `${formatCount(displayedRoadCount)} road records queued`;
+    ? `${formatCount(filteredRoads.length)} visible road routes`
+    : `${formatCount(displayedRoadCount)} road routes queued`;
   const hudNodeText = nodes?.features?.length ? `${formatCount(nodes.features.length)} analysis nodes` : "Network nodes loading";
   const hudRouteText = routeMatrix?.routes?.length ? `${formatCount(routeMatrix.routes.length)} OD route pairs` : "OD route matrix loading";
   const mapStatusText = mapLoadState.stage === "ready" ? "Road layer ready" : mapLoadState.message;
@@ -2590,7 +2619,7 @@ function MapScene3D({ programme }) {
           <h2>2D Uganda Road Intelligence Map</h2>
         </div>
         <div className="layer-toggles">
-          <button className="layer-btn active unified">Joined Road Network</button>
+          <button className="layer-btn active unified">Fast Route Network</button>
           <button className={`layer-btn ${showFlows ? "active" : ""}`} onClick={() => setShowFlows((value) => !value)}>Traffic Flow</button>
         </div>
       </div>
@@ -2599,8 +2628,8 @@ function MapScene3D({ programme }) {
         <label><ListFilter size={16} /> System<select value={roadSystemFilter} onChange={(e) => setRoadSystemFilter(e.target.value)} disabled={!roadsReady}>{roadOptions.systems.map((x) => <option key={x}>{x}</option>)}</select></label>
         <label>Class<select value={roadClassFilter} onChange={(e) => setRoadClassFilter(e.target.value)} disabled={!roadsReady}>{roadOptions.classes.map((x) => <option key={x} value={x}>{formatRoadClassLabel(x)}</option>)}</select></label>
         <label>Surface<select value={surfaceFilter} onChange={(e) => setSurfaceFilter(e.target.value)} disabled={!roadsReady}>{roadOptions.surfaces.map((x) => <option key={x}>{x}</option>)}</select></label>
-        <label>Sort<select value={roadSort} onChange={(e) => setRoadSort(e.target.value)} disabled={!roadsReady}>{["length_km", "road_name", "road_class", "region", "district", "quality_flag"].map((x) => <option key={x}>{x}</option>)}</select></label>
-        <strong>{formatCount(displayedRoadCount)} {roadsReady ? "road records" : "records loading"}</strong>
+        <label>Sort<select value={roadSort} onChange={(e) => setRoadSort(e.target.value)} disabled={!roadsReady}>{["length_km", "traffic_flow_index", "segment_count", "road_name", "road_class", "region", "district"].map((x) => <option key={x}>{x}</option>)}</select></label>
+        <strong>{formatCount(displayedRoadCount)} {roadsReady ? "road routes" : "routes loading"}</strong>
       </div>
       <div className="map-stat-strip">
         {mapStats.map((item) => (
@@ -2618,12 +2647,12 @@ function MapScene3D({ programme }) {
             <div>
               <strong>{mapLoadState.stage === "error" ? "Map layer unavailable" : "Loading road intelligence"}</strong>
               <span>{mapLoadState.message}</span>
-              {!!displayedRoadCount && mapLoadState.stage !== "error" && <em>{formatCount(displayedRoadCount)} records in the current manifest</em>}
+              {!!displayedRoadCount && mapLoadState.stage !== "error" && <em>{formatCount(displayedRoadCount)} routes in the current manifest</em>}
             </div>
           </div>
         )}
         <div className="scene-hud">
-          <strong>2D joined road network</strong>
+          <strong>2D route-level road network</strong>
           <span>{hudRoadText}</span>
           <span>{hudNodeText}</span>
           <span>{hudRouteText}</span>

@@ -48,12 +48,29 @@ def layer_record(
     }
 
 
+def cartographic_layer_record(*, summary: dict[str, Any], manifest: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "id": "cartographic-routes",
+        "label": "Fast cartographic route layer",
+        "file": basename(manifest, "cartographic_roads_geojson"),
+        "generated_at_utc": summary.get("generated_at_utc") or manifest.get("updated_at_utc"),
+        "record_count": summary.get("cartographic_route_count"),
+        "total_length_km": summary.get("total_length_km"),
+        "edge_count": summary.get("edge_count"),
+        "node_count": summary.get("node_count"),
+        "source_record_count": summary.get("source_record_count"),
+        "by_network_category": summary.get("by_network_category") or {},
+        "detail": "Simplified route-level layer used by the interactive GIS map for faster browser rendering.",
+    }
+
+
 def main() -> None:
     manifest = load_manifest(ROOT)
     status_time = datetime.now(timezone.utc).isoformat()
     unified = load_json(resolve_manifest_path(ROOT, manifest.get("unified_roads_summary")))
     national = load_json(resolve_manifest_path(ROOT, manifest.get("national_roads_summary")))
     master = load_json(resolve_manifest_path(ROOT, manifest.get("roads_master_summary")))
+    network = load_json(resolve_manifest_path(ROOT, manifest.get("network_analysis_summary")))
 
     status = {
         "updated_at_utc": status_time,
@@ -66,6 +83,7 @@ def main() -> None:
                 manifest=manifest,
                 detail="Browser road layer joining DUCAR, national, KCCA/CBD and OSM-derived roads.",
             ),
+            cartographic_layer_record(summary=network, manifest=manifest),
             layer_record(
                 layer_id="national-roads",
                 label="National road reference layer",

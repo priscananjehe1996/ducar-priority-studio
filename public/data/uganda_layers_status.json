@@ -1,5 +1,5 @@
 {
-  "updated_at_utc": "2026-05-13T13:25:25.569641+00:00",
+  "updated_at_utc": "2026-05-14T08:24:30.393404+00:00",
   "layers": [
     {
       "id": "unified-roads",
@@ -33,6 +33,25 @@
       "detail": "Browser road layer joining DUCAR, national, KCCA/CBD and OSM-derived roads."
     },
     {
+      "id": "cartographic-routes",
+      "label": "Fast cartographic route layer",
+      "file": "uganda_clean_road_routes_web.geojson",
+      "generated_at_utc": "2026-05-14T08:24:29.258867+00:00",
+      "record_count": 5604,
+      "total_length_km": 92253.85,
+      "edge_count": 37352,
+      "node_count": 44972,
+      "source_record_count": 16319,
+      "by_network_category": {
+        "City Roads": 2257,
+        "Community Access Roads": 592,
+        "District Roads": 1735,
+        "KCCA": 7,
+        "National Roads": 1013
+      },
+      "detail": "Simplified route-level layer used by the interactive GIS map for faster browser rendering."
+    },
+    {
       "id": "national-roads",
       "label": "National road reference layer",
       "file": "uganda_national_roads_fy25_26_2026-05-13.geojson",
@@ -51,7 +70,7 @@
       "id": "road-master",
       "label": "Editable all-road master",
       "file": "uganda_roads_master_2026-05-13.gpkg",
-      "generated_at_utc": "2026-05-13T06:33:45.291759+00:00",
+      "generated_at_utc": "2026-05-13T23:33:23.079325+00:00",
       "record_count": 708651,
       "total_length_km": 410243.69,
       "by_source": {

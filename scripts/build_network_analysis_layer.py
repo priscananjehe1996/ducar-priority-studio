@@ -18,15 +18,11 @@ import pandas as pd
 from shapely.geometry import LineString, MultiLineString, Point
 from shapely.ops import linemerge, transform, unary_union
 
-from uganda_layers_manifest import update_manifest
+from uganda_layers_manifest import load_manifest, normalise_manifest_value, resolve_manifest_path, update_manifest
 
 ROOT = Path(__file__).resolve().parents[1]
 PUBLIC = ROOT / "public" / "data"
 DATA = ROOT / "data"
-SOURCE = PUBLIC / "uganda_unified_roads_web_2026-05-05.geojson"
-if not SOURCE.exists():
-    SOURCE = PUBLIC / "uganda_unified_roads_web.geojson"
-
 EDGES_OUT = PUBLIC / "uganda_network_edges_web.geojson"
 CARTO_OUT = PUBLIC / "uganda_clean_road_routes_web.geojson"
 NODES_OUT = PUBLIC / "uganda_network_nodes_web.geojson"
@@ -44,6 +40,23 @@ SYSTEM_PRIORITY = {
     "DUCAR": 4,
     "Open mapping": 5,
 }
+
+
+def source_path() -> Path:
+    manifest = load_manifest(ROOT)
+    candidate = resolve_manifest_path(ROOT, manifest.get("unified_roads_geojson"))
+    if candidate and candidate.exists():
+        return candidate
+
+    candidates = sorted(
+        PUBLIC.glob("uganda_unified_roads_web*.geojson"),
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    )
+    if candidates:
+        return candidates[0]
+
+    raise FileNotFoundError("No unified roads GeoJSON found in manifest or public/data")
 
 
 def drop_z(geom):
@@ -178,7 +191,8 @@ def build_cartographic_routes(edges):
 def main() -> None:
     PUBLIC.mkdir(parents=True, exist_ok=True)
     DATA.mkdir(parents=True, exist_ok=True)
-    gdf = gpd.read_file(SOURCE).to_crs(epsg=4326)
+    source = source_path()
+    gdf = gpd.read_file(source).to_crs(epsg=4326)
     gdf["geometry"] = gdf.geometry.apply(drop_z)
 
     rows = []
@@ -297,7 +311,7 @@ def main() -> None:
 
     summary = {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
-        "source": str(SOURCE),
+        "source": normalise_manifest_value(ROOT, str(source)),
         "edge_count": int(len(edges)),
         "cartographic_route_count": int(len(cartographic_routes)),
         "node_count": int(len(nodes)),
