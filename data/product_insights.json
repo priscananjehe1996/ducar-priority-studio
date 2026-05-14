@@ -1,0 +1,240 @@
+{
+  "generated_at_utc": "2026-05-14T10:13:56.974134+00:00",
+  "source": "materialized from evidence_synthesis.json",
+  "summary": {
+    "core_documents_found": 114,
+    "core_documents_read": 114,
+    "core_pages_read": 4052,
+    "core_words_read": 2460492,
+    "docx_tables_read": 185,
+    "local_tables_read": 225,
+    "tabular_extracts": 21,
+    "global_case_records": 9,
+    "decision_assumptions": 10,
+    "transport_vehicle_classes": 12,
+    "presentation_decks_read": 5,
+    "presentation_slides_read": 172,
+    "local_inventory_files": 345,
+    "local_inventory_mb": 6370.92,
+    "spatial_files_found": 43,
+    "spatial_layers_read": 41,
+    "spatial_features_read": 277045,
+    "spatial_line_km": 1160983.24,
+    "manual_repository_files": 5221,
+    "manual_logic_records": 2199,
+    "mowt_pdf_records": 4,
+    "online_sources_checked": 15,
+    "online_sources_read": 12
+  },
+  "sourceCoverage": {
+    "sourceAreaChart": {
+      "title": "Local evidence files by source area",
+      "columns": [
+        "Source area",
+        "Files"
+      ],
+      "rows": [
+        [
+          "TOR and local source documents",
+          36
+        ],
+        [
+          "Web data feeds",
+          27
+        ],
+        [
+          "Published source documents",
+          16
+        ],
+        [
+          "Traffic count scratch dataset",
+          8
+        ],
+        [
+          "DUCAR manuals and policies",
+          7
+        ],
+        [
+          "Global case evidence package",
+          5
+        ],
+        [
+          "DUCAR presentation decks",
+          5
+        ],
+        [
+          "Road transport data",
+          4
+        ]
+      ]
+    }
+  },
+  "documentTopicChart": [
+    {
+      "topic": "Construction QA",
+      "mentions": 21427,
+      "share": 100.0,
+      "decision_use": "Design, material, testing, supervision and quality acceptance rules."
+    },
+    {
+      "topic": "Traffic and axle load",
+      "mentions": 11572,
+      "share": 54.0,
+      "decision_use": "AADT, representative vehicles, axle-load pressure and speed-flow assumptions."
+    },
+    {
+      "topic": "Procurement and contracts",
+      "mentions": 11257,
+      "share": 52.5,
+      "decision_use": "Tender readiness, BOQ, contract administration and payment controls."
+    },
+    {
+      "topic": "Bridge and structures",
+      "mentions": 10403,
+      "share": 48.6,
+      "decision_use": "Bridge/culvert inventory, inspection and structural criticality gates."
+    },
+    {
+      "topic": "Safety and NMT",
+      "mentions": 6920,
+      "share": 32.3,
+      "decision_use": "Crash exposure, vulnerable users and safety countermeasure benefits."
+    },
+    {
+      "topic": "Climate and drainage",
+      "mentions": 6004,
+      "share": 28.0,
+      "decision_use": "Flood, drainage, culvert and climate-resilience screens."
+    },
+    {
+      "topic": "Road condition",
+      "mentions": 5465,
+      "share": 25.5,
+      "decision_use": "Condition-based treatment triggers, deterioration pressure and monitoring tiers."
+    },
+    {
+      "topic": "GIS and network",
+      "mentions": 3983,
+      "share": 18.6,
+      "decision_use": "Route identity, district joins, topology, route matrix and spatial equity."
+    }
+  ],
+  "spatialEvidence": {
+    "summary": {
+      "files_found": 43,
+      "layers_read": 41,
+      "layer_count": 43,
+      "feature_count": 277045,
+      "line_length_km": 1160983.24,
+      "polygon_area_km2": 1691384.52
+    },
+    "featureChart": {
+      "title": "Largest spatial layers by features",
+      "columns": [
+        "Layer",
+        "Features"
+      ],
+      "rows": [
+        [
+          "uganda_network_nodes_web (GEOJSON)",
+          44972
+        ],
+        [
+          "uganda_network_edges_web (GEOJSON)",
+          37352
+        ],
+        [
+          "dcroads2025 (SHP)",
+          31106
+        ],
+        [
+          "dcroads (SHP)",
+          21675
+        ],
+        [
+          "uganda_unified_roads_web (GEOJSON)",
+          16319
+        ],
+        [
+          "uganda_unified_roads_web_2026-05-05 (GEOJSON)",
+          16319
+        ],
+        [
+          "uganda_unified_roads_web_2026-05-06 (GEOJSON)",
+          16319
+        ],
+        [
+          "uganda_unified_roads_web_2026-05-13 (GEOJSON)",
+          16319
+        ]
+      ]
+    },
+    "geometryChart": {
+      "title": "Spatial features by geometry type",
+      "columns": [
+        "Geometry",
+        "Features"
+      ],
+      "rows": [
+        [
+          "LineString",
+          226732
+        ],
+        [
+          "Point",
+          44985
+        ],
+        [
+          "MultiLineString",
+          4034
+        ],
+        [
+          "Polygon",
+          946
+        ]
+      ]
+    }
+  },
+  "fileInventory": {
+    "summary": {
+      "files_indexed": 345,
+      "total_bytes": 6680395364,
+      "total_mb": 6370.92,
+      "source_areas": 10
+    }
+  },
+  "storyCards": [
+    {
+      "title": "Local evidence corpus",
+      "metric": "114",
+      "label": "files indexed",
+      "story": "TORs, manuals, policy notes, budget reports, web data feeds, spreadsheets and global case package files are now read into one evidence dataset.",
+      "evidence": "114 files yielded text or tables; leading type: JSON.",
+      "tone": "blue"
+    },
+    {
+      "title": "Decision-topic spine",
+      "metric": "21,427",
+      "label": "Construction QA",
+      "story": "Design, material, testing, supervision and quality acceptance rules.",
+      "evidence": "Keyword counts are calculated across the extracted local evidence text.",
+      "tone": "green"
+    },
+    {
+      "title": "Global case transfer",
+      "metric": "9",
+      "label": "case rows",
+      "story": "The international case package translates country practices into DUCAR-specific lessons and adaptation rules.",
+      "evidence": "10 decision assumptions are linked back to APA source keys.",
+      "tone": "gold"
+    },
+    {
+      "title": "Spatial evidence atlas",
+      "metric": "277,045",
+      "label": "GIS features",
+      "story": "Shapefiles, GeoJSON and GeoPackage layers are converted into a spatial evidence register for route, district and network checks.",
+      "evidence": "41 layers read, including 30 line-network layers and district boundary evidence.",
+      "tone": "purple"
+    }
+  ]
+}

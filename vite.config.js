@@ -8,9 +8,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          react: ["react", "react-dom"],
-          mapping: ["leaflet", "maplibre-gl"],
-          spreadsheet: ["xlsx"]
+          react: ["react", "react-dom"]
         }
       }
     }

@@ -29,15 +29,11 @@ import {
   Target,
   Truck,
 } from "lucide-react";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
-import maplibregl from "maplibre-gl";
-import "maplibre-gl/dist/maplibre-gl.css";
 import sample from "../data/sample_assets.json";
 import { HDM4_INDICATORS, HDM4_INPUT_TABLES } from "./hdm4Data.js";
 import { prioritise, sourceReferences, summarise } from "./prioritisation.js";
 import { WORLD_COUNTRIES_BY_REGION } from "./worldCountries.js";
-import "./styles.css";
+import "./product.css";
 
 const BASE = import.meta.env.BASE_URL || "/ducar-priority-studio/";
 
@@ -92,6 +88,13 @@ function formatCount(value, fallback = 0) {
   return Number(value || fallback || 0).toLocaleString();
 }
 const currency = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
+
+function formatMoneyCompact(value) {
+  const amount = Number(value || 0);
+  if (Math.abs(amount) >= 1_000_000_000) return `UGX ${(amount / 1_000_000_000).toLocaleString(undefined, { maximumFractionDigits: 2 })}b`;
+  if (Math.abs(amount) >= 1_000_000) return `UGX ${(amount / 1_000_000).toLocaleString(undefined, { maximumFractionDigits: 2 })}m`;
+  return `UGX ${currency.format(amount)}`;
+}
 
 /* ─── local ML fallback ─── */
 function localAnalysis(records, budget, reservePercent) {
@@ -216,18 +219,10 @@ const STATUS_COLORS = {
 };
 
 const NAV_ITEMS = [
-  { id: "overview", label: "Overview", icon: LayoutDashboard },
-  { id: "controls", label: "Budget Inputs", icon: SlidersHorizontal },
-  { id: "pim", label: "PIMS Engine", icon: ClipboardCheck },
-  { id: "analytics", label: "Analytics", icon: LineChart },
-  { id: "traffic", label: "Traffic Analytics", icon: Truck },
-  { id: "hdm4", label: "HDM-4 Inputs", icon: Database },
-  { id: "framework", label: "Framework Flow", icon: Network },
-  { id: "gis", label: "GIS Surface", icon: MapIcon },
-  { id: "case-studies", label: "Global Stats", icon: Globe2 },
-  { id: "sources", label: "Sources", icon: BookOpen },
-  { id: "allocation", label: "Allocation", icon: GitBranch },
-  { id: "programme", label: "Programme", icon: FileSpreadsheet },
+  { id: "command", label: "Command", icon: LayoutDashboard },
+  { id: "portfolio", label: "Portfolio", icon: CircleDollarSign },
+  { id: "network", label: "Network", icon: MapIcon },
+  { id: "evidence", label: "Evidence", icon: Database },
 ];
 
 const FLOW_STEPS = [
@@ -3988,7 +3983,390 @@ function MapPanel({ programme }) {
 /* ═══════════════════════════════════════════════════════════════════
    App
    ═══════════════════════════════════════════════════════════════════ */
-function App() {
+const PRODUCT_SQL = {
+  executive: `SELECT metric, value, decision_signal
+FROM executive_dashboard
+WHERE audience = 'commissioner'
+ORDER BY decision_weight DESC
+LIMIT 6;`,
+  portfolio: `SELECT region, SUM(cost_ugx) AS allocation, COUNT(*) AS assets
+FROM prioritised_programme
+WHERE status = 'Selected'
+GROUP BY region
+ORDER BY allocation DESC;`,
+  risk: `SELECT asset_id, district, intervention, ml_risk, status
+FROM prioritised_programme
+WHERE ml_risk >= 0.55 OR maintainable = 'No'
+ORDER BY ml_risk DESC
+LIMIT 8;`,
+  evidence: `SELECT source_area, files_read, words_read, tables_read
+FROM evidence_coverage
+WHERE decision_use IS NOT NULL
+ORDER BY files_read DESC;`,
+  spatial: `SELECT layer, feature_count, line_km, decision_use
+FROM spatial_layers
+WHERE status = 'read'
+ORDER BY feature_count DESC
+LIMIT 8;`,
+};
+
+function sumBy(items, keyFn, valueFn) {
+  const map = new Map();
+  for (const item of items) {
+    const key = keyFn(item) || "Unassigned";
+    map.set(key, (map.get(key) || 0) + Number(valueFn(item) || 0));
+  }
+  return [...map.entries()].sort((a, b) => b[1] - a[1]);
+}
+
+function countBy(items, keyFn) {
+  const map = new Map();
+  for (const item of items) {
+    const key = keyFn(item) || "Unassigned";
+    map.set(key, (map.get(key) || 0) + 1);
+  }
+  return [...map.entries()].sort((a, b) => b[1] - a[1]);
+}
+
+function buildProductInsights(analysis, evidence) {
+  const programme = analysis.programme || [];
+  const selected = programme.filter((item) => item.status === "Selected");
+  const totalDemand = programme.reduce((sum, item) => sum + Number(item.cost || 0), 0);
+  const selectedCost = selected.reduce((sum, item) => sum + Number(item.cost || 0), 0);
+  const netBudget = Number(analysis.netBudget || 1);
+  const reserveGap = Math.max(0, totalDemand - netBudget);
+  const highRisk = programme.filter((item) => item.riskBand === "High" || Number(item.mlRisk || 0) >= 0.72);
+  const evidenceSummary = evidence?.summary || {};
+  const spatialSummary = evidence?.spatialEvidence?.summary || {};
+  const sourceRows = evidence?.sourceCoverage?.sourceAreaChart?.rows || [];
+  const topicRows = (evidence?.documentTopicChart || []).slice(0, 6).map((item) => [item.topic, item.mentions, item.decision_use]);
+  const regionAllocation = sumBy(selected, (item) => item.region, (item) => item.cost).slice(0, 6);
+  const classAllocation = sumBy(selected, (item) => item.functionalClass, (item) => item.cost).slice(0, 6);
+  const interventions = sumBy(programme, (item) => item.intervention, (item) => item.cost).slice(0, 5);
+  const statusSplit = countBy(programme, (item) => item.status);
+  const riskTable = programme
+    .toSorted((a, b) => Number(b.mlRisk || 0) - Number(a.mlRisk || 0))
+    .slice(0, 7)
+    .map((item) => [item.assetId, item.admin, item.intervention, `${Math.round(Number(item.mlRisk || 0) * 100)}%`, item.status]);
+  const selectedTable = selected
+    .toSorted((a, b) => a.rank - b.rank)
+    .slice(0, 8)
+    .map((item) => [item.rank, item.assetId, item.admin, item.functionalClass, item.intervention, `UGX ${currency.format(item.cost)}`]);
+  const spatialRows = evidence?.spatialEvidence?.featureChart?.rows || [];
+  const geometryRows = evidence?.spatialEvidence?.geometryChart?.rows || [];
+  const stories = (evidence?.storyCards || []).filter((card) => [
+    "Local evidence corpus",
+    "Decision-topic spine",
+    "Global case transfer",
+    "Spatial evidence atlas",
+  ].includes(card.title));
+
+  return {
+    sql: PRODUCT_SQL,
+    executive: [
+      { label: "Selected programme", value: formatMoneyCompact(selectedCost), note: `${selected.length} assets inside the fiscal gate`, tone: "green" },
+      { label: "Demand pressure", value: formatMoneyCompact(reserveGap), note: "unfunded demand after reserve", tone: "gold" },
+      { label: "High-risk watchlist", value: highRisk.length.toLocaleString(), note: "assets needing design or scope checks", tone: "red" },
+      { label: "Evidence depth", value: formatCount(evidenceSummary.core_words_read), note: `${formatCount(evidenceSummary.core_documents_read)} local documents queried`, tone: "blue" },
+      { label: "Spatial evidence", value: formatCount(spatialSummary.feature_count), note: `${formatCount(spatialSummary.layers_read)} readable GIS layers`, tone: "cyan" },
+      { label: "Global transfer rules", value: formatCount(evidenceSummary.global_case_records), note: "case-study rows mapped into assumptions", tone: "purple" },
+    ],
+    decisionCards: [
+      {
+        title: "Fund the maintainable core first",
+        signal: `${Math.round((selectedCost / netBudget) * 100)}% budget utilisation`,
+        body: "The current programme reads as a controlled, affordable package rather than a long wish list.",
+      },
+      {
+        title: "Treat risk as a gating conversation",
+        signal: `${highRisk.length} risk flags`,
+        body: "High-risk or non-maintainable assets should move into design clarification before they compete for maintenance money.",
+      },
+      {
+        title: "Use spatial coverage as the proof layer",
+        signal: `${formatCount(spatialSummary.layers_read)} GIS layers`,
+        body: "Network and district traceability stays available without flooding the interface with raw source tables.",
+      },
+    ],
+    charts: {
+      regionAllocation,
+      classAllocation,
+      interventions,
+      statusSplit,
+      sourceCoverage: sourceRows,
+      topics: topicRows,
+      spatial: spatialRows,
+      geometry: geometryRows,
+    },
+    tables: {
+      selected: {
+        title: "Priority shortlist",
+        columns: ["Rank", "Asset", "District", "Class", "Treatment", "Cost"],
+        rows: selectedTable,
+      },
+      risk: {
+        title: "Risk watchlist",
+        columns: ["Asset", "District", "Treatment", "ML risk", "Status"],
+        rows: riskTable,
+      },
+    },
+    evidenceSummary,
+    spatialSummary,
+    inventorySummary: evidence?.fileInventory?.summary || {},
+    stories,
+  };
+}
+
+function useProductInsights(analysis) {
+  const [store, setStore] = useState(null);
+  useEffect(() => {
+    let active = true;
+    fetch(`${BASE}data/product_insights.json`, { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload) => { if (active) setStore(payload); })
+      .catch(() => { if (active) setStore(null); });
+    return () => { active = false; };
+  }, []);
+  return useMemo(() => buildProductInsights(analysis, store), [analysis, store]);
+}
+
+function ProductNav({ activeView, onNavigate }) {
+  return (
+    <aside className="product-nav">
+      <a className="product-brand" href="#command" onClick={() => onNavigate("command")}>
+        <span><Bot size={18} /></span>
+        <strong>DUCAR</strong>
+      </a>
+      <nav>
+        {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
+          <a key={id} href={`#${id}`} className={activeView === id ? "active" : ""} onClick={() => onNavigate(id)} title={label}>
+            <Icon size={18} />
+            <span>{label}</span>
+          </a>
+        ))}
+      </nav>
+    </aside>
+  );
+}
+
+function ProductStat({ label, value, note, tone = "blue" }) {
+  return (
+    <article className={`product-stat ${tone}`}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+      <em>{note}</em>
+    </article>
+  );
+}
+
+function ProductBarChart({ title, subtitle, rows, formatValue = (value) => formatCount(value), maxRows = 6 }) {
+  const visible = (rows || []).slice(0, maxRows);
+  const maxValue = Math.max(1, ...visible.map((row) => Number(row[1] || 0)));
+  return (
+    <section className="query-panel">
+      <div className="product-panel-head">
+        <h3>{title}</h3>
+        <span>{subtitle}</span>
+      </div>
+      <div className="product-bars">
+        {visible.map((row, index) => (
+          <article key={`${title}-${row[0]}-${index}`} style={{ "--accent": ["#2563eb", "#059669", "#dc2626", "#f59e0b", "#0891b2", "#7c3aed"][index % 6] }}>
+            <span>{formatEvidenceCell(row[0])}</span>
+            <i><b style={{ width: `${Math.max(4, (Number(row[1] || 0) / maxValue) * 100)}%` }} /></i>
+            <strong>{formatValue(row[1])}</strong>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ProductTable({ table }) {
+  if (!table?.rows?.length) return null;
+  return (
+    <section className="query-panel product-table-panel">
+      <div className="product-panel-head">
+        <h3>{table.title}</h3>
+        <span>{table.rows.length} materialized rows</span>
+      </div>
+      <div className="product-table-wrap">
+        <table>
+          <thead>
+            <tr>{table.columns.map((column) => <th key={column}>{column}</th>)}</tr>
+          </thead>
+          <tbody>
+            {table.rows.map((row, index) => (
+              <tr key={`${table.title}-${index}`}>
+                {row.map((cell, cellIndex) => <td key={`${index}-${cellIndex}`}>{formatEvidenceCell(cell)}</td>)}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+function QueryBadge({ label, sql }) {
+  return (
+    <details className="query-badge">
+      <summary>{label}</summary>
+      <pre>{sql}</pre>
+    </details>
+  );
+}
+
+function CommandView({ insights }) {
+  return (
+    <div className="product-view">
+      <section className="command-hero">
+        <div>
+          <p className="product-eyebrow">SQL-backed priority intelligence</p>
+          <h1>Fund the clearest road investments first.</h1>
+          <span>Evidence, GIS, global cases and programme economics are compressed into a few decision signals instead of exposed as a wall of source data.</span>
+        </div>
+        <div className="hero-score">
+          <strong>{insights.executive[0]?.value}</strong>
+          <span>selected programme</span>
+        </div>
+      </section>
+      <section className="product-stat-grid">
+        {insights.executive.map((item) => <ProductStat key={item.label} {...item} />)}
+      </section>
+      <section className="decision-grid">
+        {insights.decisionCards.map((card, index) => (
+          <article key={card.title} style={{ "--delay": `${index * 90}ms` }}>
+            <span>{card.signal}</span>
+            <h3>{card.title}</h3>
+            <p>{card.body}</p>
+          </article>
+        ))}
+      </section>
+      <div className="product-grid two">
+        <ProductBarChart title="Budget by Region" subtitle="Selected assets only" rows={insights.charts.regionAllocation} formatValue={(value) => `UGX ${currency.format(value)}`} />
+        <ProductBarChart title="Decision Topics" subtitle="Materialized from extracted evidence text" rows={insights.charts.topics} />
+      </div>
+      <div className="product-grid two">
+        <ProductTable table={insights.tables.selected} />
+        <ProductTable table={insights.tables.risk} />
+      </div>
+      <section className="query-strip">
+        <QueryBadge label="executive query" sql={insights.sql.executive} />
+        <QueryBadge label="risk query" sql={insights.sql.risk} />
+      </section>
+    </div>
+  );
+}
+
+function PortfolioView({ insights, budget, reservePercent, onBudgetChange, onReserveChange, onScenario }) {
+  return (
+    <div className="product-view">
+      <section className="control-surface">
+        <div>
+          <p className="product-eyebrow">Portfolio controls</p>
+          <h2>One fiscal gate, three scenario levers.</h2>
+        </div>
+        <label>
+          Budget UGX
+          <input type="number" value={budget} onChange={(event) => onBudgetChange(Number(event.target.value))} />
+        </label>
+        <label>
+          Reserve %
+          <input type="number" value={reservePercent} onChange={(event) => onReserveChange(Number(event.target.value))} />
+        </label>
+      </section>
+      <section className="scenario-row">
+        {BUDGET_SCENARIOS.slice(0, 4).map((scenario) => (
+          <button key={scenario.name} className="scenario-chip" onClick={() => onScenario(scenario)}>
+            <strong>{scenario.name}</strong>
+            <span>UGX {currency.format(scenario.budget)}</span>
+          </button>
+        ))}
+      </section>
+      <div className="product-grid two">
+        <ProductBarChart title="Allocation by Road Class" subtitle="Selected programme cost" rows={insights.charts.classAllocation} formatValue={(value) => `UGX ${currency.format(value)}`} />
+        <ProductBarChart title="Treatment Demand" subtitle="All candidate costs by intervention" rows={insights.charts.interventions} formatValue={(value) => `UGX ${currency.format(value)}`} />
+      </div>
+      <div className="product-grid two">
+        <ProductTable table={insights.tables.selected} />
+        <ProductBarChart title="Programme Split" subtitle="Status counts after fiscal gate" rows={insights.charts.statusSplit} />
+      </div>
+      <section className="query-strip">
+        <QueryBadge label="portfolio query" sql={insights.sql.portfolio} />
+      </section>
+    </div>
+  );
+}
+
+function NetworkView({ insights }) {
+  return (
+    <div className="product-view">
+      <section className="network-brief">
+        <div>
+          <p className="product-eyebrow">Network intelligence</p>
+          <h2>Spatial proof without a heavy map wall.</h2>
+          <span>The product surfaces coverage, geometry and layer confidence; raw GIS tables stay in the data store.</span>
+        </div>
+        <ProductStat label="Features read" value={formatCount(insights.spatialSummary.feature_count)} note={`${formatCount(insights.spatialSummary.layers_read)} layers queried`} tone="cyan" />
+        <ProductStat label="Line evidence" value={formatKm(insights.spatialSummary.line_length_km)} note="includes retained dated layer copies" tone="green" />
+      </section>
+      <div className="product-grid two">
+        <ProductBarChart title="Largest GIS Layers" subtitle="Feature count by materialized spatial layer" rows={insights.charts.spatial} />
+        <ProductBarChart title="Geometry Mix" subtitle="Feature types found in local spatial evidence" rows={insights.charts.geometry} />
+      </div>
+      <div className="product-grid two">
+        <ProductBarChart title="Evidence Source Areas" subtitle="Readable local evidence grouped by source area" rows={insights.charts.sourceCoverage} />
+        <ProductTable table={insights.tables.risk} />
+      </div>
+      <section className="query-strip">
+        <QueryBadge label="spatial query" sql={insights.sql.spatial} />
+      </section>
+    </div>
+  );
+}
+
+function EvidenceView({ insights }) {
+  return (
+    <div className="product-view">
+      <section className="evidence-backend">
+        <div>
+          <p className="product-eyebrow">Back-end evidence store</p>
+          <h2>Most source data is intentionally hidden.</h2>
+          <span>The interface reads materialized query outputs and only reveals source depth, freshness and decision use.</span>
+        </div>
+        <div className="backend-meter">
+          <strong>{formatCount(insights.inventorySummary.files_indexed)}</strong>
+          <span>data-bearing files indexed behind the interface</span>
+        </div>
+      </section>
+      <section className="product-stat-grid">
+        <ProductStat label="Documents queried" value={formatCount(insights.evidenceSummary.core_documents_read)} note={`${formatCount(insights.evidenceSummary.core_words_read)} words`} />
+        <ProductStat label="Tables read" value={formatCount(insights.evidenceSummary.local_tables_read)} note="local workbook and DOCX tables" tone="gold" />
+        <ProductStat label="Slides read" value={formatCount(insights.evidenceSummary.presentation_slides_read)} note={`${formatCount(insights.evidenceSummary.presentation_decks_read)} decks`} tone="purple" />
+        <ProductStat label="Online sources" value={formatCount(insights.evidenceSummary.online_sources_read)} note="live read checks" tone="green" />
+      </section>
+      <section className="story-row">
+        {insights.stories.map((card) => (
+          <article key={card.title}>
+            <span>{card.label}</span>
+            <strong>{formatStoryMetric(card.metric)}</strong>
+            <h3>{card.title}</h3>
+            <p>{card.story}</p>
+          </article>
+        ))}
+      </section>
+      <div className="product-grid two">
+        <ProductBarChart title="Evidence Coverage" subtitle="Source areas visible as query results" rows={insights.charts.sourceCoverage} />
+        <ProductBarChart title="Decision Topics" subtitle="Top text-derived decision signals" rows={insights.charts.topics} />
+      </div>
+      <section className="query-library">
+        {Object.entries(insights.sql).map(([name, sql]) => <QueryBadge key={name} label={`${name} SQL`} sql={sql} />)}
+      </section>
+    </div>
+  );
+}
+
+function LegacyApp() {
   const [records, setRecords] = useState(sample);
   const [budget, setBudget] = useState(250000000);
   const [reservePercent, setReservePercent] = useState(5);
@@ -4426,6 +4804,96 @@ function App() {
           )}
         </PageChrome>
       </div>
+    </div>
+  );
+}
+
+function App() {
+  const [budget, setBudget] = useState(250000000);
+  const [reservePercent, setReservePercent] = useState(5);
+  const [analysis, setAnalysis] = useState(() => localAnalysis(sample, 250000000, 5));
+  const [activeView, setActiveView] = useState(() => {
+    const hash = window.location.hash.replace("#", "") || "command";
+    return NAV_ITEMS.some((item) => item.id === hash) ? hash : "command";
+  });
+  const insights = useProductInsights(analysis);
+
+  const runAnalysis = useCallback((nextBudget = budget, nextReserve = reservePercent) => {
+    setAnalysis(localAnalysis(sample, nextBudget, nextReserve));
+  }, [budget, reservePercent]);
+
+  useEffect(() => {
+    runAnalysis(budget, reservePercent);
+  }, [budget, reservePercent, runAnalysis]);
+
+  useEffect(() => {
+    function syncView() {
+      const next = window.location.hash.replace("#", "") || "command";
+      const aliases = {
+        overview: "command",
+        controls: "portfolio",
+        pim: "command",
+        analytics: "command",
+        allocation: "portfolio",
+        programme: "portfolio",
+        gis: "network",
+        traffic: "network",
+        hdm4: "portfolio",
+        framework: "evidence",
+        "case-studies": "evidence",
+        sources: "evidence",
+      };
+      const resolved = aliases[next] || next;
+      setActiveView(NAV_ITEMS.some((item) => item.id === resolved) ? resolved : "command");
+      if (resolved !== next) window.history.replaceState(null, "", `#${resolved}`);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    window.addEventListener("hashchange", syncView);
+    syncView();
+    return () => window.removeEventListener("hashchange", syncView);
+  }, []);
+
+  function navigateTo(id) {
+    setActiveView(id);
+    if (window.location.hash !== `#${id}`) window.location.hash = id;
+  }
+
+  function applyScenario(scenario) {
+    setBudget(scenario.budget);
+    setReservePercent(scenario.reserve);
+  }
+
+  const activeMeta = NAV_ITEMS.find((item) => item.id === activeView) || NAV_ITEMS[0];
+
+  return (
+    <div className="product-shell">
+      <ProductNav activeView={activeView} onNavigate={navigateTo} />
+      <main className="product-main">
+        <header className="product-topbar">
+          <div>
+            <span>DUCAR Priority Studio</span>
+            <strong>{activeMeta.label}</strong>
+          </div>
+          <div className="product-topbar-actions">
+            <span><Database size={15} /> SQL views</span>
+            <span><ShieldAlert size={15} /> source data hidden</span>
+            <button className="icon-action" onClick={() => runAnalysis()} aria-label="Refresh"><RefreshCcw size={16} /></button>
+          </div>
+        </header>
+        {activeView === "command" && <CommandView insights={insights} />}
+        {activeView === "portfolio" && (
+          <PortfolioView
+            insights={insights}
+            budget={budget}
+            reservePercent={reservePercent}
+            onBudgetChange={setBudget}
+            onReserveChange={setReservePercent}
+            onScenario={applyScenario}
+          />
+        )}
+        {activeView === "network" && <NetworkView insights={insights} />}
+        {activeView === "evidence" && <EvidenceView insights={insights} />}
+      </main>
     </div>
   );
 }
