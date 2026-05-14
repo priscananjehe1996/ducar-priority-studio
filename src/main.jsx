@@ -2099,6 +2099,10 @@ function useMowtManualsCatalog() {
 
 function GlobalCaseStudyPanel() {
   const { regionCounts, averageScore, indicatorAverages, topFrameworks, sourceCount } = getGlobalEvidenceSummary();
+  const synthesis = useEvidenceSynthesis();
+  const caseStudyTable = synthesis?.casePackageTables?.countryCaseStudies;
+  const assumptionTable = synthesis?.casePackageTables?.decisionAssumptions;
+  const referenceTypeChart = synthesis?.globalCaseStudyCharts?.referenceTypeChart;
 
   return (
     <div className="case-study-page">
@@ -2179,6 +2183,25 @@ function GlobalCaseStudyPanel() {
           </article>
         ))}
       </section>
+      {caseStudyTable && (
+        <section className="case-package-panel">
+          <div className="viz-title">
+            <h3>Local Global Case Evidence Package</h3>
+            <span>APA workbook rows extracted from the local evidence and case-study folder</span>
+          </div>
+          <div className="case-package-grid">
+            <section className="viz-card">
+              <div className="viz-title">
+                <h3>Reference Types</h3>
+                <span>APA register mix</span>
+              </div>
+              <EvidenceBarList table={referenceTypeChart} maxRows={5} />
+            </section>
+            <EvidenceMiniTable table={caseStudyTable} maxRows={6} />
+          </div>
+          <EvidenceMiniTable table={assumptionTable} maxRows={7} />
+        </section>
+      )}
       <section className="viz-card wide-viz">
         <div className="viz-title">
           <h3>All Countries Coverage Matrix</h3>
@@ -2898,10 +2921,45 @@ function EvidenceMiniTable({ table, maxRows = 8 }) {
   );
 }
 
+function EvidenceBarList({ table, maxRows = 8 }) {
+  if (!table?.rows?.length) return null;
+  const maxValue = Math.max(1, ...table.rows.map((row) => Number(row[1] || 0)));
+  return (
+    <div className="evidence-bar-list">
+      {table.rows.slice(0, maxRows).map((row, index) => {
+        const value = Number(row[1] || 0);
+        return (
+          <article key={`${table.title}-${row[0]}-${index}`} style={{ "--accent": ["#4258ff", "#12b981", "#f43f5e", "#ffb020", "#00a7c7", "#7c3aed"][index % 6] }}>
+            <span>{formatEvidenceCell(row[0])}</span>
+            <i><b style={{ width: `${Math.max(3, (value / maxValue) * 100)}%` }} /></i>
+            <strong>{formatEvidenceCell(value)}</strong>
+          </article>
+        );
+      })}
+    </div>
+  );
+}
+
+function formatStoryMetric(value) {
+  const numeric = Number(String(value ?? "").replace(/,/g, ""));
+  if (!Number.isFinite(numeric)) return value;
+  if (numeric >= 1_000_000) return `${(numeric / 1_000_000).toLocaleString(undefined, { maximumFractionDigits: 2 })}m`;
+  return numeric.toLocaleString();
+}
+
 function EvidenceSynthesisPanel() {
   const synthesis = useEvidenceSynthesis();
   const summary = synthesis?.summary || {};
   const topicChart = synthesis?.documentTopicChart || [];
+  const storyCards = synthesis?.storyCards || [];
+  const sourceArea = synthesis?.sourceCoverage?.sourceAreaChart;
+  const fileTypes = synthesis?.sourceCoverage?.fileTypeChart;
+  const caseContinents = synthesis?.globalCaseStudyCharts?.continentChart;
+  const transportAnnual = synthesis?.transportCharts?.annualVehicleTotals;
+  const transportClasses = synthesis?.transportCharts?.vehicleClassTotals;
+  const caseStudyTable = synthesis?.casePackageTables?.countryCaseStudies;
+  const decisionTable = synthesis?.casePackageTables?.decisionAssumptions;
+  const tabularPreview = synthesis?.tabularExtracts?.[0];
   const network = synthesis?.itisCharts?.charts?.network || synthesis?.itisTables?.road_network_by_category;
   const condition = synthesis?.itisCharts?.charts?.condition || synthesis?.itisTables?.road_condition_by_category;
   const crashes = synthesis?.itisCharts?.charts?.crashes || synthesis?.itisTables?.road_crashes_by_nature;
@@ -2921,7 +2979,7 @@ function EvidenceSynthesisPanel() {
           <p className="eyebrow">{statusLabel}</p>
           <h2>Document-to-decision intelligence now drives the PIMS engine.</h2>
           <span>
-            The app reads the local manuals, TORs, budget reports, MoWT manuals, ITIS tables, national repository catalogue and global framework links,
+            The app reads the local TOR folder, manuals, budget reports, transport workbooks, global case package, MoWT manuals, ITIS tables, national repository catalogue and global framework links,
             then converts them into decision charts and tables used by the allocation logic.
           </span>
           <a href="#sources">Open source register</a>
@@ -2937,6 +2995,59 @@ function EvidenceSynthesisPanel() {
         <Metric icon={ClipboardCheck} label="Manual records indexed" value={(summary.manual_repository_files || 0).toLocaleString()} tone="red" />
         <Metric icon={Globe2} label="Online sources checked" value={(summary.online_sources_checked || 0).toLocaleString()} />
       </section>
+
+      {!!storyCards.length && (
+        <section className="evidence-story-grid">
+          {storyCards.map((card, index) => (
+            <article key={card.title} className={`evidence-story-card ${card.tone || "blue"}`}>
+              <div>
+                <span>{card.label}</span>
+                <strong>{formatStoryMetric(card.metric)}</strong>
+              </div>
+              <h3>{card.title}</h3>
+              <p>{card.story}</p>
+              <em>{card.evidence}</em>
+              <i><b style={{ width: `${Math.min(100, 46 + index * 11)}%` }} /></i>
+            </article>
+          ))}
+        </section>
+      )}
+
+      <div className="evidence-chart-grid">
+        <section className="viz-card evidence-source-card">
+          <div className="viz-title">
+            <h3>Local Evidence Coverage</h3>
+            <span>Evidence-bearing files grouped by source area</span>
+          </div>
+          <EvidenceBarList table={sourceArea} maxRows={8} />
+        </section>
+
+        <section className="viz-card evidence-global-transfer-card">
+          <div className="viz-title">
+            <h3>Global Case Package</h3>
+            <span>Country case studies extracted from the local APA workbook</span>
+          </div>
+          <EvidenceBarList table={caseContinents} maxRows={8} />
+        </section>
+      </div>
+
+      <div className="evidence-chart-grid">
+        <section className="viz-card evidence-transport-card">
+          <div className="viz-title">
+            <h3>Transport Demand Workbook</h3>
+            <span>Motor vehicle registrations aggregated from Road transport data</span>
+          </div>
+          <EvidenceBarList table={transportAnnual} maxRows={7} />
+        </section>
+
+        <section className="viz-card evidence-filetype-card">
+          <div className="viz-title">
+            <h3>Extracted File Types</h3>
+            <span>Local documents, feeds and workbook tables processed into evidence data</span>
+          </div>
+          <EvidenceBarList table={fileTypes} maxRows={8} />
+        </section>
+      </div>
 
       <div className="evidence-chart-grid">
         <section className="viz-card evidence-topic-card">
@@ -3016,6 +3127,16 @@ function EvidenceSynthesisPanel() {
 
       <div className="evidence-table-grid">
         <EvidenceMiniTable table={documentTable} maxRows={9} />
+        <EvidenceMiniTable table={caseStudyTable} maxRows={7} />
+      </div>
+
+      <div className="evidence-table-grid">
+        <EvidenceMiniTable table={decisionTable} maxRows={8} />
+        <EvidenceMiniTable table={transportClasses} maxRows={8} />
+      </div>
+
+      <div className="evidence-table-grid">
+        <EvidenceMiniTable table={tabularPreview} maxRows={7} />
         <EvidenceMiniTable table={onlineGroup} maxRows={6} />
       </div>
 

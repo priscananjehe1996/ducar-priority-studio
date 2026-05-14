@@ -14,6 +14,7 @@ import json
 import re
 import statistics
 import zipfile
+import csv
 from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
@@ -23,6 +24,7 @@ from pathlib import Path
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
+import pandas as pd
 from docx import Document
 from pypdf import PdfReader
 
@@ -36,6 +38,27 @@ MANUALS_CATALOG = PUBLIC_DATA / "manuals_catalog.json"
 MOWT_CATALOG = PUBLIC_DATA / "mowt_manuals_catalog.json"
 OUT_PUBLIC = PUBLIC_DATA / "evidence_synthesis.json"
 OUT_DATA = DATA_DIR / "evidence_synthesis.json"
+CASE_PACKAGE_WORKBOOK = TOR_ROOT / "DUCAR_Framework_Tool" / "evidence_and_case_studies" / "DUCAR_APA_References_and_Assumptions_Register.xlsx"
+TRANSPORT_VEHICLE_WORKBOOK = TOR_ROOT / "Road transport data" / "Motor Vehicle data Updated Up to December 2023(1).xls"
+
+SUPPORTED_LOCAL_EXTENSIONS = {".pdf", ".docx", ".json", ".csv", ".xlsx", ".xls", ".md", ".txt"}
+EXCLUDED_DIR_NAMES = {
+    ".git",
+    "__pycache__",
+    "node_modules",
+    "dist",
+    "build",
+    ".vite",
+}
+EXCLUDED_DIR_PREFIXES = ("rendered_",)
+EXCLUDED_FILE_NAMES = {
+    "package.json",
+    "package-lock.json",
+    "tsconfig.json",
+    "tsconfig.app.json",
+    "tsconfig.node.json",
+    "_manifest_write_test.json",
+}
 
 TOPIC_KEYWORDS = {
     "PIMS appraisal": ["pims", "public investment", "appraisal", "feasibility", "npv", "eirr", "economic", "cost-benefit"],
@@ -330,27 +353,126 @@ def extract_docx(path: Path) -> tuple[str, int, int]:
     return normalize_text(" ".join(parts)), 0, table_count
 
 
+def serialise_cell(value) -> str | int | float | None:
+    if pd.isna(value):
+        return None
+    if isinstance(value, (int, float)):
+        if isinstance(value, float) and value.is_integer():
+            return int(value)
+        return round(float(value), 4)
+    text = str(value).strip()
+    if not text:
+        return None
+    if len(text) > 220:
+        return f"{text[:217]}..."
+    return text
+
+
+def table_preview_from_frame(df: pd.DataFrame, title: str, source: str, max_rows: int = 8, max_cols: int = 8) -> dict:
+    clean = df.dropna(how="all").dropna(axis=1, how="all")
+    if clean.empty:
+        return {"title": title, "source": source, "columns": [], "rows": [], "row_count": 0, "column_count": 0}
+
+    preview = clean.iloc[:max_rows, :max_cols]
+    rows = [[serialise_cell(value) for value in row] for row in preview.to_numpy().tolist()]
+    columns = [f"Column {index + 1}" for index in range(preview.shape[1])]
+    return {
+        "title": title,
+        "source": source,
+        "columns": columns,
+        "rows": rows,
+        "row_count": int(clean.shape[0]),
+        "column_count": int(clean.shape[1]),
+    }
+
+
+def extract_workbook(path: Path) -> tuple[str, int, int, list[dict]]:
+    xl = pd.ExcelFile(path)
+    parts: list[str] = []
+    previews: list[dict] = []
+    for sheet_name in xl.sheet_names:
+        df = xl.parse(sheet_name, header=None, dtype=object)
+        clean = df.dropna(how="all").dropna(axis=1, how="all")
+        if clean.empty:
+            continue
+        cells = [str(value) for value in clean.to_numpy().ravel() if not pd.isna(value)]
+        parts.extend(cells[:5000])
+        previews.append(table_preview_from_frame(clean, f"{path.stem} / {sheet_name}", str(path)))
+    return normalize_text(" ".join(parts)), 0, len(previews), previews
+
+
+def extract_csv(path: Path) -> tuple[str, int, int, list[dict]]:
+    rows: list[list[str]] = []
+    with path.open("r", encoding="utf-8-sig", errors="ignore", newline="") as handle:
+        reader = csv.reader(handle)
+        for row in reader:
+            rows.append(row)
+    text = normalize_text(" ".join(" ".join(cell for cell in row if cell) for row in rows))
+    if not rows:
+        return text, 0, 0, []
+    max_cols = max(len(row) for row in rows)
+    frame = pd.DataFrame([row + [""] * (max_cols - len(row)) for row in rows])
+    return text, 0, 1, [table_preview_from_frame(frame, path.stem, str(path))]
+
+
+def extract_plain_text(path: Path) -> tuple[str, int, int, list[dict]]:
+    return normalize_text(path.read_text(encoding="utf-8", errors="ignore")), 0, 0, []
+
+
+def source_area(path: Path) -> str:
+    text = path.as_posix().lower()
+    if "/evidence_and_case_studies/" in text:
+        return "Global case evidence package"
+    if "/road transport data/" in text:
+        return "Road transport data"
+    if "/workbooks/" in text:
+        return "Generated DUCAR workbooks"
+    if "/manuals/" in text or "/policies/" in text:
+        return "DUCAR manuals and policies"
+    if "/public/docs/" in text or "/data_sources/" in text:
+        return "Published source documents"
+    if "/github_app/data/" in text or "/public/data/" in text:
+        return "Web data feeds"
+    if "/gis/" in text or "/roads/" in text or "/districts/" in text:
+        return "GIS and road data"
+    return "TOR and local source documents"
+
+
 def read_doc(path: Path) -> dict:
     ext = path.suffix.lower()
     try:
         if ext == ".pdf":
             text, pages, tables = extract_pdf(path)
+            table_extracts = []
         elif ext == ".docx":
             text, pages, tables = extract_docx(path)
+            table_extracts = []
+        elif ext in {".xlsx", ".xls"}:
+            text, pages, tables, table_extracts = extract_workbook(path)
+        elif ext == ".csv":
+            text, pages, tables, table_extracts = extract_csv(path)
+        elif ext in {".md", ".txt"}:
+            text, pages, tables, table_extracts = extract_plain_text(path)
         elif ext == ".json":
             text = normalize_text(path.read_text(encoding="utf-8", errors="ignore"))
-            pages, tables = 0, 0
+            pages, tables, table_extracts = 0, 0, []
         else:
-            text, pages, tables = "", 0, 0
+            text, pages, tables, table_extracts = "", 0, 0, []
         counts = topic_counts(text)
         dominant = max(counts.items(), key=lambda item: item[1])[0] if text else "Not text-extracted"
+        try:
+            relative = path.relative_to(TOR_ROOT).as_posix()
+        except ValueError:
+            relative = path.name
         return {
             "name": path.name,
-            "path": str(path),
+            "path": relative,
+            "source_area": source_area(path),
             "extension": ext,
             "bytes": path.stat().st_size,
             "pages": pages,
             "tables": tables,
+            "table_extracts": table_extracts[:3],
             "words": count_words(text),
             "characters": len(text),
             "dominant_topic": dominant,
@@ -361,11 +483,13 @@ def read_doc(path: Path) -> dict:
     except Exception as exc:
         return {
             "name": path.name,
-            "path": str(path),
+            "path": path.name,
+            "source_area": source_area(path),
             "extension": ext,
             "bytes": path.stat().st_size if path.exists() else 0,
             "pages": 0,
             "tables": 0,
+            "table_extracts": [],
             "words": 0,
             "characters": 0,
             "dominant_topic": "Extraction issue",
@@ -377,14 +501,21 @@ def read_doc(path: Path) -> dict:
 
 def iter_core_documents() -> list[Path]:
     candidates: dict[str, Path] = {}
-    for root in [PUBLIC_DOCS, TOR_ROOT]:
-        if not root.exists():
+    if not TOR_ROOT.exists():
+        return []
+    for path in TOR_ROOT.rglob("*"):
+        if not path.is_file() or path.name.startswith("~$"):
             continue
-        for path in root.rglob("*") if root == PUBLIC_DOCS else root.glob("*"):
-            if not path.is_file():
-                continue
-            if path.suffix.lower() in {".pdf", ".docx", ".json"} and not path.name.startswith("~$"):
-                candidates[path.name.lower()] = path
+        if path.suffix.lower() not in SUPPORTED_LOCAL_EXTENSIONS:
+            continue
+        if path.name.lower() in EXCLUDED_FILE_NAMES:
+            continue
+        parts = {part.lower() for part in path.parts}
+        if parts & EXCLUDED_DIR_NAMES:
+            continue
+        if any(part.lower().startswith(EXCLUDED_DIR_PREFIXES) for part in path.parts):
+            continue
+        candidates[path.resolve().as_posix().lower()] = path
     return sorted(candidates.values(), key=lambda item: item.name.lower())
 
 
@@ -485,6 +616,7 @@ def build_document_table(documents: list[dict]) -> dict:
     for doc in sorted(documents, key=lambda item: item["words"], reverse=True):
         rows.append([
             doc["name"],
+            doc.get("source_area", "Local source"),
             doc["extension"].replace(".", "").upper(),
             doc["pages"] or "",
             doc["tables"] or "",
@@ -493,10 +625,202 @@ def build_document_table(documents: list[dict]) -> dict:
             doc["status"],
         ])
     return {
-        "title": "Core national documents actually text-extracted",
-        "columns": ["Document", "Type", "Pages", "DOCX tables", "Words read", "Dominant topic", "Read status"],
+        "title": "Local evidence files extracted from TOR - DUCACR",
+        "columns": ["Document", "Source area", "Type", "Pages", "Tables", "Words read", "Dominant topic", "Read status"],
         "rows": rows,
     }
+
+
+def simple_chart(title: str, columns: list[str], counter: Counter | dict) -> dict:
+    rows = [[key, value] for key, value in sorted(counter.items(), key=lambda item: item[1], reverse=True)]
+    return {"title": title, "columns": columns, "rows": rows}
+
+
+def build_source_coverage(documents: list[dict]) -> dict:
+    by_type = Counter(doc["extension"].replace(".", "").upper() or "No extension" for doc in documents)
+    by_area = Counter(doc.get("source_area", "Local source") for doc in documents)
+    by_status = Counter(doc.get("status", "unknown") for doc in documents)
+    by_topic = Counter(doc.get("dominant_topic", "Unclassified") for doc in documents)
+    return {
+        "fileTypeChart": simple_chart("Local evidence files by type", ["Type", "Files"], by_type),
+        "sourceAreaChart": simple_chart("Local evidence files by source area", ["Source area", "Files"], by_area),
+        "extractionStatusChart": simple_chart("Extraction status", ["Status", "Files"], by_status),
+        "dominantTopicChart": simple_chart("Dominant topics by file", ["Topic", "Files"], by_topic),
+    }
+
+
+def build_tabular_extracts(documents: list[dict]) -> list[dict]:
+    extracts: list[dict] = []
+    for doc in documents:
+        for table in doc.get("table_extracts", []):
+            if table.get("rows"):
+                extracts.append(
+                    {
+                        **table,
+                        "document": doc["name"],
+                        "source_area": doc.get("source_area", "Local source"),
+                        "source": doc.get("path", doc["name"]),
+                    }
+                )
+    return sorted(extracts, key=lambda item: (item.get("source_area", ""), item.get("title", "")))
+
+
+def dataframe_table(title: str, df: pd.DataFrame, source: str, max_rows: int = 80) -> dict:
+    clean = df.dropna(how="all").dropna(axis=1, how="all")
+    columns = [str(column) for column in clean.columns]
+    rows = [
+        [serialise_cell(value) for value in row]
+        for row in clean.head(max_rows).to_numpy().tolist()
+    ]
+    return {
+        "title": title,
+        "source": source,
+        "columns": columns,
+        "rows": rows,
+        "row_count": int(clean.shape[0]),
+        "column_count": int(clean.shape[1]),
+    }
+
+
+def read_case_package_tables() -> dict:
+    if not CASE_PACKAGE_WORKBOOK.exists():
+        return {}
+    tables: dict[str, dict] = {}
+    for sheet in ["APA_References", "Decision_Assumptions", "Country_Case_Studies"]:
+        df = pd.read_excel(CASE_PACKAGE_WORKBOOK, sheet_name=sheet)
+        key = {
+            "APA_References": "apaReferences",
+            "Decision_Assumptions": "decisionAssumptions",
+            "Country_Case_Studies": "countryCaseStudies",
+        }[sheet]
+        tables[key] = dataframe_table(f"Global case package: {sheet.replace('_', ' ')}", df, CASE_PACKAGE_WORKBOOK.name)
+    return tables
+
+
+def build_global_case_charts(case_tables: dict) -> dict:
+    country_table = case_tables.get("countryCaseStudies", {})
+    reference_table = case_tables.get("apaReferences", {})
+    country_rows = country_table.get("rows", [])
+    reference_rows = reference_table.get("rows", [])
+    continent_counts = Counter(row[0] for row in country_rows if row and row[0])
+    source_counts = Counter(row[-1] for row in country_rows if row and row[-1])
+    reference_type_counts = Counter(row[1] for row in reference_rows if len(row) > 1 and row[1])
+    return {
+        "continentChart": simple_chart("Country case studies by continent", ["Continent", "Cases"], continent_counts),
+        "sourceKeyChart": simple_chart("Case-study source keys", ["Source key", "Cases"], source_counts),
+        "referenceTypeChart": simple_chart("APA register by source type", ["Source type", "References"], reference_type_counts),
+    }
+
+
+def build_transport_vehicle_charts() -> dict:
+    if not TRANSPORT_VEHICLE_WORKBOOK.exists():
+        return {}
+    df = pd.read_excel(TRANSPORT_VEHICLE_WORKBOOK, sheet_name=0, header=None)
+    if df.empty or df.shape[0] < 3:
+        return {}
+    date_row = df.iloc[1]
+    date_columns: list[tuple[int, int]] = []
+    for column_index, value in enumerate(date_row):
+        parsed = pd.to_datetime(value, errors="coerce")
+        if pd.notna(parsed):
+            date_columns.append((column_index, int(parsed.year)))
+
+    class_totals: Counter[str] = Counter()
+    annual_totals: Counter[int] = Counter()
+    class_year: defaultdict[str, Counter[int]] = defaultdict(Counter)
+    for _, row in df.iloc[2:].iterrows():
+        vehicle_class = str(row.iloc[1]).strip() if len(row) > 1 and not pd.isna(row.iloc[1]) else ""
+        if not vehicle_class or vehicle_class.lower() in {"nan", "total"}:
+            continue
+        for column_index, year in date_columns:
+            value = pd.to_numeric(row.iloc[column_index], errors="coerce")
+            if pd.isna(value):
+                continue
+            amount = float(value)
+            class_totals[vehicle_class] += amount
+            annual_totals[year] += amount
+            class_year[vehicle_class][year] += amount
+
+    top_classes = class_totals.most_common(12)
+    latest_year = max(annual_totals) if annual_totals else None
+    latest_mix = []
+    if latest_year:
+        latest_mix = sorted(
+            [[vehicle_class, round(values[latest_year], 1)] for vehicle_class, values in class_year.items() if values[latest_year]],
+            key=lambda row: row[1],
+            reverse=True,
+        )[:12]
+    return {
+        "vehicleClassTotals": {
+            "title": "Motor vehicle registrations by class, July 2018-February 2024",
+            "source": TRANSPORT_VEHICLE_WORKBOOK.name,
+            "columns": ["Vehicle class", "Registrations"],
+            "rows": [[name, round(total, 1)] for name, total in top_classes],
+        },
+        "annualVehicleTotals": {
+            "title": "Motor vehicle registrations by calendar year",
+            "source": TRANSPORT_VEHICLE_WORKBOOK.name,
+            "columns": ["Year", "Registrations"],
+            "rows": [[year, round(total, 1)] for year, total in sorted(annual_totals.items())],
+        },
+        "latestYearClassMix": {
+            "title": f"Motor vehicle class mix in {latest_year}" if latest_year else "Motor vehicle class mix",
+            "source": TRANSPORT_VEHICLE_WORKBOOK.name,
+            "columns": ["Vehicle class", "Registrations"],
+            "rows": latest_mix,
+        },
+    }
+
+
+def build_story_cards(summary: dict, topic_chart: list[dict], case_tables: dict, transport_charts: dict, source_coverage: dict) -> list[dict]:
+    top_topic = topic_chart[0] if topic_chart else {"topic": "Evidence", "mentions": 0, "decision_use": "Source material indexed."}
+    global_case_count = (case_tables.get("countryCaseStudies") or {}).get("row_count", 0)
+    decision_count = (case_tables.get("decisionAssumptions") or {}).get("row_count", 0)
+    transport_total = sum(float(row[1] or 0) for row in (transport_charts.get("annualVehicleTotals") or {}).get("rows", [])) if transport_charts else 0
+    file_type_rows = (source_coverage.get("fileTypeChart") or {}).get("rows", [])
+    leading_type = file_type_rows[0][0] if file_type_rows else "Files"
+    return [
+        {
+            "title": "Local evidence corpus",
+            "metric": f"{summary.get('core_documents_found', 0):,}",
+            "label": "files indexed",
+            "story": "TORs, manuals, policy notes, budget reports, web data feeds, spreadsheets and global case package files are now read into one evidence dataset.",
+            "evidence": f"{summary.get('core_documents_read', 0):,} files yielded text or tables; leading type: {leading_type}.",
+            "tone": "blue",
+        },
+        {
+            "title": "Decision-topic spine",
+            "metric": f"{int(top_topic.get('mentions', 0)):,}",
+            "label": top_topic.get("topic", "Topic"),
+            "story": top_topic.get("decision_use", "The dominant topic drives decision charts and screening logic."),
+            "evidence": "Keyword counts are calculated across the extracted local evidence text.",
+            "tone": "green",
+        },
+        {
+            "title": "Global case transfer",
+            "metric": f"{global_case_count:,}",
+            "label": "case rows",
+            "story": "The international case package translates country practices into DUCAR-specific lessons and adaptation rules.",
+            "evidence": f"{decision_count:,} decision assumptions are linked back to APA source keys.",
+            "tone": "gold",
+        },
+        {
+            "title": "Transport demand signal",
+            "metric": f"{round(transport_total):,}",
+            "label": "vehicle records",
+            "story": "The local motor-vehicle workbook is converted into class and annual demand charts for traffic-pressure context.",
+            "evidence": "Values are aggregated from monthly vehicle registration columns in the Road transport data folder.",
+            "tone": "cyan",
+        },
+        {
+            "title": "Manual repository depth",
+            "metric": f"{summary.get('manual_repository_files', 0):,}",
+            "label": "manual files",
+            "story": "The national manual repository remains indexed as a large evidence backdrop for RAM, GIS, bridge, condition and QA rules.",
+            "evidence": f"{summary.get('manual_logic_records', 0):,} logic records are available for evidence-role mapping.",
+            "tone": "red",
+        },
+    ]
 
 
 def build_manual_repository_charts(manual_repo: dict) -> dict:
@@ -579,6 +903,12 @@ def main() -> None:
     documents = [read_doc(path) for path in core_paths]
     manual_repo = read_manual_repository_catalog()
     mowt_catalog = load_json(MOWT_CATALOG, {"records": []})
+    source_coverage = build_source_coverage(documents)
+    tabular_extracts = build_tabular_extracts(documents)
+    case_package_tables = read_case_package_tables()
+    global_case_charts = build_global_case_charts(case_package_tables)
+    transport_charts = build_transport_vehicle_charts()
+    document_topic_chart = build_document_topic_chart(documents)
 
     online_records = []
     with ThreadPoolExecutor(max_workers=6) as pool:
@@ -603,7 +933,12 @@ def main() -> None:
             "core_documents_read": readable_docs,
             "core_pages_read": doc_pages,
             "core_words_read": doc_words,
-            "docx_tables_read": sum(doc.get("tables", 0) for doc in documents),
+            "docx_tables_read": sum(doc.get("tables", 0) for doc in documents if doc.get("extension") == ".docx"),
+            "local_tables_read": sum(doc.get("tables", 0) for doc in documents),
+            "tabular_extracts": len(tabular_extracts),
+            "global_case_records": (case_package_tables.get("countryCaseStudies") or {}).get("row_count", 0),
+            "decision_assumptions": (case_package_tables.get("decisionAssumptions") or {}).get("row_count", 0),
+            "transport_vehicle_classes": len((transport_charts.get("vehicleClassTotals") or {}).get("rows", [])),
             "manual_repository_files": manual_repo.get("file_count", 0),
             "manual_logic_records": manual_repo.get("logic_record_count", 0),
             "mowt_pdf_records": len(mowt_catalog.get("records", [])),
@@ -612,7 +947,24 @@ def main() -> None:
         },
         "documents": documents,
         "documentTable": build_document_table(documents),
-        "documentTopicChart": build_document_topic_chart(documents),
+        "documentTopicChart": document_topic_chart,
+        "sourceCoverage": source_coverage,
+        "tabularExtracts": tabular_extracts,
+        "casePackageTables": case_package_tables,
+        "globalCaseStudyCharts": global_case_charts,
+        "transportCharts": transport_charts,
+        "storyCards": build_story_cards(
+            {
+                "core_documents_found": len(core_paths),
+                "core_documents_read": readable_docs,
+                "manual_repository_files": manual_repo.get("file_count", 0),
+                "manual_logic_records": manual_repo.get("logic_record_count", 0),
+            },
+            document_topic_chart,
+            case_package_tables,
+            transport_charts,
+            source_coverage,
+        ),
         "manualRepository": manual_repo,
         "manualRepositoryCharts": build_manual_repository_charts(manual_repo),
         "mowtManuals": mowt_catalog.get("records", []),
