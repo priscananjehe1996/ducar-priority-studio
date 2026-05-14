@@ -1,0 +1,21 @@
+{
+  "database": "data/ducar_unified.sqlite",
+  "generated_at_utc": "2026-05-14T10:13:56.974134+00:00",
+  "tables": {
+    "evidence_documents": 114,
+    "document_topic_counts": 1254,
+    "raw_table_cells": 1187,
+    "online_sources": 15,
+    "spatial_layers": 43,
+    "map_surface_features": 815,
+    "file_inventory": 345,
+    "programme_assets": 8
+  },
+  "size_bytes": 1417216,
+  "sql_examples": {
+    "executive": "SELECT title, metric, story FROM story_cards ORDER BY title;",
+    "spatial": "SELECT layer_name, feature_count, line_length_km FROM spatial_layers WHERE status = 'read' ORDER BY feature_count DESC LIMIT 8;",
+    "map": "SELECT feature_group, geometry_type, coordinates_json FROM map_surface_features ORDER BY feature_group, feature_id;",
+    "raw_tables": "SELECT table_group, table_name, COUNT(*) AS cells FROM raw_table_cells GROUP BY table_group, table_name ORDER BY cells DESC;"
+  }
+}

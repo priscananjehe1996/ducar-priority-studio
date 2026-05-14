@@ -9,6 +9,7 @@
     "test": "node tests/prioritisation.test.js",
     "evidence": "python scripts/build_evidence_synthesis.py",
     "product-insights": "python scripts/build_product_insights.py",
+    "database": "python scripts/build_unified_database.py",
     "layer-status": "python scripts/build_layer_status.py",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1 --port 4173"
@@ -20,6 +21,7 @@
     "maplibre-gl": "^5.24.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "sql.js": "^1.14.1",
     "vite": "^7.1.11",
     "xlsx": "^0.18.5"
   },

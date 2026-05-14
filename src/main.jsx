@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { createRoot } from "react-dom/client";
+import initSqlJs from "sql.js";
+import sqlWasmUrl from "sql.js/dist/sql-wasm.wasm?url";
 import {
   Activity,
   ArrowLeft,
@@ -3984,31 +3986,174 @@ function MapPanel({ programme }) {
    App
    ═══════════════════════════════════════════════════════════════════ */
 const PRODUCT_SQL = {
-  executive: `SELECT metric, value, decision_signal
-FROM executive_dashboard
-WHERE audience = 'commissioner'
-ORDER BY decision_weight DESC
+  executive: `SELECT title, metric, story AS decision_signal
+FROM story_cards
+ORDER BY rowid
 LIMIT 6;`,
   portfolio: `SELECT region, SUM(cost_ugx) AS allocation, COUNT(*) AS assets
-FROM prioritised_programme
-WHERE status = 'Selected'
+FROM programme_assets
 GROUP BY region
 ORDER BY allocation DESC;`,
-  risk: `SELECT asset_id, district, intervention, ml_risk, status
-FROM prioritised_programme
-WHERE ml_risk >= 0.55 OR maintainable = 'No'
-ORDER BY ml_risk DESC
+  risk: `SELECT asset_id, district, intervention,
+       condition_score + climate_score + safety_score AS risk_pressure
+FROM programme_assets
+ORDER BY risk_pressure DESC
 LIMIT 8;`,
-  evidence: `SELECT source_area, files_read, words_read, tables_read
-FROM evidence_coverage
-WHERE decision_use IS NOT NULL
+  evidence: `SELECT label AS source_area, value AS files_read
+FROM source_coverage
+WHERE chart_name = 'sourceAreaChart'
 ORDER BY files_read DESC;`,
-  spatial: `SELECT layer, feature_count, line_km, decision_use
-FROM spatial_layers
-WHERE status = 'read'
-ORDER BY feature_count DESC
-LIMIT 8;`,
+  spatial: `SELECT feature_group, geometry_type, coordinates_json
+FROM map_surface_features
+WHERE feature_group IN ('district', 'route', 'national', 'flow', 'node')
+ORDER BY feature_group, feature_id
+LIMIT 815;`,
 };
+
+function runSqlRows(db, sql, params = []) {
+  const result = db.exec(sql, params)[0];
+  if (!result) return [];
+  return result.values.map((row) => Object.fromEntries(result.columns.map((column, index) => [column, row[index]])));
+}
+
+function runSqlValue(db, sql, params = []) {
+  return db.exec(sql, params)[0]?.values?.[0]?.[0] ?? 0;
+}
+
+function chartFromSql(rows, labelKey, valueKey, extraKey) {
+  return rows.map((row) => extraKey ? [row[labelKey], Number(row[valueKey] || 0), row[extraKey]] : [row[labelKey], Number(row[valueKey] || 0)]);
+}
+
+function useUnifiedDatabase() {
+  const [store, setStore] = useState(null);
+  useEffect(() => {
+    let active = true;
+    async function loadDatabase() {
+      try {
+        const SQL = await initSqlJs({ locateFile: () => sqlWasmUrl });
+        const response = await fetch(`${BASE}data/ducar_unified.sqlite`, { cache: "no-store" });
+        if (!response.ok) throw new Error(`Database HTTP ${response.status}`);
+        const db = new SQL.Database(new Uint8Array(await response.arrayBuffer()));
+        const tableNames = runSqlRows(db, "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name");
+        const tableCounts = tableNames.map((row) => {
+          const name = row.name;
+          return [name, Number(runSqlValue(db, `SELECT COUNT(*) FROM ${name}`) || 0)];
+        });
+        const summary = runSqlRows(db, `
+          SELECT
+            (SELECT COUNT(*) FROM evidence_documents) AS core_documents_read,
+            (SELECT COALESCE(SUM(words), 0) FROM evidence_documents) AS core_words_read,
+            (SELECT COALESCE(SUM(tables), 0) FROM evidence_documents) AS local_tables_read,
+            (SELECT COUNT(*) FROM file_inventory) AS local_inventory_files,
+            (SELECT COUNT(*) FROM online_sources WHERE status = 'read') AS online_sources_read,
+            (SELECT COUNT(*) FROM spatial_layers WHERE status = 'read') AS spatial_layers_read,
+            (SELECT COALESCE(SUM(feature_count), 0) FROM spatial_layers WHERE status = 'read') AS spatial_features_read,
+            (SELECT COALESCE(SUM(line_length_km), 0) FROM spatial_layers WHERE status = 'read') AS spatial_line_km,
+            (SELECT COUNT(*) FROM raw_table_cells) AS raw_table_cells,
+            (SELECT COUNT(*) FROM raw_table_cells WHERE table_group = 'case_package' AND table_name LIKE '%Country Case%') AS global_case_cells,
+            (SELECT COUNT(DISTINCT row_index) FROM raw_table_cells WHERE table_group = 'case_package' AND table_name LIKE '%Country Case%') AS global_case_records,
+            (SELECT COUNT(DISTINCT path) FROM file_inventory) AS inventory_distinct_paths
+        `)[0] || {};
+        const spatialSummary = {
+          layers_read: summary.spatial_layers_read || 0,
+          feature_count: summary.spatial_features_read || 0,
+          line_length_km: summary.spatial_line_km || 0,
+        };
+        const sourceCoverage = chartFromSql(
+          runSqlRows(db, "SELECT label, value FROM source_coverage WHERE chart_name = 'sourceAreaChart' ORDER BY value DESC LIMIT 8"),
+          "label",
+          "value",
+        );
+        const topics = runSqlRows(db, "SELECT topic, mentions, decision_use FROM document_topic_summary ORDER BY mentions DESC LIMIT 8")
+          .map((row) => ({ topic: row.topic, mentions: Number(row.mentions || 0), decision_use: row.decision_use }));
+        const spatialRows = chartFromSql(
+          runSqlRows(db, "SELECT layer_name, feature_count FROM spatial_layers WHERE status = 'read' ORDER BY feature_count DESC LIMIT 8"),
+          "layer_name",
+          "feature_count",
+        );
+        const geometryRows = chartFromSql(
+          runSqlRows(db, "SELECT geometry_type, SUM(feature_count) AS feature_count FROM spatial_geometry_counts GROUP BY geometry_type ORDER BY feature_count DESC"),
+          "geometry_type",
+          "feature_count",
+        );
+        const rawTableRows = chartFromSql(
+          runSqlRows(db, "SELECT table_group || ': ' || table_name AS table_name, COUNT(*) AS cells FROM raw_table_cells GROUP BY table_group, table_name ORDER BY cells DESC LIMIT 8"),
+          "table_name",
+          "cells",
+        );
+        const storyCards = runSqlRows(db, "SELECT title, metric, label, story, evidence, tone FROM story_cards ORDER BY rowid")
+          .map((row) => ({ title: row.title, metric: row.metric, label: row.label, story: row.story, evidence: row.evidence, tone: row.tone }));
+        const spatialLayerTableRows = runSqlRows(db, `
+          SELECT layer_name, source_area, extension, feature_count, ROUND(line_length_km, 1) AS line_km, decision_use
+          FROM spatial_layers
+          WHERE status = 'read'
+          ORDER BY feature_count DESC
+          LIMIT 8
+        `).map((row) => [row.layer_name, row.source_area, row.extension, row.feature_count, row.line_km, row.decision_use]);
+        const mapFeatures = runSqlRows(db, `
+          SELECT feature_group, source_file, name, geometry_type, coordinates_json, metric
+          FROM map_surface_features
+          ORDER BY feature_group, feature_id
+          LIMIT 815
+        `).map((row) => ({
+          group: row.feature_group,
+          source: row.source_file,
+          name: row.name,
+          geometryType: row.geometry_type,
+          coordinates: JSON.parse(row.coordinates_json || "null"),
+          metric: Number(row.metric || 0),
+        }));
+        const rawTableCatalogRows = runSqlRows(db, `
+          SELECT table_group, table_name, row_count, column_count, source
+          FROM table_catalog
+          ORDER BY row_count DESC, column_count DESC
+          LIMIT 8
+        `).map((row) => [row.table_group, row.table_name, row.row_count, row.column_count, row.source]);
+        const manifestRows = tableCounts.map(([name, count]) => [name, count]);
+        const payload = {
+          loadedFromDatabase: true,
+          summary,
+          sourceCoverage: { sourceAreaChart: { rows: sourceCoverage } },
+          documentTopicChart: topics,
+          spatialEvidence: {
+            summary: spatialSummary,
+            featureChart: { rows: spatialRows },
+            geometryChart: { rows: geometryRows },
+            layerTable: {
+              title: "Spatial layers from unified SQLite database",
+              columns: ["Layer", "Source area", "Type", "Features", "Line km", "Decision use"],
+              rows: spatialLayerTableRows,
+            },
+            mapFeatures,
+          },
+          fileInventory: { summary: { files_indexed: summary.local_inventory_files || 0 } },
+          storyCards,
+          rawTables: {
+            cellChart: { rows: rawTableRows },
+            catalog: {
+              title: "Raw database table catalog",
+              columns: ["Group", "Table", "Rows", "Columns", "Source"],
+              rows: rawTableCatalogRows,
+            },
+            manifest: {
+              title: "SQLite table row counts",
+              columns: ["Table", "Rows"],
+              rows: manifestRows,
+            },
+          },
+        };
+        db.close();
+        if (active) setStore(payload);
+      } catch (error) {
+        console.warn("DUCAR SQLite load failed", error);
+        if (active) setStore(null);
+      }
+    }
+    loadDatabase();
+    return () => { active = false; };
+  }, []);
+  return store;
+}
 
 function sumBy(items, keyFn, valueFn) {
   const map = new Map();
@@ -4114,19 +4259,14 @@ function buildProductInsights(analysis, evidence) {
     spatialSummary,
     inventorySummary: evidence?.fileInventory?.summary || {},
     stories,
+    rawTables: evidence?.rawTables || {},
+    spatialEvidence: evidence?.spatialEvidence || {},
+    databaseLoaded: Boolean(evidence?.loadedFromDatabase),
   };
 }
 
 function useProductInsights(analysis) {
-  const [store, setStore] = useState(null);
-  useEffect(() => {
-    let active = true;
-    fetch(`${BASE}data/product_insights.json`, { cache: "no-store" })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((payload) => { if (active) setStore(payload); })
-      .catch(() => { if (active) setStore(null); });
-    return () => { active = false; };
-  }, []);
+  const store = useUnifiedDatabase();
   return useMemo(() => buildProductInsights(analysis, store), [analysis, store]);
 }
 
@@ -4216,6 +4356,166 @@ function QueryBadge({ label, sql }) {
   );
 }
 
+const GEO_FRAME = { width: 1000, height: 560, minLon: 29.2, maxLon: 35.2, minLat: -1.8, maxLat: 4.4 };
+
+const FALLBACK_GEO_LINES = [
+  [[30.0, -0.9], [30.8, -0.2], [31.7, 0.4], [32.7, 0.6], [33.8, 1.2]],
+  [[31.1, 3.4], [31.8, 2.5], [32.3, 1.7], [32.9, 0.9], [33.3, 0.1]],
+  [[29.9, 1.0], [30.8, 1.3], [31.9, 1.1], [33.0, 1.7], [34.4, 2.3]],
+];
+
+function projectGeo(position, frame = GEO_FRAME) {
+  if (!Array.isArray(position) || position.length < 2) return null;
+  const lon = Number(position[0]);
+  const lat = Number(position[1]);
+  if (!Number.isFinite(lon) || !Number.isFinite(lat)) return null;
+  const x = ((lon - frame.minLon) / (frame.maxLon - frame.minLon)) * frame.width;
+  const y = (1 - ((lat - frame.minLat) / (frame.maxLat - frame.minLat))) * frame.height;
+  return [Math.max(0, Math.min(frame.width, x)), Math.max(0, Math.min(frame.height, y))];
+}
+
+function geoPath(coordinates, close = false, frame = GEO_FRAME) {
+  const points = (coordinates || []).map((point) => projectGeo(point, frame)).filter(Boolean);
+  if (points.length < 2) return "";
+  const path = points.map(([x, y], index) => `${index === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)}`).join(" ");
+  return close ? `${path} Z` : path;
+}
+
+function mapFeatureFrame(features, programme) {
+  const positions = [];
+  for (const item of features) {
+    if (item.geometryType === "Point") {
+      positions.push(item.coordinates);
+    } else if (Array.isArray(item.coordinates)) {
+      positions.push(...item.coordinates);
+    }
+  }
+  for (const item of programme) {
+    positions.push([item.lon, item.lat]);
+  }
+  const valid = positions.filter((position) => projectGeo(position));
+  if (valid.length < 2) return GEO_FRAME;
+  let minLon = Math.min(...valid.map((position) => Number(position[0])));
+  let maxLon = Math.max(...valid.map((position) => Number(position[0])));
+  let minLat = Math.min(...valid.map((position) => Number(position[1])));
+  let maxLat = Math.max(...valid.map((position) => Number(position[1])));
+  const lonPad = Math.max((maxLon - minLon) * 0.08, 0.12);
+  const latPad = Math.max((maxLat - minLat) * 0.08, 0.12);
+  minLon -= lonPad;
+  maxLon += lonPad;
+  minLat -= latPad;
+  maxLat += latPad;
+  const targetRatio = GEO_FRAME.width / GEO_FRAME.height;
+  const currentRatio = (maxLon - minLon) / Math.max(maxLat - minLat, 0.001);
+  if (currentRatio > targetRatio) {
+    const targetLatSpan = (maxLon - minLon) / targetRatio;
+    const midLat = (minLat + maxLat) / 2;
+    minLat = midLat - targetLatSpan / 2;
+    maxLat = midLat + targetLatSpan / 2;
+  } else {
+    const targetLonSpan = (maxLat - minLat) * targetRatio;
+    const midLon = (minLon + maxLon) / 2;
+    minLon = midLon - targetLonSpan / 2;
+    maxLon = midLon + targetLonSpan / 2;
+  }
+  return { ...GEO_FRAME, minLon, maxLon, minLat, maxLat };
+}
+
+function ModernGeoMap({ features = [], programme = [] }) {
+  const grouped = useMemo(() => ({
+    district: features.filter((item) => item.group === "district" && item.geometryType === "Polygon"),
+    route: features.filter((item) => item.group === "route" && item.geometryType === "LineString"),
+    national: features.filter((item) => item.group === "national" && item.geometryType === "LineString"),
+    flow: features.filter((item) => item.group === "flow" && item.geometryType === "LineString"),
+    node: features.filter((item) => item.group === "node" && item.geometryType === "Point"),
+  }), [features]);
+  const routeFeatures = grouped.route.length
+    ? grouped.route
+    : FALLBACK_GEO_LINES.map((coordinates, index) => ({ name: `route-${index}`, coordinates }));
+  const frame = useMemo(() => mapFeatureFrame(features.length ? features : routeFeatures, programme), [features, routeFeatures, programme]);
+  const assetPoints = programme
+    .map((item) => ({ ...item, point: projectGeo([item.lon, item.lat], frame) }))
+    .filter((item) => item.point);
+  const featureCount = features.length || routeFeatures.length + assetPoints.length;
+
+  return (
+    <section className="geo-command-map">
+      <div className="product-panel-head">
+        <h3>Modern Geospatial Surface</h3>
+        <span>SQL-drawn roads, national reference, network nodes and programme assets</span>
+      </div>
+      <div className="geo-map-canvas">
+        <svg className="geo-surface-svg" viewBox={`0 0 ${GEO_FRAME.width} ${GEO_FRAME.height}`} role="img" aria-label="DUCAR geospatial evidence surface">
+          <defs>
+            <linearGradient id="geoSurface" x1="0%" x2="100%" y1="0%" y2="100%">
+              <stop offset="0%" stopColor="#e8f1ff" />
+              <stop offset="55%" stopColor="#effdf8" />
+              <stop offset="100%" stopColor="#eef2ff" />
+            </linearGradient>
+            <filter id="geoGlow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="5" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+          <rect width={GEO_FRAME.width} height={GEO_FRAME.height} fill="url(#geoSurface)" />
+          <g className="geo-grid-lines">
+            {Array.from({ length: 8 }, (_, index) => <line key={`x-${index}`} x1={125 * index} y1="0" x2={125 * index} y2={GEO_FRAME.height} />)}
+            {Array.from({ length: 6 }, (_, index) => <line key={`y-${index}`} x1="0" y1={112 * index} x2={GEO_FRAME.width} y2={112 * index} />)}
+          </g>
+          <g>
+            {grouped.district.slice(0, 80).map((item, index) => {
+              const d = geoPath(item.coordinates, true, frame);
+              return d ? <path key={`${item.source}-${index}`} className="geo-district" d={d}><title>{item.name || item.source}</title></path> : null;
+            })}
+          </g>
+          <g filter="url(#geoGlow)">
+            {grouped.flow.slice(0, 95).map((item, index) => {
+              const d = geoPath(item.coordinates, false, frame);
+              return d ? <path key={`${item.source}-flow-${index}`} className="geo-line flow" d={d} style={{ animationDelay: `${(index % 20) * 0.05}s` }}><title>{item.name || "Traffic flow"}</title></path> : null;
+            })}
+          </g>
+          <g>
+            {routeFeatures.slice(0, 170).map((item, index) => {
+              const d = geoPath(item.coordinates, false, frame);
+              return d ? <path key={`${item.name || item.source}-route-${index}`} className="geo-line route" d={d} style={{ animationDelay: `${(index % 24) * 0.04}s` }}><title>{item.name || "DUCAR route"}</title></path> : null;
+            })}
+            {grouped.national.slice(0, 110).map((item, index) => {
+              const d = geoPath(item.coordinates, false, frame);
+              return d ? <path key={`${item.source}-national-${index}`} className="geo-line national" d={d}><title>{item.name || "National road reference"}</title></path> : null;
+            })}
+          </g>
+          <g>
+            {grouped.node.slice(0, 360).map((item, index) => {
+              const point = projectGeo(item.coordinates, frame);
+              return point ? <circle key={`${item.source}-node-${index}`} className="geo-node" cx={point[0]} cy={point[1]} r="2.3"><title>{item.name || "Network node"}</title></circle> : null;
+            })}
+          </g>
+          <g>
+            {assetPoints.map((item) => (
+              <circle key={item.assetId} className={`geo-asset ${item.status === "Selected" ? "selected" : item.status === "Referred" ? "referred" : "candidate"}`} cx={item.point[0]} cy={item.point[1]} r={item.status === "Selected" ? 9 : 7}>
+                <title>{`${item.assetId} - ${item.admin} - ${item.status}`}</title>
+              </circle>
+            ))}
+          </g>
+        </svg>
+        <div className="geo-map-metrics">
+          <span>{formatCount(featureCount)} SQL map features</span>
+          <span>{formatCount(assetPoints.length)} programme assets</span>
+        </div>
+      </div>
+      <div className="geo-layer-strip">
+        <span><i className="route" /> DUCAR / unified routes</span>
+        <span><i className="national" /> National reference</span>
+        <span><i className="node" /> Network nodes</span>
+        <span><i className="asset" /> Programme assets</span>
+      </div>
+    </section>
+  );
+}
+
 function CommandView({ insights }) {
   return (
     <div className="product-view">
@@ -4298,7 +4598,7 @@ function PortfolioView({ insights, budget, reservePercent, onBudgetChange, onRes
   );
 }
 
-function NetworkView({ insights }) {
+function NetworkView({ insights, programme }) {
   return (
     <div className="product-view">
       <section className="network-brief">
@@ -4314,8 +4614,13 @@ function NetworkView({ insights }) {
         <ProductBarChart title="Largest GIS Layers" subtitle="Feature count by materialized spatial layer" rows={insights.charts.spatial} />
         <ProductBarChart title="Geometry Mix" subtitle="Feature types found in local spatial evidence" rows={insights.charts.geometry} />
       </div>
+      <ModernGeoMap features={insights.spatialEvidence?.mapFeatures || []} programme={programme} />
       <div className="product-grid two">
         <ProductBarChart title="Evidence Source Areas" subtitle="Readable local evidence grouped by source area" rows={insights.charts.sourceCoverage} />
+        <ProductTable table={insights.rawTables?.manifest} />
+      </div>
+      <div className="product-grid two">
+        <ProductTable table={insights.spatialEvidence?.layerTable || insights.rawTables?.catalog} />
         <ProductTable table={insights.tables.risk} />
       </div>
       <section className="query-strip">
@@ -4359,6 +4664,11 @@ function EvidenceView({ insights }) {
         <ProductBarChart title="Evidence Coverage" subtitle="Source areas visible as query results" rows={insights.charts.sourceCoverage} />
         <ProductBarChart title="Decision Topics" subtitle="Top text-derived decision signals" rows={insights.charts.topics} />
       </div>
+      <div className="product-grid two">
+        <ProductBarChart title="Raw Table Cells" subtitle="All extracted workbook, case, ITIS and local table cells in SQLite" rows={insights.rawTables?.cellChart?.rows || []} />
+        <ProductTable table={insights.rawTables?.catalog} />
+      </div>
+      <ProductTable table={insights.rawTables?.manifest} />
       <section className="query-library">
         {Object.entries(insights.sql).map(([name, sql]) => <QueryBadge key={name} label={`${name} SQL`} sql={sql} />)}
       </section>
@@ -4875,7 +5185,7 @@ function App() {
             <strong>{activeMeta.label}</strong>
           </div>
           <div className="product-topbar-actions">
-            <span><Database size={15} /> SQL views</span>
+            <span><Database size={15} /> {insights.databaseLoaded ? "SQLite live" : "Loading database"}</span>
             <span><ShieldAlert size={15} /> source data hidden</span>
             <button className="icon-action" onClick={() => runAnalysis()} aria-label="Refresh"><RefreshCcw size={16} /></button>
           </div>
@@ -4891,7 +5201,7 @@ function App() {
             onScenario={applyScenario}
           />
         )}
-        {activeView === "network" && <NetworkView insights={insights} />}
+        {activeView === "network" && <NetworkView insights={insights} programme={analysis.programme || []} />}
         {activeView === "evidence" && <EvidenceView insights={insights} />}
       </main>
     </div>
