@@ -1,5 +1,5 @@
 {
-  "run_id": "20260514T144511Z",
+  "run_id": "20260514T145156Z",
   "status": "success",
   "source_roots": [
     "D:\\OneDrive\\Procurements\\TOR - DUCACR",
@@ -7,8 +7,9 @@
     "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\data",
     "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\docs"
   ],
+  "source_snapshot_mode": "live",
   "source_files_indexed": 813,
-  "changed_source_files": 1,
+  "changed_source_files": 0,
   "materialized_queries": {
     "network_prediction_context": 7,
     "prediction_feature_matrix": 8,

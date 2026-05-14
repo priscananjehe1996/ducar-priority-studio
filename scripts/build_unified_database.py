@@ -10,6 +10,7 @@ features for the geospatial interface.
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 import time
 from pathlib import Path
@@ -105,6 +106,17 @@ def unlink_with_retry(path: Path, attempts: int = 8) -> None:
             if attempt == attempts - 1:
                 raise
             time.sleep(0.35 * (attempt + 1))
+
+
+def replace_with_retry(source: Path, target: Path, attempts: int = 18) -> None:
+    for attempt in range(attempts):
+        try:
+            source.replace(target)
+            return
+        except PermissionError:
+            if attempt == attempts - 1:
+                raise
+            time.sleep(min(2.0, 0.35 * (attempt + 1)))
 
 
 def sample_items(items: list[Any], limit: int) -> list[Any]:
@@ -487,8 +499,9 @@ def build_database() -> dict[str, Any]:
     product = load_json(PRODUCT_JSON, {})
     sample_assets = load_json(SAMPLE_ASSETS, [])
 
-    unlink_with_retry(OUT_DATA)
-    conn = sqlite3.connect(OUT_DATA)
+    tmp_data = OUT_DATA.with_name(f".{OUT_DATA.name}.{os.getpid()}.tmp")
+    unlink_with_retry(tmp_data)
+    conn = sqlite3.connect(tmp_data)
     try:
         create_schema(conn)
         conn.executemany(
@@ -709,6 +722,7 @@ def build_database() -> dict[str, Any]:
     finally:
         conn.close()
 
+    replace_with_retry(tmp_data, OUT_DATA)
     OUT_PUBLIC.write_bytes(OUT_DATA.read_bytes())
     manifest = {
         "database": "data/ducar_unified.sqlite",

@@ -124,19 +124,42 @@ def iter_source_files(roots: list[Path]) -> list[Path]:
     return sorted(files.values(), key=lambda item: str(item).lower())
 
 
-def read_previous_hashes() -> dict[str, str]:
+def read_previous_source_state() -> dict[str, dict[str, Any]]:
     if not OUT_DATA.exists():
         return {}
     try:
         with sqlite3.connect(OUT_DATA) as conn:
+            conn.row_factory = sqlite3.Row
             exists = conn.execute(
                 "SELECT 1 FROM sqlite_master WHERE type='table' AND name='source_sync_state'"
             ).fetchone()
             if not exists:
                 return {}
-            return {row[0]: row[1] for row in conn.execute("SELECT path, sha256 FROM source_sync_state")}
+            rows = conn.execute("SELECT * FROM source_sync_state").fetchall()
+            return {row["path"]: dict(row) for row in rows}
     except sqlite3.Error:
         return {}
+
+
+def source_snapshot_mode(previous: dict[str, dict[str, Any]]) -> str:
+    configured = os.environ.get("DUCAR_SOURCE_ROOT")
+    external_source = Path(configured) if configured else DEFAULT_EXTERNAL_SOURCE
+    if external_source.exists() or not previous:
+        return "live"
+
+    external_areas = {
+        "road transport data",
+        "global case and evidence package",
+        "geospatial source data",
+        "local workbook source data",
+        "local source corpus",
+    }
+    has_external_snapshot = any(
+        str(row.get("path", "")).lower().startswith("d:\\")
+        or row.get("source_area") in external_areas
+        for row in previous.values()
+    )
+    return "cached" if has_external_snapshot else "live"
 
 
 def create_bot_schema(conn: sqlite3.Connection) -> None:
@@ -212,17 +235,42 @@ def create_bot_schema(conn: sqlite3.Connection) -> None:
     )
 
 
-def insert_source_state(conn: sqlite3.Connection, files: list[Path], previous: dict[str, str], indexed_at: str) -> int:
+def insert_source_state(
+    conn: sqlite3.Connection,
+    files: list[Path],
+    previous: dict[str, dict[str, Any]],
+    indexed_at: str,
+    snapshot_mode: str,
+) -> tuple[int, int]:
+    if snapshot_mode == "cached":
+        rows = [
+            (
+                path,
+                row.get("source_area") or source_area(Path(path)),
+                row.get("extension") or Path(path).suffix.lower(),
+                int(row.get("bytes") or 0),
+                row.get("modified_utc") or indexed_at,
+                row.get("sha256") or "",
+                indexed_at,
+                "cached_source_unavailable",
+            )
+            for path, row in sorted(previous.items(), key=lambda item: item[0].lower())
+        ]
+        conn.execute("DELETE FROM source_sync_state")
+        conn.executemany("INSERT INTO source_sync_state VALUES (?, ?, ?, ?, ?, ?, ?, ?)", rows)
+        return 0, len(rows)
+
+    previous_hashes = {path: str(row.get("sha256") or "") for path, row in previous.items()}
     rows = []
     changed = 0
     for path in files:
         stat = path.stat()
         digest = sha256_file(path)
         key = str(path)
-        if key not in previous:
+        if key not in previous_hashes:
             change_state = "indexed"
             changed += 1
-        elif previous[key] != digest:
+        elif previous_hashes[key] != digest:
             change_state = "changed"
             changed += 1
         else:
@@ -239,7 +287,7 @@ def insert_source_state(conn: sqlite3.Connection, files: list[Path], previous: d
         ))
     conn.execute("DELETE FROM source_sync_state")
     conn.executemany("INSERT INTO source_sync_state VALUES (?, ?, ?, ?, ?, ?, ?, ?)", rows)
-    return changed
+    return changed, len(rows)
 
 
 def execute_population_query(conn: sqlite3.Connection, run_id: str, name: str, sql: str, target_table: str) -> int:
@@ -378,7 +426,8 @@ def update_manifest(extra: dict[str, Any]) -> dict[str, Any]:
 def main() -> None:
     started_at = utc_now()
     run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    previous = read_previous_hashes()
+    previous = read_previous_source_state()
+    snapshot_mode = source_snapshot_mode(previous)
     roots = source_roots()
     files = iter_source_files(roots)
 
@@ -386,7 +435,7 @@ def main() -> None:
 
     with sqlite3.connect(OUT_DATA) as conn:
         create_bot_schema(conn)
-        changed_files = insert_source_state(conn, files, previous, started_at)
+        changed_files, source_file_count = insert_source_state(conn, files, previous, started_at, snapshot_mode)
         completed_at = utc_now()
         materialized = run_materialized_queries(conn, run_id, completed_at, changed_files)
         conn.execute(
@@ -396,11 +445,11 @@ def main() -> None:
                 started_at,
                 completed_at,
                 len(roots),
-                len(files),
+                source_file_count,
                 changed_files,
                 OUT_DATA.stat().st_size,
                 "success",
-                "Unified SQLite database rebuilt and SQL prediction tables materialized.",
+                f"Unified SQLite database rebuilt and SQL prediction tables materialized using {snapshot_mode} source snapshot.",
             ),
         )
         conn.commit()
@@ -414,7 +463,8 @@ def main() -> None:
             "started_at_utc": started_at,
             "completed_at_utc": completed_at,
             "source_roots": [str(root) for root in roots],
-            "source_files_indexed": len(files),
+            "source_snapshot_mode": snapshot_mode,
+            "source_files_indexed": source_file_count,
             "changed_source_files": changed_files,
             "materialized_queries": materialized,
         },
@@ -425,7 +475,8 @@ def main() -> None:
         "run_id": run_id,
         "status": "success",
         "source_roots": [str(root) for root in roots],
-        "source_files_indexed": len(files),
+        "source_snapshot_mode": snapshot_mode,
+        "source_files_indexed": source_file_count,
         "changed_source_files": changed_files,
         "materialized_queries": materialized,
         "database_size_bytes": OUT_PUBLIC.stat().st_size,
