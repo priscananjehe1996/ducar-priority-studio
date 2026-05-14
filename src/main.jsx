@@ -2243,6 +2243,15 @@ function SourcesPanel() {
   const caseStudyTable = evidence?.casePackageTables?.countryCaseStudies;
   const decisionAssumptionTable = evidence?.casePackageTables?.decisionAssumptions;
   const onlineReadTable = evidence?.onlineEvidence?.sourceTable;
+  const spatialSummary = evidence?.spatialEvidence?.summary || {};
+  const spatialSourceArea = evidence?.spatialEvidence?.sourceAreaChart;
+  const spatialGeometry = evidence?.spatialEvidence?.geometryChart;
+  const spatialFeatureChart = evidence?.spatialEvidence?.featureChart;
+  const spatialLayerTable = evidence?.spatialEvidence?.layerTable;
+  const inventorySummary = evidence?.fileInventory?.summary || {};
+  const inventoryKind = evidence?.fileInventory?.kindChart;
+  const inventoryExtension = evidence?.fileInventory?.extensionChart;
+  const inventoryTable = evidence?.fileInventory?.fileTable;
   const mowtPages = 1425;
   const mowtSources = MOWT_CATALOGUE_MANUALS.map(([title, year, url, use]) => ({
     title,
@@ -2339,6 +2348,8 @@ function SourcesPanel() {
           <Metric icon={BookOpen} label="Words extracted" value={(evidenceSummary.core_words_read || 0).toLocaleString()} tone="green" />
           <Metric icon={FileSpreadsheet} label="Local tables read" value={(evidenceSummary.local_tables_read || 0).toLocaleString()} tone="gold" />
           <Metric icon={Globe2} label="Global case rows" value={(evidenceSummary.global_case_records || 0).toLocaleString()} tone="red" />
+          <Metric icon={MapIcon} label="Spatial layers read" value={(spatialSummary.layers_read || 0).toLocaleString()} tone="green" />
+          <Metric icon={Database} label="Data files indexed" value={(inventorySummary.files_indexed || 0).toLocaleString()} tone="gold" />
         </div>
         <div className="source-evidence-grid">
           <section className="viz-card">
@@ -2366,10 +2377,53 @@ function SourcesPanel() {
           </section>
           <EvidenceMiniTable table={caseStudyTable} maxRows={5} />
         </div>
+        <div className="source-evidence-grid">
+          <section className="viz-card">
+            <div className="viz-title">
+              <h3>Spatial Layers</h3>
+              <span>Shapefile, GeoJSON and GeoPackage evidence read from local data</span>
+            </div>
+            <EvidenceBarList table={spatialSourceArea} maxRows={7} />
+          </section>
+          <section className="viz-card">
+            <div className="viz-title">
+              <h3>Spatial Geometry</h3>
+              <span>Features extracted from road, district and network layers</span>
+            </div>
+            <EvidenceBarList table={spatialGeometry} maxRows={6} />
+          </section>
+        </div>
+        <div className="source-evidence-grid">
+          <section className="viz-card">
+            <div className="viz-title">
+              <h3>Largest GIS Layers</h3>
+              <span>Feature counts from local layers and retained dated copies</span>
+            </div>
+            <EvidenceBarList table={spatialFeatureChart} maxRows={7} />
+          </section>
+          <section className="viz-card">
+            <div className="viz-title">
+              <h3>Local Data Inventory</h3>
+              <span>All data-bearing local files, excluding dependencies and generated app bundles</span>
+            </div>
+            <EvidenceBarList table={inventoryKind} maxRows={7} />
+          </section>
+        </div>
+        <div className="source-evidence-grid">
+          <section className="viz-card">
+            <div className="viz-title">
+              <h3>Inventory File Types</h3>
+              <span>Extensions present across the local data package</span>
+            </div>
+            <EvidenceBarList table={inventoryExtension} maxRows={8} />
+          </section>
+          <EvidenceMiniTable table={spatialLayerTable} maxRows={8} />
+        </div>
         <div className="evidence-table-grid">
           <EvidenceMiniTable table={decisionAssumptionTable} maxRows={6} />
           <EvidenceMiniTable table={localDocumentTable} maxRows={10} />
         </div>
+        <EvidenceMiniTable table={inventoryTable} maxRows={10} />
         <EvidenceMiniTable table={onlineReadTable} maxRows={10} />
       </section>
       <section className="viz-card wide-viz">
@@ -3019,6 +3073,15 @@ function EvidenceSynthesisPanel() {
   const onlineGroup = synthesis?.onlineEvidence?.groupChart;
   const onlineSources = synthesis?.onlineEvidence?.sourceTable;
   const documentTable = synthesis?.documentTable;
+  const spatialSummary = synthesis?.spatialEvidence?.summary || {};
+  const spatialSourceArea = synthesis?.spatialEvidence?.sourceAreaChart;
+  const spatialGeometry = synthesis?.spatialEvidence?.geometryChart;
+  const spatialFeatures = synthesis?.spatialEvidence?.featureChart;
+  const spatialLength = synthesis?.spatialEvidence?.lengthChart;
+  const spatialTable = synthesis?.spatialEvidence?.layerTable;
+  const inventorySummary = synthesis?.fileInventory?.summary || {};
+  const inventoryKind = synthesis?.fileInventory?.kindChart;
+  const inventoryTable = synthesis?.fileInventory?.fileTable;
   const maxRoadKm = Math.max(1, ...(network?.rows || []).map((row) => Number(row[1] || 0)));
   const maxPoorKm = Math.max(1, ...(condition?.rows || []).map((row) => Number(row[3] || 0)));
   const maxCrash = Math.max(1, ...(crashes?.rows || []).map((row) => Number(row[4] || 0)));
@@ -3046,6 +3109,7 @@ function EvidenceSynthesisPanel() {
         <Metric icon={Database} label="DOCX tables read" value={(summary.docx_tables_read || 0).toLocaleString()} tone="gold" />
         <Metric icon={ClipboardCheck} label="Manual records indexed" value={(summary.manual_repository_files || 0).toLocaleString()} tone="red" />
         <Metric icon={Globe2} label="Online sources checked" value={(summary.online_sources_checked || 0).toLocaleString()} />
+        <Metric icon={MapIcon} label="Spatial layers read" value={(summary.spatial_layers_read || 0).toLocaleString()} tone="green" />
       </section>
 
       {!!storyCards.length && (
@@ -3064,6 +3128,72 @@ function EvidenceSynthesisPanel() {
           ))}
         </section>
       )}
+
+      <section className="spatial-evidence-panel">
+        <div className="viz-title">
+          <h3>Spatial Evidence Infographic</h3>
+          <span>Road, district, KCCA/CBD, GeoPackage and app-delivered GIS layers read from the local TOR folder</span>
+        </div>
+        <div className="spatial-kpi-grid">
+          <article>
+            <MapIcon size={18} />
+            <strong>{(spatialSummary.layer_count || 0).toLocaleString()}</strong>
+            <span>spatial layers</span>
+          </article>
+          <article>
+            <Route size={18} />
+            <strong>{(spatialSummary.feature_count || 0).toLocaleString()}</strong>
+            <span>features read</span>
+          </article>
+          <article>
+            <Network size={18} />
+            <strong>{Math.round(spatialSummary.line_length_km || 0).toLocaleString()}</strong>
+            <span>line-km across local copies</span>
+          </article>
+          <article>
+            <Database size={18} />
+            <strong>{(inventorySummary.files_indexed || 0).toLocaleString()}</strong>
+            <span>data-bearing files indexed</span>
+          </article>
+        </div>
+        <div className="spatial-chart-grid">
+          <section className="viz-card">
+            <div className="viz-title">
+              <h3>Spatial Source Areas</h3>
+              <span>Where the GIS evidence lives</span>
+            </div>
+            <EvidenceBarList table={spatialSourceArea} maxRows={6} />
+          </section>
+          <section className="viz-card">
+            <div className="viz-title">
+              <h3>Geometry Mix</h3>
+              <span>Feature types found in the local spatial layers</span>
+            </div>
+            <EvidenceBarList table={spatialGeometry} maxRows={6} />
+          </section>
+          <section className="viz-card">
+            <div className="viz-title">
+              <h3>Largest GIS Layers</h3>
+              <span>Feature counts across local road and district datasets</span>
+            </div>
+            <EvidenceBarList table={spatialFeatures} maxRows={6} />
+          </section>
+          <section className="viz-card">
+            <div className="viz-title">
+              <h3>Line Evidence</h3>
+              <span>Measured length by layer, including retained dated copies</span>
+            </div>
+            <EvidenceBarList table={spatialLength} maxRows={6} />
+          </section>
+          <section className="viz-card">
+            <div className="viz-title">
+              <h3>All Local Data Types</h3>
+              <span>Documents, tables, GIS, decks, media and metadata inventory</span>
+            </div>
+            <EvidenceBarList table={inventoryKind} maxRows={7} />
+          </section>
+        </div>
+      </section>
 
       <div className="evidence-chart-grid">
         <section className="viz-card evidence-source-card">
@@ -3195,6 +3325,11 @@ function EvidenceSynthesisPanel() {
       <div className="evidence-table-grid">
         <EvidenceMiniTable table={ferry} maxRows={5} />
         <EvidenceMiniTable table={onlineSources} maxRows={8} />
+      </div>
+
+      <div className="evidence-table-grid">
+        <EvidenceMiniTable table={spatialTable} maxRows={8} />
+        <EvidenceMiniTable table={inventoryTable} maxRows={8} />
       </div>
     </section>
   );

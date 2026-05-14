@@ -3575,7 +3575,7 @@ td .range-value {
 }
 
 .evidence-read-grid {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
 }
 
 .evidence-story-grid {
@@ -3621,6 +3621,12 @@ td .range-value {
   background:
     radial-gradient(circle at 88% 12%, rgba(244, 63, 94, 0.13), transparent 30%),
     linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(255, 241, 242, 0.9));
+}
+
+.evidence-story-card.purple {
+  background:
+    radial-gradient(circle at 88% 12%, rgba(124, 58, 237, 0.14), transparent 30%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(245, 243, 255, 0.9));
 }
 
 .evidence-story-card > div {
@@ -3683,6 +3689,63 @@ td .range-value {
   display: grid;
   grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
   gap: 18px;
+}
+
+.spatial-evidence-panel {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 24px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(240, 253, 250, 0.88)),
+    radial-gradient(circle at 90% 10%, rgba(18, 185, 129, 0.16), transparent 30%);
+  border: 1px solid rgba(255, 255, 255, 0.88);
+  box-shadow: 16px 18px 42px rgba(30, 38, 64, 0.1);
+}
+
+.spatial-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+.spatial-kpi-grid article {
+  min-height: 128px;
+  display: grid;
+  align-content: space-between;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 18px;
+  color: #0d1324;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: inset 0 0 0 1px rgba(18, 24, 38, 0.06);
+}
+
+.spatial-kpi-grid svg {
+  color: #12b981;
+}
+
+.spatial-kpi-grid strong {
+  color: #0d1324;
+  font-size: clamp(24px, 3vw, 34px);
+  line-height: 0.95;
+  font-weight: 950;
+  overflow-wrap: anywhere;
+}
+
+.spatial-kpi-grid span {
+  color: #52657c;
+  font-size: 12px;
+  line-height: 1.25;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.spatial-chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  align-items: start;
 }
 
 .evidence-topic-bars,
@@ -4751,7 +4814,7 @@ td .range-value {
 
 .source-evidence-kpis {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: 12px;
 }
 

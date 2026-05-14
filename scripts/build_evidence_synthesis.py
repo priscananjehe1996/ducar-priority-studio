@@ -23,10 +23,21 @@ from html.parser import HTMLParser
 from pathlib import Path
 from urllib.error import URLError
 from urllib.request import Request, urlopen
+from xml.etree import ElementTree as ET
 
 import pandas as pd
 from docx import Document
 from pypdf import PdfReader
+
+try:
+    import geopandas as gpd
+except Exception:  # pragma: no cover - optional local GIS dependency
+    gpd = None
+
+try:
+    import pyogrio
+except Exception:  # pragma: no cover - optional local GIS dependency
+    pyogrio = None
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -41,7 +52,27 @@ OUT_DATA = DATA_DIR / "evidence_synthesis.json"
 CASE_PACKAGE_WORKBOOK = TOR_ROOT / "DUCAR_Framework_Tool" / "evidence_and_case_studies" / "DUCAR_APA_References_and_Assumptions_Register.xlsx"
 TRANSPORT_VEHICLE_WORKBOOK = TOR_ROOT / "Road transport data" / "Motor Vehicle data Updated Up to December 2023(1).xls"
 
-SUPPORTED_LOCAL_EXTENSIONS = {".pdf", ".docx", ".json", ".csv", ".xlsx", ".xls", ".md", ".txt"}
+SUPPORTED_LOCAL_EXTENSIONS = {".pdf", ".docx", ".pptx", ".json", ".csv", ".xlsx", ".xls", ".md", ".txt"}
+SPATIAL_EXTENSIONS = {".shp", ".geojson", ".gpkg"}
+INVENTORY_EXTENSIONS = SUPPORTED_LOCAL_EXTENSIONS | SPATIAL_EXTENSIONS | {
+    ".dbf",
+    ".shx",
+    ".prj",
+    ".cpg",
+    ".sbn",
+    ".sbx",
+    ".xml",
+    ".zip",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".webp",
+    ".gif",
+    ".svg",
+    ".mp4",
+    ".webm",
+    ".mp3",
+}
 EXCLUDED_DIR_NAMES = {
     ".git",
     "__pycache__",
@@ -66,6 +97,10 @@ EXCLUDED_PATH_FRAGMENTS = {
     "/dist/",
     "/node_modules/",
     "/.git/",
+}
+
+SPATIAL_EXCLUDED_PATH_FRAGMENTS = {
+    "/github_app/data_sources/geofabrik_uganda/",
 }
 
 TOPIC_KEYWORDS = {
@@ -361,6 +396,25 @@ def extract_docx(path: Path) -> tuple[str, int, int]:
     return normalize_text(" ".join(parts)), 0, table_count
 
 
+def extract_pptx(path: Path) -> tuple[str, int, int]:
+    parts: list[str] = []
+    table_count = 0
+    with zipfile.ZipFile(path) as archive:
+        slide_names = sorted(
+            name for name in archive.namelist()
+            if name.startswith("ppt/slides/slide") and name.endswith(".xml")
+        )
+        for name in slide_names:
+            root = ET.fromstring(archive.read(name))
+            for element in root.iter():
+                tag = element.tag.rsplit("}", 1)[-1]
+                if tag == "t" and element.text:
+                    parts.append(element.text)
+                elif tag == "tbl":
+                    table_count += 1
+    return normalize_text(" ".join(parts)), len(slide_names), table_count
+
+
 def serialise_cell(value) -> str | int | float | None:
     if pd.isna(value):
         return None
@@ -433,6 +487,8 @@ def source_area(path: Path) -> str:
         return "Global case evidence package"
     if "/road transport data/" in text:
         return "Road transport data"
+    if "/ppt/" in text:
+        return "DUCAR presentation decks"
     if "/scratch/uganda_atc/" in text:
         return "Traffic count scratch dataset"
     if "/workbooks/" in text:
@@ -448,6 +504,22 @@ def source_area(path: Path) -> str:
     return "TOR and local source documents"
 
 
+def is_excluded_local_path(path: Path, allowed_extensions: set[str] | None = None) -> bool:
+    if not path.is_file() or path.name.startswith("~$"):
+        return True
+    if allowed_extensions is not None and path.suffix.lower() not in allowed_extensions:
+        return True
+    normalised = path.resolve().as_posix().lower()
+    if any(fragment in normalised for fragment in EXCLUDED_PATH_FRAGMENTS):
+        return True
+    if path.name.lower() in EXCLUDED_FILE_NAMES:
+        return True
+    parts = {part.lower() for part in path.parts}
+    if parts & EXCLUDED_DIR_NAMES:
+        return True
+    return any(part.lower().startswith(EXCLUDED_DIR_PREFIXES) for part in path.parts)
+
+
 def read_doc(path: Path) -> dict:
     ext = path.suffix.lower()
     try:
@@ -456,6 +528,9 @@ def read_doc(path: Path) -> dict:
             table_extracts = []
         elif ext == ".docx":
             text, pages, tables = extract_docx(path)
+            table_extracts = []
+        elif ext == ".pptx":
+            text, pages, tables = extract_pptx(path)
             table_extracts = []
         elif ext in {".xlsx", ".xls"}:
             text, pages, tables, table_extracts = extract_workbook(path)
@@ -515,18 +590,7 @@ def iter_core_documents() -> list[Path]:
         return []
     for path in TOR_ROOT.rglob("*"):
         normalised = path.resolve().as_posix().lower()
-        if not path.is_file() or path.name.startswith("~$"):
-            continue
-        if path.suffix.lower() not in SUPPORTED_LOCAL_EXTENSIONS:
-            continue
-        if any(fragment in normalised for fragment in EXCLUDED_PATH_FRAGMENTS):
-            continue
-        if path.name.lower() in EXCLUDED_FILE_NAMES:
-            continue
-        parts = {part.lower() for part in path.parts}
-        if parts & EXCLUDED_DIR_NAMES:
-            continue
-        if any(part.lower().startswith(EXCLUDED_DIR_PREFIXES) for part in path.parts):
+        if is_excluded_local_path(path, SUPPORTED_LOCAL_EXTENSIONS):
             continue
         candidates[normalised] = path
     return sorted(candidates.values(), key=lambda item: item.name.lower())
@@ -662,6 +726,236 @@ def build_source_coverage(documents: list[dict]) -> dict:
     }
 
 
+def relative_to_tor(path: Path) -> str:
+    try:
+        return path.relative_to(TOR_ROOT).as_posix()
+    except ValueError:
+        return path.name
+
+
+def classify_file_kind(extension: str) -> str:
+    ext = extension.lower()
+    if ext in {".pdf", ".docx", ".pptx", ".md", ".txt"}:
+        return "Document and presentation"
+    if ext in {".xlsx", ".xls", ".csv"}:
+        return "Spreadsheet and tabular"
+    if ext in SPATIAL_EXTENSIONS or ext in {".dbf", ".shx", ".prj", ".cpg", ".sbn", ".sbx"}:
+        return "GIS and spatial"
+    if ext in {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"}:
+        return "Image and rendered visual"
+    if ext in {".mp4", ".webm", ".mp3"}:
+        return "Media"
+    if ext == ".json":
+        return "JSON data feed"
+    if ext == ".xml":
+        return "Metadata XML"
+    if ext == ".zip":
+        return "Archive"
+    return "Other data file"
+
+
+def build_file_inventory() -> dict:
+    records: list[dict] = []
+    if not TOR_ROOT.exists():
+        return {}
+    for path in TOR_ROOT.rglob("*"):
+        if is_excluded_local_path(path, INVENTORY_EXTENSIONS):
+            continue
+        ext = path.suffix.lower()
+        try:
+            size = path.stat().st_size
+            modified = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc).date().isoformat()
+        except OSError:
+            size = 0
+            modified = ""
+        records.append({
+            "name": path.name,
+            "path": relative_to_tor(path),
+            "source_area": source_area(path),
+            "extension": ext.replace(".", "").upper() or "No extension",
+            "kind": classify_file_kind(ext),
+            "bytes": size,
+            "modified": modified,
+        })
+
+    by_kind = Counter(record["kind"] for record in records)
+    by_extension = Counter(record["extension"] for record in records)
+    by_source = Counter(record["source_area"] for record in records)
+    table_rows = [
+        [
+            record["name"],
+            record["source_area"],
+            record["kind"],
+            record["extension"],
+            round(record["bytes"] / 1024 / 1024, 2),
+            record["modified"],
+            record["path"],
+        ]
+        for record in sorted(records, key=lambda item: item["bytes"], reverse=True)
+    ]
+    return {
+        "summary": {
+            "files_indexed": len(records),
+            "total_bytes": sum(record["bytes"] for record in records),
+            "total_mb": round(sum(record["bytes"] for record in records) / 1024 / 1024, 2),
+            "source_areas": len(by_source),
+        },
+        "kindChart": simple_chart("All local data-bearing files by kind", ["Kind", "Files"], by_kind),
+        "extensionChart": simple_chart("All local data-bearing files by extension", ["Extension", "Files"], by_extension),
+        "sourceAreaChart": simple_chart("All local data-bearing files by source area", ["Source area", "Files"], by_source),
+        "fileTable": {
+            "title": "Local data-bearing file inventory",
+            "columns": ["File", "Source area", "Kind", "Type", "Size MB", "Modified", "Path"],
+            "rows": table_rows,
+        },
+    }
+
+
+def spatial_decision_use(path: Path, layer_name: str) -> str:
+    key = f"{path.as_posix()} {layer_name}".lower()
+    if "district" in key:
+        return "District equity joins, regional aggregation and administrative boundary checks."
+    if "bridge" in key:
+        return "Bridge location evidence, structure screening and network criticality checks."
+    if "traffic" in key or "atc" in key:
+        return "Traffic-count placement, demand calibration and AADT validation."
+    if "national" in key:
+        return "National-road exclusion, coordination and double-counting controls."
+    if "kcca" in key or "cbd" in key or "selected" in key:
+        return "Urban/KCCA road prioritisation, city access and CBD treatment context."
+    return "Road-network inventory, route length, topology and spatial coverage evidence."
+
+
+def read_spatial_layer(path: Path, layer_name: str | None = None) -> dict:
+    display_layer = layer_name or path.stem
+    base = {
+        "name": path.name,
+        "layer": display_layer,
+        "path": relative_to_tor(path),
+        "source_area": source_area(path),
+        "extension": path.suffix.lower().replace(".", "").upper(),
+        "bytes": path.stat().st_size if path.exists() else 0,
+        "feature_count": 0,
+        "geometry_types": [],
+        "columns": [],
+        "column_count": 0,
+        "crs": "",
+        "bounds": [],
+        "line_length_km": 0,
+        "polygon_area_km2": 0,
+        "decision_use": spatial_decision_use(path, display_layer),
+    }
+    if gpd is None:
+        return {**base, "status": "metadata only: geopandas unavailable"}
+    try:
+        gdf = gpd.read_file(path, layer=layer_name) if layer_name else gpd.read_file(path)
+        if gdf.empty:
+            return {**base, "status": "metadata only: empty layer", "crs": str(gdf.crs or "")}
+        geom = gdf.geometry if "geometry" in gdf else None
+        geom_types = Counter(str(value) for value in geom.geom_type.dropna()) if geom is not None else Counter()
+        data_columns = [column for column in gdf.columns if column != "geometry"]
+        working = gdf
+        if working.crs is None:
+            working = working.set_crs(epsg=4326, allow_override=True)
+        projected = working.to_crs(epsg=32636)
+        projected_types = projected.geometry.geom_type.fillna("")
+        line_mask = projected_types.str.contains("Line", case=False, regex=False)
+        polygon_mask = projected_types.str.contains("Polygon", case=False, regex=False)
+        line_length_km = float(projected.loc[line_mask].geometry.length.sum() / 1000) if line_mask.any() else 0
+        polygon_area_km2 = float(projected.loc[polygon_mask].geometry.area.sum() / 1_000_000) if polygon_mask.any() else 0
+        try:
+            bounds = [round(float(value), 5) for value in working.to_crs(epsg=4326).total_bounds]
+        except Exception:
+            bounds = [round(float(value), 5) for value in working.total_bounds]
+        return {
+            **base,
+            "feature_count": int(len(gdf)),
+            "geometry_types": [[key, int(value)] for key, value in geom_types.most_common()],
+            "columns": data_columns[:12],
+            "column_count": len(data_columns),
+            "crs": str(working.crs or ""),
+            "bounds": bounds,
+            "line_length_km": round(line_length_km, 2),
+            "polygon_area_km2": round(polygon_area_km2, 2),
+            "status": "read",
+        }
+    except Exception as exc:
+        return {**base, "status": f"error: {type(exc).__name__}"}
+
+
+def spatial_layer_names(path: Path) -> list[str | None]:
+    if path.suffix.lower() != ".gpkg" or pyogrio is None:
+        return [None]
+    try:
+        return [str(item[0]) for item in pyogrio.list_layers(path)]
+    except Exception:
+        return [None]
+
+
+def build_spatial_evidence() -> dict:
+    paths = []
+    if TOR_ROOT.exists():
+        for path in TOR_ROOT.rglob("*"):
+            normalised = path.resolve().as_posix().lower()
+            if any(fragment in normalised for fragment in SPATIAL_EXCLUDED_PATH_FRAGMENTS):
+                continue
+            if not is_excluded_local_path(path, SPATIAL_EXTENSIONS):
+                paths.append(path)
+    records = []
+    for path in sorted(paths, key=lambda item: relative_to_tor(item).lower()):
+        for layer_name in spatial_layer_names(path):
+            records.append(read_spatial_layer(path, layer_name))
+
+    by_source = Counter(record["source_area"] for record in records)
+    by_extension = Counter(record["extension"] for record in records)
+    by_status = Counter(record["status"] for record in records)
+    by_geometry: Counter[str] = Counter()
+    for record in records:
+        for geometry, count in record.get("geometry_types", []):
+            by_geometry[geometry] += count
+
+    table_rows = [
+        [
+            record["name"],
+            record["layer"],
+            record["source_area"],
+            record["extension"],
+            record["feature_count"],
+            record["line_length_km"] or "",
+            record["polygon_area_km2"] or "",
+            record["column_count"],
+            ", ".join(record["columns"][:5]),
+            record["status"],
+            record["decision_use"],
+        ]
+        for record in sorted(records, key=lambda item: item.get("feature_count", 0), reverse=True)
+    ]
+    feature_chart = Counter({f"{record['layer']} ({record['extension']})": record["feature_count"] for record in records if record["feature_count"]})
+    length_chart = Counter({record["layer"]: record["line_length_km"] for record in records if record.get("line_length_km")})
+    return {
+        "summary": {
+            "files_found": len(paths),
+            "layers_read": sum(1 for record in records if record.get("status") == "read"),
+            "layer_count": len(records),
+            "feature_count": sum(record.get("feature_count", 0) for record in records),
+            "line_length_km": round(sum(record.get("line_length_km", 0) for record in records), 2),
+            "polygon_area_km2": round(sum(record.get("polygon_area_km2", 0) for record in records), 2),
+        },
+        "sourceAreaChart": simple_chart("Spatial layers by source area", ["Source area", "Layers"], by_source),
+        "fileTypeChart": simple_chart("Spatial files by type", ["Type", "Layers"], by_extension),
+        "statusChart": simple_chart("Spatial extraction status", ["Status", "Layers"], by_status),
+        "geometryChart": simple_chart("Spatial features by geometry type", ["Geometry", "Features"], by_geometry),
+        "featureChart": simple_chart("Largest spatial layers by features", ["Layer", "Features"], feature_chart),
+        "lengthChart": simple_chart("Largest line layers by length", ["Layer", "Length km"], length_chart),
+        "layerTable": {
+            "title": "Local spatial evidence layers",
+            "columns": ["File", "Layer", "Source area", "Type", "Features", "Line km", "Area km2", "Fields", "Field sample", "Status", "Decision use"],
+            "rows": table_rows,
+        },
+        "records": records,
+    }
+
+
 def build_tabular_extracts(documents: list[dict]) -> list[dict]:
     extracts: list[dict] = []
     for doc in documents:
@@ -785,13 +1079,22 @@ def build_transport_vehicle_charts() -> dict:
     }
 
 
-def build_story_cards(summary: dict, topic_chart: list[dict], case_tables: dict, transport_charts: dict, source_coverage: dict) -> list[dict]:
+def build_story_cards(
+    summary: dict,
+    topic_chart: list[dict],
+    case_tables: dict,
+    transport_charts: dict,
+    source_coverage: dict,
+    spatial_evidence: dict,
+) -> list[dict]:
     top_topic = topic_chart[0] if topic_chart else {"topic": "Evidence", "mentions": 0, "decision_use": "Source material indexed."}
     global_case_count = (case_tables.get("countryCaseStudies") or {}).get("row_count", 0)
     decision_count = (case_tables.get("decisionAssumptions") or {}).get("row_count", 0)
     transport_total = sum(float(row[1] or 0) for row in (transport_charts.get("annualVehicleTotals") or {}).get("rows", [])) if transport_charts else 0
     file_type_rows = (source_coverage.get("fileTypeChart") or {}).get("rows", [])
     leading_type = file_type_rows[0][0] if file_type_rows else "Files"
+    spatial_summary = spatial_evidence.get("summary", {})
+    line_layer_count = sum(1 for record in spatial_evidence.get("records", []) if record.get("line_length_km"))
     return [
         {
             "title": "Local evidence corpus",
@@ -816,6 +1119,14 @@ def build_story_cards(summary: dict, topic_chart: list[dict], case_tables: dict,
             "story": "The international case package translates country practices into DUCAR-specific lessons and adaptation rules.",
             "evidence": f"{decision_count:,} decision assumptions are linked back to APA source keys.",
             "tone": "gold",
+        },
+        {
+            "title": "Spatial evidence atlas",
+            "metric": f"{spatial_summary.get('feature_count', 0):,}",
+            "label": "GIS features",
+            "story": "Shapefiles, GeoJSON and GeoPackage layers are converted into a spatial evidence register for route, district and network checks.",
+            "evidence": f"{spatial_summary.get('layers_read', 0):,} layers read, including {line_layer_count:,} line-network layers and district boundary evidence.",
+            "tone": "purple",
         },
         {
             "title": "Transport demand signal",
@@ -916,6 +1227,8 @@ def main() -> None:
     documents = [read_doc(path) for path in core_paths]
     manual_repo = read_manual_repository_catalog()
     mowt_catalog = load_json(MOWT_CATALOG, {"records": []})
+    file_inventory = build_file_inventory()
+    spatial_evidence = build_spatial_evidence()
     source_coverage = build_source_coverage(documents)
     tabular_extracts = build_tabular_extracts(documents)
     case_package_tables = read_case_package_tables()
@@ -936,7 +1249,9 @@ def main() -> None:
     payload = {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "method": {
-            "local_documents": "PDF and DOCX text extraction using pypdf and python-docx; JSON digest parsed as text.",
+            "local_documents": "PDF, DOCX, PPTX and spreadsheet text extraction using pypdf, python-docx, zipped presentation XML and pandas; JSON digest parsed as text.",
+            "local_inventory": "All data-bearing local files are inventoried by source area, extension, storage size and evidence kind while build dependencies and generated app bundles are excluded.",
+            "spatial_layers": "Shapefiles, GeoJSON files and GeoPackages are read with geopandas/pyogrio when available; feature counts, geometry types, fields, line kilometres and polygon areas are summarized.",
             "manual_repository": "Full national manual repository classified from manuals_catalog.json; unsupported legacy/binary files are used as metadata evidence.",
             "online_sources": "National and global URLs fetched with source status, text sample extraction and decision-topic scoring.",
             "apa_rule": "Every generated table carries a source string; source links remain in the Sources tab.",
@@ -952,6 +1267,14 @@ def main() -> None:
             "global_case_records": (case_package_tables.get("countryCaseStudies") or {}).get("row_count", 0),
             "decision_assumptions": (case_package_tables.get("decisionAssumptions") or {}).get("row_count", 0),
             "transport_vehicle_classes": len((transport_charts.get("vehicleClassTotals") or {}).get("rows", [])),
+            "presentation_decks_read": sum(1 for doc in documents if doc.get("extension") == ".pptx" and doc.get("status") == "read"),
+            "presentation_slides_read": sum(doc.get("pages", 0) for doc in documents if doc.get("extension") == ".pptx"),
+            "local_inventory_files": (file_inventory.get("summary") or {}).get("files_indexed", 0),
+            "local_inventory_mb": (file_inventory.get("summary") or {}).get("total_mb", 0),
+            "spatial_files_found": (spatial_evidence.get("summary") or {}).get("files_found", 0),
+            "spatial_layers_read": (spatial_evidence.get("summary") or {}).get("layers_read", 0),
+            "spatial_features_read": (spatial_evidence.get("summary") or {}).get("feature_count", 0),
+            "spatial_line_km": (spatial_evidence.get("summary") or {}).get("line_length_km", 0),
             "manual_repository_files": manual_repo.get("file_count", 0),
             "manual_logic_records": manual_repo.get("logic_record_count", 0),
             "mowt_pdf_records": len(mowt_catalog.get("records", [])),
@@ -962,6 +1285,8 @@ def main() -> None:
         "documentTable": build_document_table(documents),
         "documentTopicChart": document_topic_chart,
         "sourceCoverage": source_coverage,
+        "fileInventory": file_inventory,
+        "spatialEvidence": spatial_evidence,
         "tabularExtracts": tabular_extracts,
         "casePackageTables": case_package_tables,
         "globalCaseStudyCharts": global_case_charts,
@@ -977,6 +1302,7 @@ def main() -> None:
             case_package_tables,
             transport_charts,
             source_coverage,
+            spatial_evidence,
         ),
         "manualRepository": manual_repo,
         "manualRepositoryCharts": build_manual_repository_charts(manual_repo),

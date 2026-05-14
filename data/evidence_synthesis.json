@@ -1,27 +1,37 @@
 {
-  "generated_at_utc": "2026-05-14T09:39:04.807481+00:00",
+  "generated_at_utc": "2026-05-14T10:13:56.974134+00:00",
   "method": {
-    "local_documents": "PDF and DOCX text extraction using pypdf and python-docx; JSON digest parsed as text.",
+    "local_documents": "PDF, DOCX, PPTX and spreadsheet text extraction using pypdf, python-docx, zipped presentation XML and pandas; JSON digest parsed as text.",
+    "local_inventory": "All data-bearing local files are inventoried by source area, extension, storage size and evidence kind while build dependencies and generated app bundles are excluded.",
+    "spatial_layers": "Shapefiles, GeoJSON files and GeoPackages are read with geopandas/pyogrio when available; feature counts, geometry types, fields, line kilometres and polygon areas are summarized.",
     "manual_repository": "Full national manual repository classified from manuals_catalog.json; unsupported legacy/binary files are used as metadata evidence.",
     "online_sources": "National and global URLs fetched with source status, text sample extraction and decision-topic scoring.",
     "apa_rule": "Every generated table carries a source string; source links remain in the Sources tab."
   },
   "summary": {
-    "core_documents_found": 109,
-    "core_documents_read": 109,
-    "core_pages_read": 3880,
-    "core_words_read": 2449322,
+    "core_documents_found": 114,
+    "core_documents_read": 114,
+    "core_pages_read": 4052,
+    "core_words_read": 2460492,
     "docx_tables_read": 185,
     "local_tables_read": 225,
     "tabular_extracts": 21,
     "global_case_records": 9,
     "decision_assumptions": 10,
     "transport_vehicle_classes": 12,
+    "presentation_decks_read": 5,
+    "presentation_slides_read": 172,
+    "local_inventory_files": 345,
+    "local_inventory_mb": 6370.92,
+    "spatial_files_found": 43,
+    "spatial_layers_read": 41,
+    "spatial_features_read": 277045,
+    "spatial_line_km": 1160983.24,
     "manual_repository_files": 5221,
     "manual_logic_records": 2199,
     "mowt_pdf_records": 4,
     "online_sources_checked": 15,
-    "online_sources_read": 11
+    "online_sources_read": 12
   },
   "documents": [
     {
@@ -820,6 +830,72 @@
       "status": "read"
     },
     {
+      "name": "DUCAR_Executive_Briefing.pptx",
+      "path": "DUCAR_Framework_Tool/ppt/DUCAR_Executive_Briefing.pptx",
+      "source_area": "DUCAR presentation decks",
+      "extension": ".pptx",
+      "bytes": 146299,
+      "pages": 5,
+      "tables": 0,
+      "table_extracts": [],
+      "words": 289,
+      "characters": 2180,
+      "dominant_topic": "Budget monitoring",
+      "topic_counts": {
+        "PIMS appraisal": 0,
+        "Budget monitoring": 7,
+        "Road condition": 2,
+        "RAM and lifecycle": 0,
+        "Traffic and axle load": 1,
+        "GIS and network": 7,
+        "Construction QA": 0,
+        "Climate and drainage": 3,
+        "Safety and NMT": 0,
+        "Bridge and structures": 4,
+        "Procurement and contracts": 0
+      },
+      "summary_points": [
+        "Roads + bridges + drainage + access + budget evidence DUCAR network The decision problem editable native PPT DUCAR is large, access-critical and budget constrained.",
+        "GIS export Supports communication and delivery Sources: PIARC, n.d.; UKRLG, 2016; FHWA, 2026.",
+        "EXECUTIVE BRIEFING DUCAR Maintenance Prioritisation A defensible, budget-aware framework for roads, bridges, drainage and access-critical local infrastructure.",
+        "Worst-first lists can consume maintenance budgets with assets already beyond maintenance."
+      ],
+      "status": "read"
+    },
+    {
+      "name": "DUCAR_Executive_Briefing_80_Slides.pptx",
+      "path": "DUCAR_Framework_Tool/ppt/DUCAR_Executive_Briefing_80_Slides.pptx",
+      "source_area": "DUCAR presentation decks",
+      "extension": ".pptx",
+      "bytes": 2008969,
+      "pages": 80,
+      "tables": 0,
+      "table_extracts": [],
+      "words": 5184,
+      "characters": 37873,
+      "dominant_topic": "GIS and network",
+      "topic_counts": {
+        "PIMS appraisal": 0,
+        "Budget monitoring": 46,
+        "Road condition": 29,
+        "RAM and lifecycle": 0,
+        "Traffic and axle load": 0,
+        "GIS and network": 88,
+        "Construction QA": 0,
+        "Climate and drainage": 1,
+        "Safety and NMT": 0,
+        "Bridge and structures": 42,
+        "Procurement and contracts": 0
+      },
+      "summary_points": [
+        "04 Prioritisation Logic Triggers before ranking Maintainability classification Weighted score and budget selection DUCAR network DUCAR Priority Studio Prioritisation Logic workflow: scenario planning 1 Collect Use approved field forms and road/bridge IDs.",
+        "Editable PowerPoint | Native shapes, charts, tables and APA source footers 80-slide detailed implementation deck DUCAR Priority Studio Strategic Case workflow: scenario planning 1 Collect Use approved field forms and road/bridge IDs.",
+        "08 Implementation Roadmap Pilot, train, scale Institutional handover Continuous improvement DUCAR network DUCAR Priority Studio Implementation Roadmap chart: deferred backlog Interpretation Charts are editable PowerPoint chart objects where supported.",
+        "02 Data Foundation Minimum viable data Road and bridge identifiers Survey QA and source traceability DUCAR network DUCAR Priority Studio Data Foundation infographic: institutional maturity Decision What is the programme trying to decide and who approves it?"
+      ],
+      "status": "read"
+    },
+    {
       "name": "DUCAR_Field_Condition_Monitoring_Manual.docx",
       "path": "DUCAR_Framework_Tool/manuals/DUCAR_Field_Condition_Monitoring_Manual.docx",
       "source_area": "DUCAR manuals and policies",
@@ -966,6 +1042,34 @@
         "Climate and drainage": 0,
         "Safety and NMT": 0,
         "Bridge and structures": 0,
+        "Procurement and contracts": 0
+      },
+      "summary_points": [],
+      "status": "read"
+    },
+    {
+      "name": "DUCAR_Framework_Schematic_Diagram.pptx",
+      "path": "DUCAR_Framework_Tool/ppt/DUCAR_Framework_Schematic_Diagram.pptx",
+      "source_area": "DUCAR presentation decks",
+      "extension": ".pptx",
+      "bytes": 100615,
+      "pages": 1,
+      "tables": 0,
+      "table_extracts": [],
+      "words": 187,
+      "characters": 1511,
+      "dominant_topic": "Budget monitoring",
+      "topic_counts": {
+        "PIMS appraisal": 0,
+        "Budget monitoring": 8,
+        "Road condition": 3,
+        "RAM and lifecycle": 0,
+        "Traffic and axle load": 2,
+        "GIS and network": 2,
+        "Construction QA": 1,
+        "Climate and drainage": 3,
+        "Safety and NMT": 2,
+        "Bridge and structures": 4,
         "Procurement and contracts": 0
       },
       "summary_points": [],
@@ -2042,6 +2146,72 @@
       },
       "summary_points": [
         "DUCAR System Administration and Handover Manual Configuration, version control, backup, audit and annual maintenance of the tool package DUCAR network | Working implementation pack | 2026-05-05 1."
+      ],
+      "status": "read"
+    },
+    {
+      "name": "DUCAR_Tool_Training_80_Slides.pptx",
+      "path": "DUCAR_Framework_Tool/ppt/DUCAR_Tool_Training_80_Slides.pptx",
+      "source_area": "DUCAR presentation decks",
+      "extension": ".pptx",
+      "bytes": 2008772,
+      "pages": 80,
+      "tables": 0,
+      "table_extracts": [],
+      "words": 5181,
+      "characters": 37386,
+      "dominant_topic": "GIS and network",
+      "topic_counts": {
+        "PIMS appraisal": 0,
+        "Budget monitoring": 30,
+        "Road condition": 29,
+        "RAM and lifecycle": 0,
+        "Traffic and axle load": 7,
+        "GIS and network": 82,
+        "Construction QA": 0,
+        "Climate and drainage": 1,
+        "Safety and NMT": 0,
+        "Bridge and structures": 50,
+        "Procurement and contracts": 0
+      },
+      "summary_points": [
+        "04 Prioritisation Logic Triggers before ranking Maintainability classification Weighted score and budget selection DUCAR network DUCAR Priority Studio Prioritisation Logic workflow: traffic proxy 1 Collect Use approved field forms and road/bridge IDs.",
+        "Editable PowerPoint | Native shapes, charts, tables and APA source footers 80-slide detailed implementation deck DUCAR Priority Studio Strategic Case workflow: traffic proxy 1 Collect Use approved field forms and road/bridge IDs.",
+        "DUCAR Priority Studio Implementation Roadmap workflow: traffic proxy 1 Collect Use approved field forms and road/bridge IDs.",
+        "08 Implementation Roadmap Pilot, train, scale Institutional handover Continuous improvement DUCAR network DUCAR Priority Studio Implementation Roadmap chart: QA exceptions Interpretation Charts are editable PowerPoint chart objects where supported."
+      ],
+      "status": "read"
+    },
+    {
+      "name": "DUCAR_Tool_Training_Deck.pptx",
+      "path": "DUCAR_Framework_Tool/ppt/DUCAR_Tool_Training_Deck.pptx",
+      "source_area": "DUCAR presentation decks",
+      "extension": ".pptx",
+      "bytes": 160487,
+      "pages": 6,
+      "tables": 0,
+      "table_extracts": [],
+      "words": 329,
+      "characters": 2367,
+      "dominant_topic": "GIS and network",
+      "topic_counts": {
+        "PIMS appraisal": 0,
+        "Budget monitoring": 4,
+        "Road condition": 2,
+        "RAM and lifecycle": 0,
+        "Traffic and axle load": 0,
+        "GIS and network": 8,
+        "Construction QA": 0,
+        "Climate and drainage": 1,
+        "Safety and NMT": 0,
+        "Bridge and structures": 5,
+        "Procurement and contracts": 0
+      },
+      "summary_points": [
+        "Roads + bridges + drainage + access + budget evidence DUCAR network Learning outcomes editable native PPT Understand the annual DUCAR data-to-programme workflow.",
+        "Workbook operating sequence editable native PPT Start with Inputs_Budget, Policy_Weights and Unit_Rates.",
+        "TRAINING MODULE Using the DUCAR Decision Tool Training deck for field teams, planners, GIS officers, managers and reviewers.",
+        "Practical exercise editable native PPT Update the received budget and reserve percentage."
       ],
       "status": "read"
     },
@@ -4876,6 +5046,16 @@
         "read"
       ],
       [
+        "DUCAR_Executive_Briefing_80_Slides.pptx",
+        "DUCAR presentation decks",
+        "PPTX",
+        80,
+        "",
+        5184,
+        "GIS and network",
+        "read"
+      ],
+      [
         "Pavement data collection policies and procedures.docx",
         "TOR and local source documents",
         "DOCX",
@@ -4883,6 +5063,16 @@
         21,
         5182,
         "Construction QA",
+        "read"
+      ],
+      [
+        "DUCAR_Tool_Training_80_Slides.pptx",
+        "DUCAR presentation decks",
+        "PPTX",
+        80,
+        "",
+        5181,
+        "GIS and network",
         "read"
       ],
       [
@@ -5226,6 +5416,16 @@
         "read"
       ],
       [
+        "DUCAR_Tool_Training_Deck.pptx",
+        "DUCAR presentation decks",
+        "PPTX",
+        6,
+        "",
+        329,
+        "GIS and network",
+        "read"
+      ],
+      [
         "DUCAR_Editability_and_Modern_Design_Guide.docx",
         "TOR and local source documents",
         "DOCX",
@@ -5273,6 +5473,16 @@
         "",
         295,
         "RAM and lifecycle",
+        "read"
+      ],
+      [
+        "DUCAR_Executive_Briefing.pptx",
+        "DUCAR presentation decks",
+        "PPTX",
+        5,
+        "",
+        289,
+        "Budget monitoring",
         "read"
       ],
       [
@@ -5333,6 +5543,16 @@
         1,
         196,
         "GIS and network",
+        "read"
+      ],
+      [
+        "DUCAR_Framework_Schematic_Diagram.pptx",
+        "DUCAR presentation decks",
+        "PPTX",
+        1,
+        "",
+        187,
+        "Budget monitoring",
         "read"
       ],
       [
@@ -5720,13 +5940,13 @@
   "documentTopicChart": [
     {
       "topic": "Construction QA",
-      "mentions": 21426,
+      "mentions": 21427,
       "share": 100.0,
       "decision_use": "Design, material, testing, supervision and quality acceptance rules."
     },
     {
       "topic": "Traffic and axle load",
-      "mentions": 11562,
+      "mentions": 11572,
       "share": 54.0,
       "decision_use": "AADT, representative vehicles, axle-load pressure and speed-flow assumptions."
     },
@@ -5738,32 +5958,32 @@
     },
     {
       "topic": "Bridge and structures",
-      "mentions": 10298,
-      "share": 48.1,
+      "mentions": 10403,
+      "share": 48.6,
       "decision_use": "Bridge/culvert inventory, inspection and structural criticality gates."
     },
     {
       "topic": "Safety and NMT",
-      "mentions": 6918,
+      "mentions": 6920,
       "share": 32.3,
       "decision_use": "Crash exposure, vulnerable users and safety countermeasure benefits."
     },
     {
       "topic": "Climate and drainage",
-      "mentions": 5995,
+      "mentions": 6004,
       "share": 28.0,
       "decision_use": "Flood, drainage, culvert and climate-resilience screens."
     },
     {
       "topic": "Road condition",
-      "mentions": 5400,
-      "share": 25.2,
+      "mentions": 5465,
+      "share": 25.5,
       "decision_use": "Condition-based treatment triggers, deterioration pressure and monitoring tiers."
     },
     {
       "topic": "GIS and network",
-      "mentions": 3796,
-      "share": 17.7,
+      "mentions": 3983,
+      "share": 18.6,
       "decision_use": "Route identity, district joins, topology, route matrix and spatial equity."
     },
     {
@@ -5780,8 +6000,8 @@
     },
     {
       "topic": "Budget monitoring",
-      "mentions": 2371,
-      "share": 11.1,
+      "mentions": 2466,
+      "share": 11.5,
       "decision_use": "Budget release, absorption, variance and physical progress checks."
     }
   ],
@@ -5815,6 +6035,10 @@
         ],
         [
           "XLSX",
+          5
+        ],
+        [
+          "PPTX",
           5
         ],
         [
@@ -5855,6 +6079,10 @@
           5
         ],
         [
+          "DUCAR presentation decks",
+          5
+        ],
+        [
           "Road transport data",
           4
         ],
@@ -5877,7 +6105,7 @@
       "rows": [
         [
           "read",
-          109
+          114
         ]
       ]
     },
@@ -5890,7 +6118,7 @@
       "rows": [
         [
           "GIS and network",
-          30
+          33
         ],
         [
           "PIMS appraisal",
@@ -5906,7 +6134,7 @@
         ],
         [
           "Budget monitoring",
-          10
+          12
         ],
         [
           "Road condition",
@@ -5930,6 +6158,5990 @@
         ]
       ]
     }
+  },
+  "fileInventory": {
+    "summary": {
+      "files_indexed": 345,
+      "total_bytes": 6680395364,
+      "total_mb": 6370.92,
+      "source_areas": 10
+    },
+    "kindChart": {
+      "title": "All local data-bearing files by kind",
+      "columns": [
+        "Kind",
+        "Files"
+      ],
+      "rows": [
+        [
+          "GIS and spatial",
+          208
+        ],
+        [
+          "Document and presentation",
+          65
+        ],
+        [
+          "JSON data feed",
+          36
+        ],
+        [
+          "Spreadsheet and tabular",
+          13
+        ],
+        [
+          "Metadata XML",
+          12
+        ],
+        [
+          "Image and rendered visual",
+          6
+        ],
+        [
+          "Archive",
+          5
+        ]
+      ]
+    },
+    "extensionChart": {
+      "title": "All local data-bearing files by extension",
+      "columns": [
+        "Extension",
+        "Files"
+      ],
+      "rows": [
+        [
+          "JSON",
+          36
+        ],
+        [
+          "DOCX",
+          34
+        ],
+        [
+          "DBF",
+          31
+        ],
+        [
+          "PRJ",
+          31
+        ],
+        [
+          "SHP",
+          31
+        ],
+        [
+          "SHX",
+          31
+        ],
+        [
+          "CPG",
+          30
+        ],
+        [
+          "GEOJSON",
+          30
+        ],
+        [
+          "PDF",
+          14
+        ],
+        [
+          "XML",
+          12
+        ],
+        [
+          "MD",
+          12
+        ],
+        [
+          "SBN",
+          11
+        ],
+        [
+          "SBX",
+          11
+        ],
+        [
+          "CSV",
+          7
+        ],
+        [
+          "ZIP",
+          5
+        ],
+        [
+          "XLSX",
+          5
+        ],
+        [
+          "SVG",
+          5
+        ],
+        [
+          "PPTX",
+          5
+        ],
+        [
+          "GPKG",
+          2
+        ],
+        [
+          "XLS",
+          1
+        ],
+        [
+          "PNG",
+          1
+        ]
+      ]
+    },
+    "sourceAreaChart": {
+      "title": "All local data-bearing files by source area",
+      "columns": [
+        "Source area",
+        "Files"
+      ],
+      "rows": [
+        [
+          "Published source documents",
+          117
+        ],
+        [
+          "TOR and local source documents",
+          68
+        ],
+        [
+          "GIS and road data",
+          66
+        ],
+        [
+          "Web data feeds",
+          56
+        ],
+        [
+          "Traffic count scratch dataset",
+          14
+        ],
+        [
+          "DUCAR manuals and policies",
+          7
+        ],
+        [
+          "Global case evidence package",
+          5
+        ],
+        [
+          "DUCAR presentation decks",
+          5
+        ],
+        [
+          "Road transport data",
+          4
+        ],
+        [
+          "Generated DUCAR workbooks",
+          3
+        ]
+      ]
+    },
+    "fileTable": {
+      "title": "Local data-bearing file inventory",
+      "columns": [
+        "File",
+        "Source area",
+        "Kind",
+        "Type",
+        "Size MB",
+        "Modified",
+        "Path"
+      ],
+      "rows": [
+        [
+          "gis_osm_buildings_a_free_1.shp",
+          "Published source documents",
+          "GIS and spatial",
+          "SHP",
+          1530.27,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_buildings_a_free_1.shp"
+        ],
+        [
+          "gis_osm_buildings_a_free_1.dbf",
+          "Published source documents",
+          "GIS and spatial",
+          "DBF",
+          1523.56,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_buildings_a_free_1.dbf"
+        ],
+        [
+          "uganda-latest-free.shp.zip",
+          "Published source documents",
+          "Archive",
+          "ZIP",
+          1104.61,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/uganda-latest-free.shp.zip"
+        ],
+        [
+          "uganda_roads_master.gpkg",
+          "Web data feeds",
+          "GIS and spatial",
+          "GPKG",
+          529.16,
+          "2026-05-13",
+          "DUCAR_Framework_Tool/github_app/data/uganda_roads_master.gpkg"
+        ],
+        [
+          "gis_osm_roads_free_1.shp",
+          "Published source documents",
+          "GIS and spatial",
+          "SHP",
+          223.97,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_roads_free_1.shp"
+        ],
+        [
+          "dcroads2025.dbf",
+          "TOR and local source documents",
+          "GIS and spatial",
+          "DBF",
+          175.41,
+          "2025-10-13",
+          "district roads/dcroads2025.dbf"
+        ],
+        [
+          "dcroads.dbf",
+          "TOR and local source documents",
+          "GIS and spatial",
+          "DBF",
+          118.47,
+          "2025-10-10",
+          "district roads/dcroads.dbf"
+        ],
+        [
+          "gis_osm_roads_free_1.dbf",
+          "Published source documents",
+          "GIS and spatial",
+          "DBF",
+          118.25,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_roads_free_1.dbf"
+        ],
+        [
+          "gis_osm_landuse_a_free_1.shp",
+          "Published source documents",
+          "GIS and spatial",
+          "SHP",
+          93.38,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_landuse_a_free_1.shp"
+        ],
+        [
+          "gis_osm_buildings_a_free_1.shx",
+          "Published source documents",
+          "GIS and spatial",
+          "SHX",
+          73.87,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_buildings_a_free_1.shx"
+        ],
+        [
+          "dcroads2025.shp",
+          "TOR and local source documents",
+          "GIS and spatial",
+          "SHP",
+          57.57,
+          "2025-10-13",
+          "district roads/dcroads2025.shp"
+        ],
+        [
+          "dcroads.shp",
+          "TOR and local source documents",
+          "GIS and spatial",
+          "SHP",
+          53.64,
+          "2025-10-10",
+          "district roads/dcroads.shp"
+        ],
+        [
+          "massive_sites.json",
+          "Traffic count scratch dataset",
+          "JSON data feed",
+          "JSON",
+          42.31,
+          "2026-04-24",
+          "scratch/uganda_atc/src/data/massive_sites.json"
+        ],
+        [
+          "gis_osm_natural_free_1.dbf",
+          "Published source documents",
+          "GIS and spatial",
+          "DBF",
+          37.4,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_natural_free_1.dbf"
+        ],
+        [
+          "road_links.json",
+          "Traffic count scratch dataset",
+          "JSON data feed",
+          "JSON",
+          34.07,
+          "2026-05-08",
+          "scratch/uganda_atc/src/data/road_links.json"
+        ],
+        [
+          "network2025.shp",
+          "GIS and road data",
+          "GIS and spatial",
+          "SHP",
+          26.54,
+          "2025-11-04",
+          "Roads/network2025.shp"
+        ],
+        [
+          "networkfy25_26.shp",
+          "GIS and road data",
+          "GIS and spatial",
+          "SHP",
+          26.54,
+          "2026-01-21",
+          "Roads/networkfy25_26.shp"
+        ],
+        [
+          "network2026.shp",
+          "GIS and road data",
+          "GIS and spatial",
+          "SHP",
+          26.54,
+          "2026-03-04",
+          "Roads/network2026/network2026.shp"
+        ],
+        [
+          "networkfy25_26.shp",
+          "GIS and road data",
+          "GIS and spatial",
+          "SHP",
+          26.54,
+          "2026-01-05",
+          "Roads/networkfy25_26/networkfy25_26.shp"
+        ],
+        [
+          "gis_osm_water_a_free_1.shp",
+          "Published source documents",
+          "GIS and spatial",
+          "SHP",
+          25.99,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_water_a_free_1.shp"
+        ],
+        [
+          "national road network fy25-26.shp",
+          "GIS and road data",
+          "GIS and spatial",
+          "SHP",
+          22.97,
+          "2025-11-24",
+          "Roads/national road network fy25-26.shp"
+        ],
+        [
+          "uganda_network_edges_web.geojson",
+          "Web data feeds",
+          "GIS and spatial",
+          "GEOJSON",
+          22.39,
+          "2026-05-14",
+          "DUCAR_Framework_Tool/github_app/public/data/uganda_network_edges_web.geojson"
+        ],
+        [
+          "uganda_unified_roads_web_2026-05-05.geojson",
+          "Web data feeds",
+          "GIS and spatial",
+          "GEOJSON",
+          20.22,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/public/data/uganda_unified_roads_web_2026-05-05.geojson"
+        ],
+        [
+          "uganda_unified_roads_web_2026-05-06.geojson",
+          "Web data feeds",
+          "GIS and spatial",
+          "GEOJSON",
+          20.22,
+          "2026-05-06",
+          "DUCAR_Framework_Tool/github_app/public/data/uganda_unified_roads_web_2026-05-06.geojson"
+        ],
+        [
+          "uganda_unified_roads_web_2026-05-13.geojson",
+          "Web data feeds",
+          "GIS and spatial",
+          "GEOJSON",
+          20.22,
+          "2026-05-13",
+          "DUCAR_Framework_Tool/github_app/public/data/uganda_unified_roads_web_2026-05-13.geojson"
+        ],
+        [
+          "gis_osm_landuse_a_free_1.dbf",
+          "Published source documents",
+          "GIS and spatial",
+          "DBF",
+          20.09,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_landuse_a_free_1.dbf"
+        ],
+        [
+          "uganda_unified_roads_web.geojson",
+          "Web data feeds",
+          "GIS and spatial",
+          "GEOJSON",
+          20.03,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/public/data/uganda_unified_roads_web.geojson"
+        ],
+        [
+          "CONSTRUCTION-MANUAL-.pdf",
+          "TOR and local source documents",
+          "Document and presentation",
+          "PDF",
+          19.94,
+          "2026-05-05",
+          "CONSTRUCTION-MANUAL-.pdf"
+        ],
+        [
+          "CONSTRUCTION-MANUAL-.pdf",
+          "Published source documents",
+          "Document and presentation",
+          "PDF",
+          19.94,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/public/docs/CONSTRUCTION-MANUAL-.pdf"
+        ],
+        [
+          "URDM-Manual-Part-1-July-2023.pdf",
+          "Published source documents",
+          "Document and presentation",
+          "PDF",
+          19.32,
+          "2026-05-07",
+          "DUCAR_Framework_Tool/github_app/public/docs/mowt/URDM-Manual-Part-1-July-2023.pdf"
+        ],
+        [
+          "URDM-Manual-Part-1-July-2023.pdf",
+          "Published source documents",
+          "Document and presentation",
+          "PDF",
+          19.32,
+          "2026-05-07",
+          "DUCAR_Framework_Tool/github_app/data_sources/mowt_manuals/URDM-Manual-Part-1-July-2023.pdf"
+        ],
+        [
+          "gis_osm_waterways_free_1.shp",
+          "Published source documents",
+          "GIS and spatial",
+          "SHP",
+          18.25,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_waterways_free_1.shp"
+        ],
+        [
+          "Final-General-Specifications-for-Roads-and-Bridges_March-2026.pdf",
+          "Published source documents",
+          "Document and presentation",
+          "PDF",
+          13.41,
+          "2026-05-07",
+          "DUCAR_Framework_Tool/github_app/public/docs/mowt/Final-General-Specifications-for-Roads-and-Bridges_March-2026.pdf"
+        ],
+        [
+          "Final-General-Specifications-for-Roads-and-Bridges_March-2026.pdf",
+          "Published source documents",
+          "Document and presentation",
+          "PDF",
+          13.41,
+          "2026-05-07",
+          "DUCAR_Framework_Tool/github_app/data_sources/mowt_manuals/Final-General-Specifications-for-Roads-and-Bridges_March-2026.pdf"
+        ],
+        [
+          "gis_osm_places_free_1.dbf",
+          "Published source documents",
+          "GIS and spatial",
+          "DBF",
+          11.01,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_places_free_1.dbf"
+        ],
+        [
+          "URDM-Standard-Drawings-July2023.pdf",
+          "Published source documents",
+          "Document and presentation",
+          "PDF",
+          10.33,
+          "2026-05-07",
+          "DUCAR_Framework_Tool/github_app/public/docs/mowt/URDM-Standard-Drawings-July2023.pdf"
+        ],
+        [
+          "URDM-Standard-Drawings-July2023.pdf",
+          "Published source documents",
+          "Document and presentation",
+          "PDF",
+          10.33,
+          "2026-05-07",
+          "DUCAR_Framework_Tool/github_app/data_sources/mowt_manuals/URDM-Standard-Drawings-July2023.pdf"
+        ],
+        [
+          "network2026.zip",
+          "GIS and road data",
+          "Archive",
+          "ZIP",
+          9.08,
+          "2026-04-02",
+          "Roads/network2026.zip"
+        ],
+        [
+          "National roads.zip",
+          "GIS and road data",
+          "Archive",
+          "ZIP",
+          9.08,
+          "2026-01-23",
+          "Roads/National roads.zip"
+        ],
+        [
+          "networkfy25_26.zip",
+          "GIS and road data",
+          "Archive",
+          "ZIP",
+          9.03,
+          "2025-11-25",
+          "Roads/networkfy25_26.zip"
+        ],
+        [
+          "gis_osm_pois_free_1.dbf",
+          "Published source documents",
+          "GIS and spatial",
+          "DBF",
+          8.59,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_pois_free_1.dbf"
+        ],
+        [
+          "gis_osm_adminareas_a_free_1.shp",
+          "Published source documents",
+          "GIS and spatial",
+          "SHP",
+          8.19,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_adminareas_a_free_1.shp"
+        ],
+        [
+          "Integrated Transport Infrastructure Services Annual Budget Monitoring report FY 2023-24.pdf",
+          "TOR and local source documents",
+          "Document and presentation",
+          "PDF",
+          8.01,
+          "2026-05-06",
+          "Integrated Transport Infrastructure Services Annual Budget Monitoring report FY 2023-24.pdf"
+        ],
+        [
+          "Integrated Transport Infrastructure Services Annual Budget Monitoring report FY 2023-24.pdf",
+          "Published source documents",
+          "Document and presentation",
+          "PDF",
+          8.01,
+          "2026-05-06",
+          "DUCAR_Framework_Tool/github_app/public/docs/Integrated Transport Infrastructure Services Annual Budget Monitoring report FY 2023-24.pdf"
+        ],
+        [
+          "uganda_osm_major_roads_web_2026-05-05.geojson",
+          "Web data feeds",
+          "GIS and spatial",
+          "GEOJSON",
+          7.84,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/public/data/uganda_osm_major_roads_web_2026-05-05.geojson"
+        ],
+        [
+          "uganda_osm_major_roads_web_2026-05-06.geojson",
+          "Web data feeds",
+          "GIS and spatial",
+          "GEOJSON",
+          7.84,
+          "2026-05-06",
+          "DUCAR_Framework_Tool/github_app/public/data/uganda_osm_major_roads_web_2026-05-06.geojson"
+        ],
+        [
+          "uganda_osm_major_roads_web_2026-05-13.geojson",
+          "Web data feeds",
+          "GIS and spatial",
+          "GEOJSON",
+          7.84,
+          "2026-05-13",
+          "DUCAR_Framework_Tool/github_app/public/data/uganda_osm_major_roads_web_2026-05-13.geojson"
+        ],
+        [
+          "uganda_osm_major_roads_web.geojson",
+          "Web data feeds",
+          "GIS and spatial",
+          "GEOJSON",
+          7.61,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/public/data/uganda_osm_major_roads_web.geojson"
+        ],
+        [
+          "uganda_network_nodes_web.geojson",
+          "Web data feeds",
+          "GIS and spatial",
+          "GEOJSON",
+          7.55,
+          "2026-05-14",
+          "DUCAR_Framework_Tool/github_app/public/data/uganda_network_nodes_web.geojson"
+        ],
+        [
+          "gis_osm_natural_free_1.shp",
+          "Published source documents",
+          "GIS and spatial",
+          "SHP",
+          7.22,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_natural_free_1.shp"
+        ],
+        [
+          "uganda_clean_road_routes_web.geojson",
+          "Web data feeds",
+          "GIS and spatial",
+          "GEOJSON",
+          7.01,
+          "2026-05-14",
+          "DUCAR_Framework_Tool/github_app/public/data/uganda_clean_road_routes_web.geojson"
+        ],
+        [
+          "districts.shp",
+          "GIS and road data",
+          "GIS and spatial",
+          "SHP",
+          6.64,
+          "2025-12-09",
+          "Districts/districts.shp"
+        ],
+        [
+          "NMT-Design-and-Operational-Manual-web-2.pdf",
+          "Published source documents",
+          "Document and presentation",
+          "PDF",
+          5.93,
+          "2026-05-07",
+          "DUCAR_Framework_Tool/github_app/public/docs/mowt/NMT-Design-and-Operational-Manual-web-2.pdf"
+        ],
+        [
+          "NMT-Design-and-Operational-Manual-web-2.pdf",
+          "Published source documents",
+          "Document and presentation",
+          "PDF",
+          5.93,
+          "2026-05-07",
+          "DUCAR_Framework_Tool/github_app/data_sources/mowt_manuals/NMT-Design-and-Operational-Manual-web-2.pdf"
+        ],
+        [
+          "networkfy25_26.dbf",
+          "GIS and road data",
+          "GIS and spatial",
+          "DBF",
+          5.63,
+          "2026-01-21",
+          "Roads/networkfy25_26.dbf"
+        ],
+        [
+          "gis_osm_roads_free_1.shx",
+          "Published source documents",
+          "GIS and spatial",
+          "SHX",
+          5.17,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_roads_free_1.shx"
+        ],
+        [
+          "Public-Investment-Manual-for-Project-Preparation-and-Appraisal.pdf",
+          "TOR and local source documents",
+          "Document and presentation",
+          "PDF",
+          5.06,
+          "2026-05-06",
+          "Public-Investment-Manual-for-Project-Preparation-and-Appraisal.pdf"
+        ],
+        [
+          "Public-Investment-Manual-for-Project-Preparation-and-Appraisal.pdf",
+          "Published source documents",
+          "Document and presentation",
+          "PDF",
+          5.06,
+          "2026-05-06",
+          "DUCAR_Framework_Tool/github_app/public/docs/Public-Investment-Manual-for-Project-Preparation-and-Appraisal.pdf"
+        ],
+        [
+          "gis_osm_waterways_free_1.dbf",
+          "Published source documents",
+          "GIS and spatial",
+          "DBF",
+          4.36,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_waterways_free_1.dbf"
+        ],
+        [
+          "gis_osm_water_a_free_1.dbf",
+          "Published source documents",
+          "GIS and spatial",
+          "DBF",
+          3.7,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_water_a_free_1.dbf"
+        ],
+        [
+          "networkfy25_26.dbf",
+          "GIS and road data",
+          "GIS and spatial",
+          "DBF",
+          2.83,
+          "2026-01-05",
+          "Roads/networkfy25_26/networkfy25_26.dbf"
+        ],
+        [
+          "networkfy25_26-MOWT-DNR-001.dbf",
+          "GIS and road data",
+          "GIS and spatial",
+          "DBF",
+          2.82,
+          "2025-11-25",
+          "Roads/networkfy25_26-MOWT-DNR-001.dbf"
+        ],
+        [
+          "network2026.dbf",
+          "GIS and road data",
+          "GIS and spatial",
+          "DBF",
+          2.16,
+          "2026-03-04",
+          "Roads/network2026/network2026.dbf"
+        ],
+        [
+          "national road network fy25-26.dbf",
+          "GIS and road data",
+          "GIS and spatial",
+          "DBF",
+          2.15,
+          "2025-11-24",
+          "Roads/national road network fy25-26.dbf"
+        ],
+        [
+          "manuals_catalog.json",
+          "Web data feeds",
+          "JSON data feed",
+          "JSON",
+          2.12,
+          "2026-05-06",
+          "DUCAR_Framework_Tool/github_app/data/manuals_catalog.json"
+        ],
+        [
+          "manuals_catalog.json",
+          "Web data feeds",
+          "JSON data feed",
+          "JSON",
+          2.12,
+          "2026-05-06",
+          "DUCAR_Framework_Tool/github_app/public/data/manuals_catalog.json"
+        ],
+        [
+          "uganda_national_roads_fy25_26.geojson",
+          "Web data feeds",
+          "GIS and spatial",
+          "GEOJSON",
+          2.11,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/public/data/uganda_national_roads_fy25_26.geojson"
+        ],
+        [
+          "gis_osm_natural_free_1.shx",
+          "Published source documents",
+          "GIS and spatial",
+          "SHX",
+          2.06,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_natural_free_1.shx"
+        ],
+        [
+          "uganda_national_roads_fy25_26_2026-05-05.geojson",
+          "Web data feeds",
+          "GIS and spatial",
+          "GEOJSON",
+          2.06,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/public/data/uganda_national_roads_fy25_26_2026-05-05.geojson"
+        ],
+        [
+          "uganda_national_roads_fy25_26_2026-05-06.geojson",
+          "Web data feeds",
+          "GIS and spatial",
+          "GEOJSON",
+          2.06,
+          "2026-05-06",
+          "DUCAR_Framework_Tool/github_app/public/data/uganda_national_roads_fy25_26_2026-05-06.geojson"
+        ],
+        [
+          "uganda_national_roads_fy25_26_2026-05-13.geojson",
+          "Web data feeds",
+          "GIS and spatial",
+          "GEOJSON",
+          2.06,
+          "2026-05-13",
+          "DUCAR_Framework_Tool/github_app/public/data/uganda_national_roads_fy25_26_2026-05-13.geojson"
+        ],
+        [
+          "gis_osm_places_free_1.shp",
+          "Published source documents",
+          "GIS and spatial",
+          "SHP",
+          1.99,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_places_free_1.shp"
+        ],
+        [
+          "district_roads_dissolved.geojson",
+          "Web data feeds",
+          "GIS and spatial",
+          "GEOJSON",
+          1.97,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data/district_roads_dissolved.geojson"
+        ],
+        [
+          "district_roads_dissolved.geojson",
+          "Web data feeds",
+          "GIS and spatial",
+          "GEOJSON",
+          1.97,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/public/data/district_roads_dissolved.geojson"
+        ],
+        [
+          "DUCAR_Executive_Briefing_80_Slides.pptx",
+          "DUCAR presentation decks",
+          "Document and presentation",
+          "PPTX",
+          1.92,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/ppt/DUCAR_Executive_Briefing_80_Slides.pptx"
+        ],
+        [
+          "DUCAR_Tool_Training_80_Slides.pptx",
+          "DUCAR presentation decks",
+          "Document and presentation",
+          "PPTX",
+          1.92,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/ppt/DUCAR_Tool_Training_80_Slides.pptx"
+        ],
+        [
+          "network2025.dbf",
+          "GIS and road data",
+          "GIS and spatial",
+          "DBF",
+          1.9,
+          "2025-11-04",
+          "Roads/network2025.dbf"
+        ],
+        [
+          "uganda_traffic_flows_web.geojson",
+          "Web data feeds",
+          "GIS and spatial",
+          "GEOJSON",
+          1.76,
+          "2026-05-14",
+          "DUCAR_Framework_Tool/github_app/public/data/uganda_traffic_flows_web.geojson"
+        ],
+        [
+          "gis_osm_pois_free_1.shp",
+          "Published source documents",
+          "GIS and spatial",
+          "SHP",
+          1.66,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_pois_free_1.shp"
+        ],
+        [
+          "gis_osm_places_a_free_1.shp",
+          "Published source documents",
+          "GIS and spatial",
+          "SHP",
+          1.57,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_places_a_free_1.shp"
+        ],
+        [
+          "gis_osm_pois_a_free_1.shp",
+          "Published source documents",
+          "GIS and spatial",
+          "SHP",
+          1.35,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_pois_a_free_1.shp"
+        ],
+        [
+          "gis_osm_protected_areas_a_free_1.shp",
+          "Published source documents",
+          "GIS and spatial",
+          "SHP",
+          1.29,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_protected_areas_a_free_1.shp"
+        ],
+        [
+          "gis_osm_landuse_a_free_1.shx",
+          "Published source documents",
+          "GIS and spatial",
+          "SHX",
+          1.11,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_landuse_a_free_1.shx"
+        ],
+        [
+          "gis_osm_pois_a_free_1.dbf",
+          "Published source documents",
+          "GIS and spatial",
+          "DBF",
+          1.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_pois_a_free_1.dbf"
+        ],
+        [
+          "gis_osm_traffic_free_1.dbf",
+          "Published source documents",
+          "GIS and spatial",
+          "DBF",
+          0.85,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_traffic_free_1.dbf"
+        ],
+        [
+          "LTPPMS Establish Guide.docx",
+          "TOR and local source documents",
+          "Document and presentation",
+          "DOCX",
+          0.72,
+          "2017-12-20",
+          "LTPPMS Establish Guide.docx"
+        ],
+        [
+          "gis_osm_places_free_1.shx",
+          "Published source documents",
+          "GIS and spatial",
+          "SHX",
+          0.57,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_places_free_1.shx"
+        ],
+        [
+          "DUCAR_source_digest.json",
+          "TOR and local source documents",
+          "JSON data feed",
+          "JSON",
+          0.51,
+          "2026-05-05",
+          "DUCAR_source_digest.json"
+        ],
+        [
+          "DUCAR_source_digest.json",
+          "Web data feeds",
+          "JSON data feed",
+          "JSON",
+          0.51,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/public/data/DUCAR_source_digest.json"
+        ],
+        [
+          "gis_osm_pois_free_1.shx",
+          "Published source documents",
+          "GIS and spatial",
+          "SHX",
+          0.47,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_pois_free_1.shx"
+        ],
+        [
+          "DUCAR_Decision_Support_Tool.xlsx",
+          "TOR and local source documents",
+          "Spreadsheet and tabular",
+          "XLSX",
+          0.44,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/DUCAR_Decision_Support_Tool.xlsx"
+        ],
+        [
+          "gis_osm_traffic_a_free_1.shp",
+          "Published source documents",
+          "GIS and spatial",
+          "SHP",
+          0.41,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_traffic_a_free_1.shp"
+        ],
+        [
+          "gis_osm_traffic_a_free_1.dbf",
+          "Published source documents",
+          "GIS and spatial",
+          "DBF",
+          0.4,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_traffic_a_free_1.dbf"
+        ],
+        [
+          "gis_osm_pofw_free_1.dbf",
+          "Published source documents",
+          "GIS and spatial",
+          "DBF",
+          0.39,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_pofw_free_1.dbf"
+        ],
+        [
+          "Guidelines for Road Performance Indicators.docx",
+          "TOR and local source documents",
+          "Document and presentation",
+          "DOCX",
+          0.37,
+          "2017-12-20",
+          "Guidelines for Road Performance Indicators.docx"
+        ],
+        [
+          "selected_cbd_roads.geojson",
+          "Web data feeds",
+          "GIS and spatial",
+          "GEOJSON",
+          0.34,
+          "2026-05-13",
+          "DUCAR_Framework_Tool/github_app/public/data/selected_cbd_roads.geojson"
+        ],
+        [
+          "uganda_roads_district_summary.geojson",
+          "Web data feeds",
+          "GIS and spatial",
+          "GEOJSON",
+          0.34,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/public/data/uganda_roads_district_summary.geojson"
+        ],
+        [
+          "uganda_roads_district_summary_2026-05-05.geojson",
+          "Web data feeds",
+          "GIS and spatial",
+          "GEOJSON",
+          0.33,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/public/data/uganda_roads_district_summary_2026-05-05.geojson"
+        ],
+        [
+          "uganda_roads_district_summary_2026-05-06.geojson",
+          "Web data feeds",
+          "GIS and spatial",
+          "GEOJSON",
+          0.33,
+          "2026-05-06",
+          "DUCAR_Framework_Tool/github_app/public/data/uganda_roads_district_summary_2026-05-06.geojson"
+        ],
+        [
+          "uganda_roads_district_summary_2026-05-13.geojson",
+          "Web data feeds",
+          "GIS and spatial",
+          "GEOJSON",
+          0.33,
+          "2026-05-13",
+          "DUCAR_Framework_Tool/github_app/public/data/uganda_roads_district_summary_2026-05-13.geojson"
+        ],
+        [
+          "districts.geojson",
+          "Web data feeds",
+          "GIS and spatial",
+          "GEOJSON",
+          0.32,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data/districts.geojson"
+        ],
+        [
+          "districts.geojson",
+          "Web data feeds",
+          "GIS and spatial",
+          "GEOJSON",
+          0.32,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/public/data/districts.geojson"
+        ],
+        [
+          "Draft Traffic data collection policies and procedures version March 2016.docx",
+          "TOR and local source documents",
+          "Document and presentation",
+          "DOCX",
+          0.29,
+          "2016-11-17",
+          "Draft Traffic data collection policies and procedures version March 2016.docx"
+        ],
+        [
+          "dcroads2025.sbn",
+          "TOR and local source documents",
+          "GIS and spatial",
+          "SBN",
+          0.28,
+          "2025-10-13",
+          "district roads/dcroads2025.sbn"
+        ],
+        [
+          "districts2020.shp.xml",
+          "GIS and road data",
+          "Metadata XML",
+          "XML",
+          0.28,
+          "2025-12-09",
+          "Districts/districts2020.shp.xml"
+        ],
+        [
+          "districts.shp.xml",
+          "GIS and road data",
+          "Metadata XML",
+          "XML",
+          0.28,
+          "2025-12-09",
+          "Districts/districts.shp.xml"
+        ],
+        [
+          "Pavement data collection policies and procedures.docx",
+          "TOR and local source documents",
+          "Document and presentation",
+          "DOCX",
+          0.27,
+          "2017-12-20",
+          "Pavement data collection policies and procedures.docx"
+        ],
+        [
+          "dcroads2025.shx",
+          "TOR and local source documents",
+          "GIS and spatial",
+          "SHX",
+          0.24,
+          "2025-10-13",
+          "district roads/dcroads2025.shx"
+        ],
+        [
+          "gis_osm_waterways_free_1.shx",
+          "Published source documents",
+          "GIS and spatial",
+          "SHX",
+          0.23,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_waterways_free_1.shx"
+        ],
+        [
+          "dcroads.sbn",
+          "TOR and local source documents",
+          "GIS and spatial",
+          "SBN",
+          0.21,
+          "2025-10-10",
+          "district roads/dcroads.sbn"
+        ],
+        [
+          "gis_osm_water_a_free_1.shx",
+          "Published source documents",
+          "GIS and spatial",
+          "SHX",
+          0.2,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_water_a_free_1.shx"
+        ],
+        [
+          "Panel Inspection Guide.docx",
+          "TOR and local source documents",
+          "Document and presentation",
+          "DOCX",
+          0.2,
+          "2017-12-20",
+          "Panel Inspection Guide.docx"
+        ],
+        [
+          "KCCA.shp",
+          "TOR and local source documents",
+          "GIS and spatial",
+          "SHP",
+          0.19,
+          "2022-09-07",
+          "Selected Roads in CBD/KCCA.shp"
+        ],
+        [
+          "Selected_Roads_in_CBD.shp",
+          "TOR and local source documents",
+          "GIS and spatial",
+          "SHP",
+          0.19,
+          "2021-03-24",
+          "Selected Roads in CBD/Selected_Roads_in_CBD.shp"
+        ],
+        [
+          "dcroads.shx",
+          "TOR and local source documents",
+          "GIS and spatial",
+          "SHX",
+          0.17,
+          "2025-10-10",
+          "district roads/dcroads.shx"
+        ],
+        [
+          "gis_osm_railways_free_1.shp",
+          "Published source documents",
+          "GIS and spatial",
+          "SHP",
+          0.16,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_railways_free_1.shp"
+        ],
+        [
+          "DUCAR_Tool_Training_Deck.pptx",
+          "DUCAR presentation decks",
+          "Document and presentation",
+          "PPTX",
+          0.15,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/ppt/DUCAR_Tool_Training_Deck.pptx"
+        ],
+        [
+          "DUCAR_Executive_Briefing.pptx",
+          "DUCAR presentation decks",
+          "Document and presentation",
+          "PPTX",
+          0.14,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/ppt/DUCAR_Executive_Briefing.pptx"
+        ],
+        [
+          "gis_osm_traffic_free_1.shp",
+          "Published source documents",
+          "GIS and spatial",
+          "SHP",
+          0.14,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_traffic_free_1.shp"
+        ],
+        [
+          "gis_osm_pofw_a_free_1.shp",
+          "Published source documents",
+          "GIS and spatial",
+          "SHP",
+          0.13,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_pofw_a_free_1.shp"
+        ],
+        [
+          "Road transport data-20260513T070333Z-3-001.zip",
+          "TOR and local source documents",
+          "Archive",
+          "ZIP",
+          0.1,
+          "2026-05-13",
+          "Road transport data-20260513T070333Z-3-001.zip"
+        ],
+        [
+          "gis_osm_pofw_a_free_1.dbf",
+          "Published source documents",
+          "GIS and spatial",
+          "DBF",
+          0.1,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_pofw_a_free_1.dbf"
+        ],
+        [
+          "DUCAR_Framework_Schematic_Diagram.pptx",
+          "DUCAR presentation decks",
+          "Document and presentation",
+          "PPTX",
+          0.1,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/ppt/DUCAR_Framework_Schematic_Diagram.pptx"
+        ],
+        [
+          "Revised__TOR__for_Consultancy_Services_for_RAM_and_Investment_Planning_Support_for_UNRA_PS_Comments(1).docx",
+          "TOR and local source documents",
+          "Document and presentation",
+          "DOCX",
+          0.09,
+          "2026-04-30",
+          "Revised__TOR__for_Consultancy_Services_for_RAM_and_Investment_Planning_Support_for_UNRA_PS_Comments(1).docx"
+        ],
+        [
+          "gis_osm_adminareas_a_free_1.dbf",
+          "Published source documents",
+          "GIS and spatial",
+          "DBF",
+          0.09,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_adminareas_a_free_1.dbf"
+        ],
+        [
+          "gis_osm_places_a_free_1.dbf",
+          "Published source documents",
+          "GIS and spatial",
+          "DBF",
+          0.08,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_places_a_free_1.dbf"
+        ],
+        [
+          "gis_osm_pofw_free_1.shp",
+          "Published source documents",
+          "GIS and spatial",
+          "SHP",
+          0.07,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_pofw_free_1.shp"
+        ],
+        [
+          "dcroads2025.shp.xml",
+          "TOR and local source documents",
+          "Metadata XML",
+          "XML",
+          0.07,
+          "2025-10-13",
+          "district roads/dcroads2025.shp.xml"
+        ],
+        [
+          "gis_osm_transport_free_1.dbf",
+          "Published source documents",
+          "GIS and spatial",
+          "DBF",
+          0.07,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_transport_free_1.dbf"
+        ],
+        [
+          "districts.dbf",
+          "GIS and road data",
+          "GIS and spatial",
+          "DBF",
+          0.07,
+          "2025-12-09",
+          "Districts/districts.dbf"
+        ],
+        [
+          "dcroads.shp.xml",
+          "TOR and local source documents",
+          "Metadata XML",
+          "XML",
+          0.07,
+          "2025-10-10",
+          "district roads/dcroads.shp.xml"
+        ],
+        [
+          "networkfy25_26.shp.xml",
+          "GIS and road data",
+          "Metadata XML",
+          "XML",
+          0.06,
+          "2026-01-21",
+          "Roads/networkfy25_26.shp.xml"
+        ],
+        [
+          "network2026.shp.xml",
+          "GIS and road data",
+          "Metadata XML",
+          "XML",
+          0.06,
+          "2026-03-04",
+          "Roads/network2026/network2026.shp.xml"
+        ],
+        [
+          "stations.json",
+          "Traffic count scratch dataset",
+          "JSON data feed",
+          "JSON",
+          0.06,
+          "2026-05-08",
+          "scratch/uganda_atc/src/data/stations.json"
+        ],
+        [
+          "TOR__for_Consultancy_Services_for_Guidelines for Monitoring Road Performance Indicators_DUCAR.docx",
+          "TOR and local source documents",
+          "Document and presentation",
+          "DOCX",
+          0.06,
+          "2026-05-06",
+          "TOR__for_Consultancy_Services_for_Guidelines for Monitoring Road Performance Indicators_DUCAR.docx"
+        ],
+        [
+          "TOR__for_Consultancy_Services_for_Guidelines for Monitoring Road Performance Indicators_DUCAR.docx",
+          "Published source documents",
+          "Document and presentation",
+          "DOCX",
+          0.06,
+          "2026-05-06",
+          "DUCAR_Framework_Tool/github_app/public/docs/TOR__for_Consultancy_Services_for_Guidelines for Monitoring Road Performance Indicators_DUCAR.docx"
+        ],
+        [
+          "gis_osm_pois_a_free_1.shx",
+          "Published source documents",
+          "GIS and spatial",
+          "SHX",
+          0.06,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_pois_a_free_1.shx"
+        ],
+        [
+          "national road network fy25-26.shp.xml",
+          "GIS and road data",
+          "Metadata XML",
+          "XML",
+          0.06,
+          "2025-11-17",
+          "Roads/national road network fy25-26.shp.xml"
+        ],
+        [
+          "TOR__for_Consultancy_Services_for_Guidelines for Monitoring Road Performance Indicators_uganda road network.docx",
+          "TOR and local source documents",
+          "Document and presentation",
+          "DOCX",
+          0.06,
+          "2026-05-07",
+          "TOR__for_Consultancy_Services_for_Guidelines for Monitoring Road Performance Indicators_uganda road network.docx"
+        ],
+        [
+          "TOR__for_Consultancy_Services_for_RAM_DUCAR.docx",
+          "TOR and local source documents",
+          "Document and presentation",
+          "DOCX",
+          0.05,
+          "2026-05-05",
+          "TOR__for_Consultancy_Services_for_RAM_DUCAR.docx"
+        ],
+        [
+          "TOR__for_Consultancy_Services_for_RAM_DUCAR.docx",
+          "Published source documents",
+          "Document and presentation",
+          "DOCX",
+          0.05,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/public/docs/TOR__for_Consultancy_Services_for_RAM_DUCAR.docx"
+        ],
+        [
+          "networkfy25_26.shp.xml",
+          "GIS and road data",
+          "Metadata XML",
+          "XML",
+          0.05,
+          "2026-01-05",
+          "Roads/networkfy25_26/networkfy25_26.shp.xml"
+        ],
+        [
+          "TOR__for_Consultancy_Services_for_Road_Condition_Monitoring_Guidelines_DUCAR.docx",
+          "TOR and local source documents",
+          "Document and presentation",
+          "DOCX",
+          0.05,
+          "2026-05-05",
+          "TOR__for_Consultancy_Services_for_Road_Condition_Monitoring_Guidelines_DUCAR.docx"
+        ],
+        [
+          "TOR__for_Consultancy_Services_for_Road_Condition_Monitoring_Guidelines_DUCAR.docx",
+          "Published source documents",
+          "Document and presentation",
+          "DOCX",
+          0.05,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/public/docs/TOR__for_Consultancy_Services_for_Road_Condition_Monitoring_Guidelines_DUCAR.docx"
+        ],
+        [
+          "networkfy25_26.shp-MOWT-DNR-001.xml",
+          "GIS and road data",
+          "Metadata XML",
+          "XML",
+          0.05,
+          "2025-11-25",
+          "Roads/networkfy25_26.shp-MOWT-DNR-001.xml"
+        ],
+        [
+          "DUCAR Status MoFPED - June 2024.docx",
+          "Road transport data",
+          "Document and presentation",
+          "DOCX",
+          0.05,
+          "2026-05-13",
+          "Road transport data/DUCAR Status MoFPED - June 2024.docx"
+        ],
+        [
+          "gis_osm_natural_a_free_1.shp",
+          "Published source documents",
+          "GIS and spatial",
+          "SHP",
+          0.05,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_natural_a_free_1.shp"
+        ],
+        [
+          "TOR__for_Consultancy_Services_for_RAM_DUCAR part 1_framework.docx",
+          "TOR and local source documents",
+          "Document and presentation",
+          "DOCX",
+          0.05,
+          "2026-05-05",
+          "TOR__for_Consultancy_Services_for_RAM_DUCAR part 1_framework.docx"
+        ],
+        [
+          "TOR__for_Consultancy_Services_for_RAM_DUCAR part 1_framework.docx",
+          "Published source documents",
+          "Document and presentation",
+          "DOCX",
+          0.05,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/public/docs/TOR__for_Consultancy_Services_for_RAM_DUCAR part 1_framework.docx"
+        ],
+        [
+          "DUCAR_Maintenance_Allocation_and_Prioritisation_Framework.docx",
+          "TOR and local source documents",
+          "Document and presentation",
+          "DOCX",
+          0.05,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/DUCAR_Maintenance_Allocation_and_Prioritisation_Framework.docx"
+        ],
+        [
+          "network2025.shp.xml",
+          "GIS and road data",
+          "Metadata XML",
+          "XML",
+          0.05,
+          "2025-11-04",
+          "Roads/network2025.shp.xml"
+        ],
+        [
+          "kcca_roads.geojson",
+          "Web data feeds",
+          "GIS and spatial",
+          "GEOJSON",
+          0.04,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data/kcca_roads.geojson"
+        ],
+        [
+          "kcca_roads.geojson",
+          "Web data feeds",
+          "GIS and spatial",
+          "GEOJSON",
+          0.04,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/public/data/kcca_roads.geojson"
+        ],
+        [
+          "QMP Template for Traffic Data Collection.docx",
+          "TOR and local source documents",
+          "Document and presentation",
+          "DOCX",
+          0.04,
+          "2016-11-18",
+          "QMP Template for Traffic Data Collection.docx"
+        ],
+        [
+          "gis_osm_railways_free_1.dbf",
+          "Published source documents",
+          "GIS and spatial",
+          "DBF",
+          0.04,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_railways_free_1.dbf"
+        ],
+        [
+          "DUCAR_International_Case_Study_Report_APA.docx",
+          "Global case evidence package",
+          "Document and presentation",
+          "DOCX",
+          0.04,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/evidence_and_case_studies/DUCAR_International_Case_Study_Report_APA.docx"
+        ],
+        [
+          "gis_osm_traffic_free_1.shx",
+          "Published source documents",
+          "GIS and spatial",
+          "SHX",
+          0.04,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_traffic_free_1.shx"
+        ],
+        [
+          "gis_osm_transport_a_free_1.shp",
+          "Published source documents",
+          "GIS and spatial",
+          "SHP",
+          0.04,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_transport_a_free_1.shp"
+        ],
+        [
+          "Motor Vehicle data Updated Up to December 2023(1).xls",
+          "Road transport data",
+          "Spreadsheet and tabular",
+          "XLS",
+          0.04,
+          "2026-05-13",
+          "Road transport data/Motor Vehicle data Updated Up to December 2023(1).xls"
+        ],
+        [
+          "TOR_2_DUCAR_Roads_Bridges_Maintenance_Prioritisation_Framework.docx",
+          "TOR and local source documents",
+          "Document and presentation",
+          "DOCX",
+          0.04,
+          "2026-04-30",
+          "TOR_2_DUCAR_Roads_Bridges_Maintenance_Prioritisation_Framework.docx"
+        ],
+        [
+          "DUCAR_Decision_Support_Tool_User_Manual.docx",
+          "DUCAR manuals and policies",
+          "Document and presentation",
+          "DOCX",
+          0.04,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/manuals/DUCAR_Decision_Support_Tool_User_Manual.docx"
+        ],
+        [
+          "DUCAR_Field_Condition_Monitoring_Manual.docx",
+          "DUCAR manuals and policies",
+          "Document and presentation",
+          "DOCX",
+          0.04,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/manuals/DUCAR_Field_Condition_Monitoring_Manual.docx"
+        ],
+        [
+          "TOR_1_DUCAR_Road_Condition_Monitoring_Guidelines.docx",
+          "TOR and local source documents",
+          "Document and presentation",
+          "DOCX",
+          0.04,
+          "2026-04-30",
+          "TOR_1_DUCAR_Road_Condition_Monitoring_Guidelines.docx"
+        ],
+        [
+          "DUCAR_Editability_and_Modern_Design_Guide.docx",
+          "TOR and local source documents",
+          "Document and presentation",
+          "DOCX",
+          0.04,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/DUCAR_Editability_and_Modern_Design_Guide.docx"
+        ],
+        [
+          "DUCAR_System_Administration_and_Handover_Manual.docx",
+          "DUCAR manuals and policies",
+          "Document and presentation",
+          "DOCX",
+          0.04,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/manuals/DUCAR_System_Administration_and_Handover_Manual.docx"
+        ],
+        [
+          "DUCAR_Road_Asset_Data_Governance_Policy.docx",
+          "DUCAR manuals and policies",
+          "Document and presentation",
+          "DOCX",
+          0.04,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/policies/DUCAR_Road_Asset_Data_Governance_Policy.docx"
+        ],
+        [
+          "DUCAR_Maintenance_Allocation_and_Prioritisation_Policy.docx",
+          "DUCAR manuals and policies",
+          "Document and presentation",
+          "DOCX",
+          0.04,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/policies/DUCAR_Maintenance_Allocation_and_Prioritisation_Policy.docx"
+        ],
+        [
+          "DUCAR_GIS_Data_Standard_and_Mapping_Policy.docx",
+          "DUCAR manuals and policies",
+          "Document and presentation",
+          "DOCX",
+          0.04,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/policies/DUCAR_GIS_Data_Standard_and_Mapping_Policy.docx"
+        ],
+        [
+          "DUCAR_Training_and_Capacity_Building_Policy.docx",
+          "DUCAR manuals and policies",
+          "Document and presentation",
+          "DOCX",
+          0.04,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/policies/DUCAR_Training_and_Capacity_Building_Policy.docx"
+        ],
+        [
+          "TOR HDM Calibration_PDU.docx",
+          "TOR and local source documents",
+          "Document and presentation",
+          "DOCX",
+          0.04,
+          "2026-04-30",
+          "TOR HDM Calibration_PDU.docx"
+        ],
+        [
+          "DUCAR_local_manuals_source_digest.json",
+          "Global case evidence package",
+          "JSON data feed",
+          "JSON",
+          0.03,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/evidence_and_case_studies/DUCAR_local_manuals_source_digest.json"
+        ],
+        [
+          "infographics_data.json",
+          "Traffic count scratch dataset",
+          "JSON data feed",
+          "JSON",
+          0.03,
+          "2026-05-08",
+          "scratch/uganda_atc/src/data/infographics_data.json"
+        ],
+        [
+          "DUCAR_Field_Survey_Template.xlsx",
+          "Generated DUCAR workbooks",
+          "Spreadsheet and tabular",
+          "XLSX",
+          0.03,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/workbooks/DUCAR_Field_Survey_Template.xlsx"
+        ],
+        [
+          "MaintenanceManagementFeatures_Rev1.docx",
+          "TOR and local source documents",
+          "Document and presentation",
+          "DOCX",
+          0.03,
+          "2026-04-30",
+          "MaintenanceManagementFeatures_Rev1.docx"
+        ],
+        [
+          "uganda_route_matrix.json",
+          "Web data feeds",
+          "JSON data feed",
+          "JSON",
+          0.03,
+          "2026-05-14",
+          "DUCAR_Framework_Tool/github_app/data/uganda_route_matrix.json"
+        ],
+        [
+          "uganda_route_matrix.json",
+          "Web data feeds",
+          "JSON data feed",
+          "JSON",
+          0.03,
+          "2026-05-14",
+          "DUCAR_Framework_Tool/github_app/public/data/uganda_route_matrix.json"
+        ],
+        [
+          "districts2020.shp",
+          "GIS and road data",
+          "GIS and spatial",
+          "SHP",
+          0.02,
+          "2025-12-09",
+          "Districts/districts2020.shp"
+        ],
+        [
+          "gis_osm_natural_a_free_1.dbf",
+          "Published source documents",
+          "GIS and spatial",
+          "DBF",
+          0.02,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_natural_a_free_1.dbf"
+        ],
+        [
+          "gis_osm_pofw_free_1.shx",
+          "Published source documents",
+          "GIS and spatial",
+          "SHX",
+          0.02,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_pofw_free_1.shx"
+        ],
+        [
+          "DUCAR_Programme_Monitoring_and_QA_Tracker.xlsx",
+          "Generated DUCAR workbooks",
+          "Spreadsheet and tabular",
+          "XLSX",
+          0.02,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/workbooks/DUCAR_Programme_Monitoring_and_QA_Tracker.xlsx"
+        ],
+        [
+          "KCCA.dbf",
+          "TOR and local source documents",
+          "GIS and spatial",
+          "DBF",
+          0.02,
+          "2022-09-07",
+          "Selected Roads in CBD/KCCA.dbf"
+        ],
+        [
+          "Distances to Kampala from Towns.docx",
+          "Road transport data",
+          "Document and presentation",
+          "DOCX",
+          0.02,
+          "2026-05-13",
+          "Road transport data/Distances to Kampala from Towns.docx"
+        ],
+        [
+          "gis_osm_traffic_a_free_1.shx",
+          "Published source documents",
+          "GIS and spatial",
+          "SHX",
+          0.02,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_traffic_a_free_1.shx"
+        ],
+        [
+          "gis_osm_transport_a_free_1.dbf",
+          "Published source documents",
+          "GIS and spatial",
+          "DBF",
+          0.02,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_transport_a_free_1.dbf"
+        ],
+        [
+          "Vehicles Licenses issued by Ministry of Works and Transport.docx",
+          "Road transport data",
+          "Document and presentation",
+          "DOCX",
+          0.02,
+          "2026-05-13",
+          "Road transport data/Vehicles Licenses issued by Ministry of Works and Transport.docx"
+        ],
+        [
+          "KCCA.shp.xml",
+          "TOR and local source documents",
+          "Metadata XML",
+          "XML",
+          0.02,
+          "2022-09-07",
+          "Selected Roads in CBD/KCCA.shp.xml"
+        ],
+        [
+          "DUCAR.docx",
+          "TOR and local source documents",
+          "Document and presentation",
+          "DOCX",
+          0.01,
+          "2026-04-30",
+          "DUCAR.docx"
+        ],
+        [
+          "Selected_Roads_in_CBD.shp.xml",
+          "TOR and local source documents",
+          "Metadata XML",
+          "XML",
+          0.01,
+          "2021-03-24",
+          "Selected Roads in CBD/Selected_Roads_in_CBD.shp.xml"
+        ],
+        [
+          "gis_osm_transport_free_1.shp",
+          "Published source documents",
+          "GIS and spatial",
+          "SHP",
+          0.01,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_transport_free_1.shp"
+        ],
+        [
+          "DUCAR_Unit_Rate_Calibration_Workbook.xlsx",
+          "Generated DUCAR workbooks",
+          "Spreadsheet and tabular",
+          "XLSX",
+          0.01,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/workbooks/DUCAR_Unit_Rate_Calibration_Workbook.xlsx"
+        ],
+        [
+          "dcroads2025.sbx",
+          "TOR and local source documents",
+          "GIS and spatial",
+          "SBX",
+          0.01,
+          "2025-10-13",
+          "district roads/dcroads2025.sbx"
+        ],
+        [
+          "hero.png",
+          "Traffic count scratch dataset",
+          "Image and rendered visual",
+          "PNG",
+          0.01,
+          "2026-04-24",
+          "scratch/uganda_atc/src/assets/hero.png"
+        ],
+        [
+          "DUCAR_APA_References_and_Assumptions_Register.xlsx",
+          "Global case evidence package",
+          "Spreadsheet and tabular",
+          "XLSX",
+          0.01,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/evidence_and_case_studies/DUCAR_APA_References_and_Assumptions_Register.xlsx"
+        ],
+        [
+          "dcroads.sbx",
+          "TOR and local source documents",
+          "GIS and spatial",
+          "SBX",
+          0.01,
+          "2025-10-10",
+          "district roads/dcroads.sbx"
+        ],
+        [
+          "sites.json",
+          "Traffic count scratch dataset",
+          "JSON data feed",
+          "JSON",
+          0.01,
+          "2026-04-24",
+          "scratch/uganda_atc/src/data/sites.json"
+        ],
+        [
+          "network2025.sbn",
+          "GIS and road data",
+          "GIS and spatial",
+          "SBN",
+          0.01,
+          "2025-11-04",
+          "Roads/network2025.sbn"
+        ],
+        [
+          "networkfy25_26.sbn",
+          "GIS and road data",
+          "GIS and spatial",
+          "SBN",
+          0.01,
+          "2026-01-21",
+          "Roads/networkfy25_26.sbn"
+        ],
+        [
+          "network2026.sbn",
+          "GIS and road data",
+          "GIS and spatial",
+          "SBN",
+          0.01,
+          "2026-03-04",
+          "Roads/network2026/network2026.sbn"
+        ],
+        [
+          "networkfy25_26.sbn",
+          "GIS and road data",
+          "GIS and spatial",
+          "SBN",
+          0.01,
+          "2026-01-05",
+          "Roads/networkfy25_26/networkfy25_26.sbn"
+        ],
+        [
+          "favicon.svg",
+          "Traffic count scratch dataset",
+          "Image and rendered visual",
+          "SVG",
+          0.01,
+          "2026-04-24",
+          "scratch/uganda_atc/public/favicon.svg"
+        ],
+        [
+          "DUCAR_budget_rationalisation_framework.svg",
+          "TOR and local source documents",
+          "Image and rendered visual",
+          "SVG",
+          0.01,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/diagrams/DUCAR_budget_rationalisation_framework.svg"
+        ],
+        [
+          "vite.svg",
+          "Traffic count scratch dataset",
+          "Image and rendered visual",
+          "SVG",
+          0.01,
+          "2026-04-24",
+          "scratch/uganda_atc/src/assets/vite.svg"
+        ],
+        [
+          "mowt_manuals_catalog.json",
+          "Web data feeds",
+          "JSON data feed",
+          "JSON",
+          0.01,
+          "2026-05-07",
+          "DUCAR_Framework_Tool/github_app/public/data/mowt_manuals_catalog.json"
+        ],
+        [
+          "mowt_manuals_catalog.json",
+          "Published source documents",
+          "JSON data feed",
+          "JSON",
+          0.01,
+          "2026-05-07",
+          "DUCAR_Framework_Tool/github_app/data_sources/mowt_manuals/mowt_manuals_catalog.json"
+        ],
+        [
+          "network2025.shx",
+          "GIS and road data",
+          "GIS and spatial",
+          "SHX",
+          0.01,
+          "2025-11-04",
+          "Roads/network2025.shx"
+        ],
+        [
+          "networkfy25_26.shx",
+          "GIS and road data",
+          "GIS and spatial",
+          "SHX",
+          0.01,
+          "2026-01-21",
+          "Roads/networkfy25_26.shx"
+        ],
+        [
+          "network2026.shx",
+          "GIS and road data",
+          "GIS and spatial",
+          "SHX",
+          0.01,
+          "2026-03-04",
+          "Roads/network2026/network2026.shx"
+        ],
+        [
+          "networkfy25_26.shx",
+          "GIS and road data",
+          "GIS and spatial",
+          "SHX",
+          0.01,
+          "2026-01-05",
+          "Roads/networkfy25_26/networkfy25_26.shx"
+        ],
+        [
+          "national road network fy25-26.sbn",
+          "GIS and road data",
+          "GIS and spatial",
+          "SBN",
+          0.01,
+          "2025-11-24",
+          "Roads/national road network fy25-26.sbn"
+        ],
+        [
+          "DUCAR_local_manuals_source_register.csv",
+          "Global case evidence package",
+          "Spreadsheet and tabular",
+          "CSV",
+          0.01,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/evidence_and_case_studies/DUCAR_local_manuals_source_register.csv"
+        ],
+        [
+          "national road network fy25-26.shx",
+          "GIS and road data",
+          "GIS and spatial",
+          "SHX",
+          0.01,
+          "2025-11-24",
+          "Roads/national road network fy25-26.shx"
+        ],
+        [
+          "gis_osm_pofw_a_free_1.shx",
+          "Published source documents",
+          "GIS and spatial",
+          "SHX",
+          0.01,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_pofw_a_free_1.shx"
+        ],
+        [
+          "README_EVIDENCE_AND_CASE_STUDIES.md",
+          "Global case evidence package",
+          "Document and presentation",
+          "MD",
+          0.01,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/evidence_and_case_studies/README_EVIDENCE_AND_CASE_STUDIES.md"
+        ],
+        [
+          "gis_osm_protected_areas_a_free_1.dbf",
+          "Published source documents",
+          "GIS and spatial",
+          "DBF",
+          0.01,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_protected_areas_a_free_1.dbf"
+        ],
+        [
+          "sites.geojson",
+          "Traffic count scratch dataset",
+          "GIS and spatial",
+          "GEOJSON",
+          0.0,
+          "2026-04-24",
+          "scratch/uganda_atc/public/data/sites.geojson"
+        ],
+        [
+          "icons.svg",
+          "Traffic count scratch dataset",
+          "Image and rendered visual",
+          "SVG",
+          0.0,
+          "2026-04-24",
+          "scratch/uganda_atc/public/icons.svg"
+        ],
+        [
+          "gis_osm_adminareas_a_free_1.shx",
+          "Published source documents",
+          "GIS and spatial",
+          "SHX",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_adminareas_a_free_1.shx"
+        ],
+        [
+          "ROAD_MAPPING_PIPELINE.md",
+          "TOR and local source documents",
+          "Document and presentation",
+          "MD",
+          0.0,
+          "2026-05-13",
+          "DUCAR_Framework_Tool/github_app/docs/ROAD_MAPPING_PIPELINE.md"
+        ],
+        [
+          "gis_osm_places_a_free_1.shx",
+          "Published source documents",
+          "GIS and spatial",
+          "SHX",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_places_a_free_1.shx"
+        ],
+        [
+          "react.svg",
+          "Traffic count scratch dataset",
+          "Image and rendered visual",
+          "SVG",
+          0.0,
+          "2026-04-24",
+          "scratch/uganda_atc/src/assets/react.svg"
+        ],
+        [
+          "hourly_patterns.json",
+          "Traffic count scratch dataset",
+          "JSON data feed",
+          "JSON",
+          0.0,
+          "2026-05-08",
+          "scratch/uganda_atc/src/data/hourly_patterns.json"
+        ],
+        [
+          "gis_osm_transport_free_1.shx",
+          "Published source documents",
+          "GIS and spatial",
+          "SHX",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_transport_free_1.shx"
+        ],
+        [
+          "uganda_layers_status.json",
+          "Web data feeds",
+          "JSON data feed",
+          "JSON",
+          0.0,
+          "2026-05-14",
+          "DUCAR_Framework_Tool/github_app/public/data/uganda_layers_status.json"
+        ],
+        [
+          "sample_assets.json",
+          "Web data feeds",
+          "JSON data feed",
+          "JSON",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data/sample_assets.json"
+        ],
+        [
+          "DUCAR_Programme_Roads.geojson",
+          "GIS and road data",
+          "GIS and spatial",
+          "GEOJSON",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/gis/DUCAR_Programme_Roads.geojson"
+        ],
+        [
+          "uganda_roads_master_summary_2026-05-05.json",
+          "Web data feeds",
+          "JSON data feed",
+          "JSON",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data/uganda_roads_master_summary_2026-05-05.json"
+        ],
+        [
+          "uganda_roads_master_summary_2026-05-06.json",
+          "Web data feeds",
+          "JSON data feed",
+          "JSON",
+          0.0,
+          "2026-05-06",
+          "DUCAR_Framework_Tool/github_app/data/uganda_roads_master_summary_2026-05-06.json"
+        ],
+        [
+          "uganda_roads_master_summary_2026-05-13.json",
+          "Web data feeds",
+          "JSON data feed",
+          "JSON",
+          0.0,
+          "2026-05-13",
+          "DUCAR_Framework_Tool/github_app/data/uganda_roads_master_summary_2026-05-13.json"
+        ],
+        [
+          "uganda_roads_master_summary.json",
+          "Web data feeds",
+          "JSON data feed",
+          "JSON",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data/uganda_roads_master_summary.json"
+        ],
+        [
+          "PACKAGE_INDEX.md",
+          "TOR and local source documents",
+          "Document and presentation",
+          "MD",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/PACKAGE_INDEX.md"
+        ],
+        [
+          "README.md",
+          "Traffic count scratch dataset",
+          "Document and presentation",
+          "MD",
+          0.0,
+          "2026-04-24",
+          "scratch/uganda_atc/README.md"
+        ],
+        [
+          "gis_osm_railways_free_1.shx",
+          "Published source documents",
+          "GIS and spatial",
+          "SHX",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_railways_free_1.shx"
+        ],
+        [
+          "ml_model.json",
+          "Traffic count scratch dataset",
+          "JSON data feed",
+          "JSON",
+          0.0,
+          "2026-05-08",
+          "scratch/uganda_atc/src/data/ml_model.json"
+        ],
+        [
+          "README.md",
+          "TOR and local source documents",
+          "Document and presentation",
+          "MD",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/README.md"
+        ],
+        [
+          "districts.sbn",
+          "GIS and road data",
+          "GIS and spatial",
+          "SBN",
+          0.0,
+          "2025-12-09",
+          "Districts/districts.sbn"
+        ],
+        [
+          "uganda_unified_roads_summary_2026-05-05.json",
+          "Web data feeds",
+          "JSON data feed",
+          "JSON",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data/uganda_unified_roads_summary_2026-05-05.json"
+        ],
+        [
+          "uganda_unified_roads_summary_2026-05-06.json",
+          "Web data feeds",
+          "JSON data feed",
+          "JSON",
+          0.0,
+          "2026-05-06",
+          "DUCAR_Framework_Tool/github_app/data/uganda_unified_roads_summary_2026-05-06.json"
+        ],
+        [
+          "uganda_unified_roads_summary_2026-05-13.json",
+          "Web data feeds",
+          "JSON data feed",
+          "JSON",
+          0.0,
+          "2026-05-13",
+          "DUCAR_Framework_Tool/github_app/data/uganda_unified_roads_summary_2026-05-13.json"
+        ],
+        [
+          "uganda_unified_roads_summary.json",
+          "Web data feeds",
+          "JSON data feed",
+          "JSON",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data/uganda_unified_roads_summary.json"
+        ],
+        [
+          "gis_osm_natural_a_free_1.shx",
+          "Published source documents",
+          "GIS and spatial",
+          "SHX",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_natural_a_free_1.shx"
+        ],
+        [
+          "DUCAR_Programme_Bridges.geojson",
+          "GIS and road data",
+          "GIS and spatial",
+          "GEOJSON",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/gis/DUCAR_Programme_Bridges.geojson"
+        ],
+        [
+          "DUCAR_OSM_Road_Classification_Rules.csv",
+          "GIS and road data",
+          "Spreadsheet and tabular",
+          "CSV",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/gis/DUCAR_OSM_Road_Classification_Rules.csv"
+        ],
+        [
+          "DUCAR_OSM_Road_Classification_Rules_2026-05-05.csv",
+          "Web data feeds",
+          "Spreadsheet and tabular",
+          "CSV",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data/DUCAR_OSM_Road_Classification_Rules_2026-05-05.csv"
+        ],
+        [
+          "DUCAR_OSM_Road_Classification_Rules_2026-05-06.csv",
+          "Web data feeds",
+          "Spreadsheet and tabular",
+          "CSV",
+          0.0,
+          "2026-05-06",
+          "DUCAR_Framework_Tool/github_app/data/DUCAR_OSM_Road_Classification_Rules_2026-05-06.csv"
+        ],
+        [
+          "DUCAR_OSM_Road_Classification_Rules_2026-05-13.csv",
+          "Web data feeds",
+          "Spreadsheet and tabular",
+          "CSV",
+          0.0,
+          "2026-05-13",
+          "DUCAR_Framework_Tool/github_app/data/DUCAR_OSM_Road_Classification_Rules_2026-05-13.csv"
+        ],
+        [
+          "DUCAR_OSM_Road_Classification_Rules.csv",
+          "TOR and local source documents",
+          "Spreadsheet and tabular",
+          "CSV",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/docs/DUCAR_OSM_Road_Classification_Rules.csv"
+        ],
+        [
+          "uganda_layers_manifest.json",
+          "Web data feeds",
+          "JSON data feed",
+          "JSON",
+          0.0,
+          "2026-05-14",
+          "DUCAR_Framework_Tool/github_app/public/data/uganda_layers_manifest.json"
+        ],
+        [
+          "uganda_national_roads_summary_2026-05-05.json",
+          "Web data feeds",
+          "JSON data feed",
+          "JSON",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data/uganda_national_roads_summary_2026-05-05.json"
+        ],
+        [
+          "uganda_national_roads_summary_2026-05-06.json",
+          "Web data feeds",
+          "JSON data feed",
+          "JSON",
+          0.0,
+          "2026-05-06",
+          "DUCAR_Framework_Tool/github_app/data/uganda_national_roads_summary_2026-05-06.json"
+        ],
+        [
+          "uganda_national_roads_summary_2026-05-13.json",
+          "Web data feeds",
+          "JSON data feed",
+          "JSON",
+          0.0,
+          "2026-05-13",
+          "DUCAR_Framework_Tool/github_app/data/uganda_national_roads_summary_2026-05-13.json"
+        ],
+        [
+          "districts.shx",
+          "GIS and road data",
+          "GIS and spatial",
+          "SHX",
+          0.0,
+          "2025-12-09",
+          "Districts/districts.shx"
+        ],
+        [
+          "uganda_national_roads_summary.json",
+          "Web data feeds",
+          "JSON data feed",
+          "JSON",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data/uganda_national_roads_summary.json"
+        ],
+        [
+          "README_DUCAR_Framework_Tool.md",
+          "TOR and local source documents",
+          "Document and presentation",
+          "MD",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/README_DUCAR_Framework_Tool.md"
+        ],
+        [
+          "gis_osm_transport_a_free_1.shx",
+          "Published source documents",
+          "GIS and spatial",
+          "SHX",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_transport_a_free_1.shx"
+        ],
+        [
+          "gis_osm_protected_areas_a_free_1.shx",
+          "Published source documents",
+          "GIS and spatial",
+          "SHX",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_protected_areas_a_free_1.shx"
+        ],
+        [
+          "districts2020.dbf",
+          "GIS and road data",
+          "GIS and spatial",
+          "DBF",
+          0.0,
+          "2025-12-09",
+          "Districts/districts2020.dbf"
+        ],
+        [
+          "network2025.sbx",
+          "GIS and road data",
+          "GIS and spatial",
+          "SBX",
+          0.0,
+          "2025-11-04",
+          "Roads/network2025.sbx"
+        ],
+        [
+          "networkfy25_26.sbx",
+          "GIS and road data",
+          "GIS and spatial",
+          "SBX",
+          0.0,
+          "2026-01-21",
+          "Roads/networkfy25_26.sbx"
+        ],
+        [
+          "network2026.sbx",
+          "GIS and road data",
+          "GIS and spatial",
+          "SBX",
+          0.0,
+          "2026-03-04",
+          "Roads/network2026/network2026.sbx"
+        ],
+        [
+          "networkfy25_26.sbx",
+          "GIS and road data",
+          "GIS and spatial",
+          "SBX",
+          0.0,
+          "2026-01-05",
+          "Roads/networkfy25_26/networkfy25_26.sbx"
+        ],
+        [
+          "uganda_network_analysis_summary.json",
+          "Web data feeds",
+          "JSON data feed",
+          "JSON",
+          0.0,
+          "2026-05-14",
+          "DUCAR_Framework_Tool/github_app/data/uganda_network_analysis_summary.json"
+        ],
+        [
+          "uganda_network_analysis_summary.json",
+          "Web data feeds",
+          "JSON data feed",
+          "JSON",
+          0.0,
+          "2026-05-14",
+          "DUCAR_Framework_Tool/github_app/public/data/uganda_network_analysis_summary.json"
+        ],
+        [
+          "app.config.json",
+          "TOR and local source documents",
+          "JSON data feed",
+          "JSON",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/app.config.json"
+        ],
+        [
+          "app.config.json",
+          "TOR and local source documents",
+          "JSON data feed",
+          "JSON",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/offline_html/app.config.json"
+        ],
+        [
+          "README_API.md",
+          "TOR and local source documents",
+          "Document and presentation",
+          "MD",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/api/README_API.md"
+        ],
+        [
+          "national road network fy25-26.sbx",
+          "GIS and road data",
+          "GIS and spatial",
+          "SBX",
+          0.0,
+          "2025-11-24",
+          "Roads/national road network fy25-26.sbx"
+        ],
+        [
+          "PUBLISH_NEW_REPO.md",
+          "TOR and local source documents",
+          "Document and presentation",
+          "MD",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/PUBLISH_NEW_REPO.md"
+        ],
+        [
+          "KCCA.sbn",
+          "TOR and local source documents",
+          "GIS and spatial",
+          "SBN",
+          0.0,
+          "2022-09-07",
+          "Selected Roads in CBD/KCCA.sbn"
+        ],
+        [
+          "Selected_Roads_in_CBD.sbn",
+          "TOR and local source documents",
+          "GIS and spatial",
+          "SBN",
+          0.0,
+          "2021-03-24",
+          "Selected Roads in CBD/Selected_Roads_in_CBD.sbn"
+        ],
+        [
+          "README_OFFLINE_HTML.md",
+          "TOR and local source documents",
+          "Document and presentation",
+          "MD",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/offline_html/README_OFFLINE_HTML.md"
+        ],
+        [
+          "KCCA.shx",
+          "TOR and local source documents",
+          "GIS and spatial",
+          "SHX",
+          0.0,
+          "2022-09-07",
+          "Selected Roads in CBD/KCCA.shx"
+        ],
+        [
+          "Selected_Roads_in_CBD.shx",
+          "TOR and local source documents",
+          "GIS and spatial",
+          "SHX",
+          0.0,
+          "2021-03-24",
+          "Selected Roads in CBD/Selected_Roads_in_CBD.shx"
+        ],
+        [
+          "dcroads.prj",
+          "TOR and local source documents",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2025-10-10",
+          "district roads/dcroads.prj"
+        ],
+        [
+          "dcroads2025.prj",
+          "TOR and local source documents",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2025-10-13",
+          "district roads/dcroads2025.prj"
+        ],
+        [
+          "README_DIAGRAMS.md",
+          "TOR and local source documents",
+          "Document and presentation",
+          "MD",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/diagrams/README_DIAGRAMS.md"
+        ],
+        [
+          "Selected_Roads_in_CBD.prj",
+          "TOR and local source documents",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2021-03-24",
+          "Selected Roads in CBD/Selected_Roads_in_CBD.prj"
+        ],
+        [
+          "national road network fy25-26.prj",
+          "GIS and road data",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2025-11-17",
+          "Roads/national road network fy25-26.prj"
+        ],
+        [
+          "network2025.prj",
+          "GIS and road data",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2025-11-04",
+          "Roads/network2025.prj"
+        ],
+        [
+          "networkfy25_26.prj",
+          "GIS and road data",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2026-01-21",
+          "Roads/networkfy25_26.prj"
+        ],
+        [
+          "network2026.prj",
+          "GIS and road data",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2026-03-04",
+          "Roads/network2026/network2026.prj"
+        ],
+        [
+          "networkfy25_26.prj",
+          "GIS and road data",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2025-11-25",
+          "Roads/networkfy25_26/networkfy25_26.prj"
+        ],
+        [
+          "DUCAR_GIS_Data_Dictionary.csv",
+          "GIS and road data",
+          "Spreadsheet and tabular",
+          "CSV",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/gis/DUCAR_GIS_Data_Dictionary.csv"
+        ],
+        [
+          "implementation_notes.md",
+          "TOR and local source documents",
+          "Document and presentation",
+          "MD",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/docs/implementation_notes.md"
+        ],
+        [
+          "README_GIS.md",
+          "GIS and road data",
+          "Document and presentation",
+          "MD",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/gis/README_GIS.md"
+        ],
+        [
+          "districts.sbx",
+          "GIS and road data",
+          "GIS and spatial",
+          "SBX",
+          0.0,
+          "2025-12-09",
+          "Districts/districts.sbx"
+        ],
+        [
+          "KCCA.prj",
+          "TOR and local source documents",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2022-09-07",
+          "Selected Roads in CBD/KCCA.prj"
+        ],
+        [
+          "KCCA.sbx",
+          "TOR and local source documents",
+          "GIS and spatial",
+          "SBX",
+          0.0,
+          "2022-09-07",
+          "Selected Roads in CBD/KCCA.sbx"
+        ],
+        [
+          "Selected_Roads_in_CBD.sbx",
+          "TOR and local source documents",
+          "GIS and spatial",
+          "SBX",
+          0.0,
+          "2021-03-24",
+          "Selected Roads in CBD/Selected_Roads_in_CBD.sbx"
+        ],
+        [
+          "geospatial_manifest.json",
+          "Web data feeds",
+          "JSON data feed",
+          "JSON",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data/geospatial_manifest.json"
+        ],
+        [
+          "districts.prj",
+          "GIS and road data",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2025-12-09",
+          "Districts/districts.prj"
+        ],
+        [
+          "districts2020.prj",
+          "GIS and road data",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2025-12-09",
+          "Districts/districts2020.prj"
+        ],
+        [
+          "gis_osm_adminareas_a_free_1.prj",
+          "Published source documents",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_adminareas_a_free_1.prj"
+        ],
+        [
+          "gis_osm_buildings_a_free_1.prj",
+          "Published source documents",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_buildings_a_free_1.prj"
+        ],
+        [
+          "gis_osm_landuse_a_free_1.prj",
+          "Published source documents",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_landuse_a_free_1.prj"
+        ],
+        [
+          "gis_osm_natural_a_free_1.prj",
+          "Published source documents",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_natural_a_free_1.prj"
+        ],
+        [
+          "gis_osm_natural_free_1.prj",
+          "Published source documents",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_natural_free_1.prj"
+        ],
+        [
+          "gis_osm_places_a_free_1.prj",
+          "Published source documents",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_places_a_free_1.prj"
+        ],
+        [
+          "gis_osm_places_free_1.prj",
+          "Published source documents",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_places_free_1.prj"
+        ],
+        [
+          "gis_osm_pofw_a_free_1.prj",
+          "Published source documents",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_pofw_a_free_1.prj"
+        ],
+        [
+          "gis_osm_pofw_free_1.prj",
+          "Published source documents",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_pofw_free_1.prj"
+        ],
+        [
+          "gis_osm_pois_a_free_1.prj",
+          "Published source documents",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_pois_a_free_1.prj"
+        ],
+        [
+          "gis_osm_pois_free_1.prj",
+          "Published source documents",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_pois_free_1.prj"
+        ],
+        [
+          "gis_osm_protected_areas_a_free_1.prj",
+          "Published source documents",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_protected_areas_a_free_1.prj"
+        ],
+        [
+          "gis_osm_railways_free_1.prj",
+          "Published source documents",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_railways_free_1.prj"
+        ],
+        [
+          "gis_osm_roads_free_1.prj",
+          "Published source documents",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_roads_free_1.prj"
+        ],
+        [
+          "gis_osm_traffic_a_free_1.prj",
+          "Published source documents",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_traffic_a_free_1.prj"
+        ],
+        [
+          "gis_osm_traffic_free_1.prj",
+          "Published source documents",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_traffic_free_1.prj"
+        ],
+        [
+          "gis_osm_transport_a_free_1.prj",
+          "Published source documents",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_transport_a_free_1.prj"
+        ],
+        [
+          "gis_osm_transport_free_1.prj",
+          "Published source documents",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_transport_free_1.prj"
+        ],
+        [
+          "gis_osm_waterways_free_1.prj",
+          "Published source documents",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_waterways_free_1.prj"
+        ],
+        [
+          "gis_osm_water_a_free_1.prj",
+          "Published source documents",
+          "GIS and spatial",
+          "PRJ",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_water_a_free_1.prj"
+        ],
+        [
+          "districts2020.sbn",
+          "GIS and road data",
+          "GIS and spatial",
+          "SBN",
+          0.0,
+          "2025-12-09",
+          "Districts/districts2020.sbn"
+        ],
+        [
+          "districts2020.sbx",
+          "GIS and road data",
+          "GIS and spatial",
+          "SBX",
+          0.0,
+          "2025-12-09",
+          "Districts/districts2020.sbx"
+        ],
+        [
+          "districts2020.shx",
+          "GIS and road data",
+          "GIS and spatial",
+          "SHX",
+          0.0,
+          "2025-12-09",
+          "Districts/districts2020.shx"
+        ],
+        [
+          "gis_osm_adminareas_a_free_1.cpg",
+          "Published source documents",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_adminareas_a_free_1.cpg"
+        ],
+        [
+          "gis_osm_buildings_a_free_1.cpg",
+          "Published source documents",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_buildings_a_free_1.cpg"
+        ],
+        [
+          "gis_osm_landuse_a_free_1.cpg",
+          "Published source documents",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_landuse_a_free_1.cpg"
+        ],
+        [
+          "gis_osm_natural_a_free_1.cpg",
+          "Published source documents",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_natural_a_free_1.cpg"
+        ],
+        [
+          "gis_osm_natural_free_1.cpg",
+          "Published source documents",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_natural_free_1.cpg"
+        ],
+        [
+          "gis_osm_places_a_free_1.cpg",
+          "Published source documents",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_places_a_free_1.cpg"
+        ],
+        [
+          "gis_osm_places_free_1.cpg",
+          "Published source documents",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_places_free_1.cpg"
+        ],
+        [
+          "gis_osm_pofw_a_free_1.cpg",
+          "Published source documents",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_pofw_a_free_1.cpg"
+        ],
+        [
+          "gis_osm_pofw_free_1.cpg",
+          "Published source documents",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_pofw_free_1.cpg"
+        ],
+        [
+          "gis_osm_pois_a_free_1.cpg",
+          "Published source documents",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_pois_a_free_1.cpg"
+        ],
+        [
+          "gis_osm_pois_free_1.cpg",
+          "Published source documents",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_pois_free_1.cpg"
+        ],
+        [
+          "gis_osm_protected_areas_a_free_1.cpg",
+          "Published source documents",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_protected_areas_a_free_1.cpg"
+        ],
+        [
+          "gis_osm_railways_free_1.cpg",
+          "Published source documents",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_railways_free_1.cpg"
+        ],
+        [
+          "gis_osm_roads_free_1.cpg",
+          "Published source documents",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_roads_free_1.cpg"
+        ],
+        [
+          "gis_osm_traffic_a_free_1.cpg",
+          "Published source documents",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_traffic_a_free_1.cpg"
+        ],
+        [
+          "gis_osm_traffic_free_1.cpg",
+          "Published source documents",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_traffic_free_1.cpg"
+        ],
+        [
+          "gis_osm_transport_a_free_1.cpg",
+          "Published source documents",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_transport_a_free_1.cpg"
+        ],
+        [
+          "gis_osm_transport_free_1.cpg",
+          "Published source documents",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_transport_free_1.cpg"
+        ],
+        [
+          "gis_osm_waterways_free_1.cpg",
+          "Published source documents",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_waterways_free_1.cpg"
+        ],
+        [
+          "gis_osm_water_a_free_1.cpg",
+          "Published source documents",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data_sources/geofabrik_uganda/gis_osm_water_a_free_1.cpg"
+        ],
+        [
+          "dcroads.cpg",
+          "TOR and local source documents",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2025-10-10",
+          "district roads/dcroads.cpg"
+        ],
+        [
+          "dcroads2025.cpg",
+          "TOR and local source documents",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2025-10-13",
+          "district roads/dcroads2025.cpg"
+        ],
+        [
+          "districts.cpg",
+          "GIS and road data",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2025-12-09",
+          "Districts/districts.cpg"
+        ],
+        [
+          "districts2020.cpg",
+          "GIS and road data",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2025-12-09",
+          "Districts/districts2020.cpg"
+        ],
+        [
+          "national road network fy25-26.cpg",
+          "GIS and road data",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2025-11-24",
+          "Roads/national road network fy25-26.cpg"
+        ],
+        [
+          "network2025.cpg",
+          "GIS and road data",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2025-11-04",
+          "Roads/network2025.cpg"
+        ],
+        [
+          "networkfy25_26.cpg",
+          "GIS and road data",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2026-01-21",
+          "Roads/networkfy25_26.cpg"
+        ],
+        [
+          "KCCA.cpg",
+          "TOR and local source documents",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2022-09-07",
+          "Selected Roads in CBD/KCCA.cpg"
+        ],
+        [
+          "network2026.cpg",
+          "GIS and road data",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2026-03-04",
+          "Roads/network2026/network2026.cpg"
+        ],
+        [
+          "networkfy25_26.cpg",
+          "GIS and road data",
+          "GIS and spatial",
+          "CPG",
+          0.0,
+          "2026-01-05",
+          "Roads/networkfy25_26/networkfy25_26.cpg"
+        ],
+        [
+          "uganda_roads_master_2026-05-05.gpkg",
+          "Web data feeds",
+          "GIS and spatial",
+          "GPKG",
+          0.0,
+          "2026-05-05",
+          "DUCAR_Framework_Tool/github_app/data/uganda_roads_master_2026-05-05.gpkg"
+        ]
+      ]
+    }
+  },
+  "spatialEvidence": {
+    "summary": {
+      "files_found": 43,
+      "layers_read": 41,
+      "layer_count": 43,
+      "feature_count": 277045,
+      "line_length_km": 1160983.24,
+      "polygon_area_km2": 1691384.52
+    },
+    "sourceAreaChart": {
+      "title": "Spatial layers by source area",
+      "columns": [
+        "Source area",
+        "Layers"
+      ],
+      "rows": [
+        [
+          "Web data feeds",
+          29
+        ],
+        [
+          "GIS and road data",
+          9
+        ],
+        [
+          "TOR and local source documents",
+          4
+        ],
+        [
+          "Traffic count scratch dataset",
+          1
+        ]
+      ]
+    },
+    "fileTypeChart": {
+      "title": "Spatial files by type",
+      "columns": [
+        "Type",
+        "Layers"
+      ],
+      "rows": [
+        [
+          "GEOJSON",
+          30
+        ],
+        [
+          "SHP",
+          11
+        ],
+        [
+          "GPKG",
+          2
+        ]
+      ]
+    },
+    "statusChart": {
+      "title": "Spatial extraction status",
+      "columns": [
+        "Status",
+        "Layers"
+      ],
+      "rows": [
+        [
+          "read",
+          41
+        ],
+        [
+          "error: DataSourceError",
+          2
+        ]
+      ]
+    },
+    "geometryChart": {
+      "title": "Spatial features by geometry type",
+      "columns": [
+        "Geometry",
+        "Features"
+      ],
+      "rows": [
+        [
+          "LineString",
+          226732
+        ],
+        [
+          "Point",
+          44985
+        ],
+        [
+          "MultiLineString",
+          4034
+        ],
+        [
+          "Polygon",
+          946
+        ]
+      ]
+    },
+    "featureChart": {
+      "title": "Largest spatial layers by features",
+      "columns": [
+        "Layer",
+        "Features"
+      ],
+      "rows": [
+        [
+          "uganda_network_nodes_web (GEOJSON)",
+          44972
+        ],
+        [
+          "uganda_network_edges_web (GEOJSON)",
+          37352
+        ],
+        [
+          "dcroads2025 (SHP)",
+          31106
+        ],
+        [
+          "dcroads (SHP)",
+          21675
+        ],
+        [
+          "uganda_unified_roads_web (GEOJSON)",
+          16319
+        ],
+        [
+          "uganda_unified_roads_web_2026-05-05 (GEOJSON)",
+          16319
+        ],
+        [
+          "uganda_unified_roads_web_2026-05-06 (GEOJSON)",
+          16319
+        ],
+        [
+          "uganda_unified_roads_web_2026-05-13 (GEOJSON)",
+          16319
+        ],
+        [
+          "uganda_osm_major_roads_web (GEOJSON)",
+          14821
+        ],
+        [
+          "uganda_osm_major_roads_web_2026-05-05 (GEOJSON)",
+          14821
+        ],
+        [
+          "uganda_osm_major_roads_web_2026-05-06 (GEOJSON)",
+          14821
+        ],
+        [
+          "uganda_osm_major_roads_web_2026-05-13 (GEOJSON)",
+          14821
+        ],
+        [
+          "uganda_clean_road_routes_web (GEOJSON)",
+          5604
+        ],
+        [
+          "uganda_national_roads_fy25_26 (GEOJSON)",
+          1014
+        ],
+        [
+          "uganda_national_roads_fy25_26_2026-05-05 (GEOJSON)",
+          1014
+        ],
+        [
+          "uganda_national_roads_fy25_26_2026-05-06 (GEOJSON)",
+          1014
+        ],
+        [
+          "uganda_national_roads_fy25_26_2026-05-13 (GEOJSON)",
+          1014
+        ],
+        [
+          "network2025 (SHP)",
+          1014
+        ],
+        [
+          "network2026 (SHP)",
+          1014
+        ],
+        [
+          "networkfy25_26 (SHP)",
+          1014
+        ],
+        [
+          "uganda_traffic_flows_web (GEOJSON)",
+          900
+        ],
+        [
+          "national road network fy25-26 (SHP)",
+          773
+        ],
+        [
+          "district_roads_dissolved (GEOJSON)",
+          345
+        ],
+        [
+          "districts (SHP)",
+          135
+        ],
+        [
+          "districts (GEOJSON)",
+          135
+        ],
+        [
+          "uganda_roads_district_summary (GEOJSON)",
+          135
+        ],
+        [
+          "uganda_roads_district_summary_2026-05-05 (GEOJSON)",
+          135
+        ],
+        [
+          "uganda_roads_district_summary_2026-05-06 (GEOJSON)",
+          135
+        ],
+        [
+          "uganda_roads_district_summary_2026-05-13 (GEOJSON)",
+          135
+        ],
+        [
+          "kcca_roads (GEOJSON)",
+          80
+        ],
+        [
+          "selected_cbd_roads (GEOJSON)",
+          59
+        ],
+        [
+          "KCCA (SHP)",
+          59
+        ],
+        [
+          "Selected_Roads_in_CBD (SHP)",
+          59
+        ],
+        [
+          "sites (GEOJSON)",
+          10
+        ],
+        [
+          "DUCAR_Programme_Roads (GEOJSON)",
+          5
+        ],
+        [
+          "DUCAR_Programme_Bridges (GEOJSON)",
+          3
+        ],
+        [
+          "districts2020 (SHP)",
+          1
+        ]
+      ]
+    },
+    "lengthChart": {
+      "title": "Largest line layers by length",
+      "columns": [
+        "Layer",
+        "Length km"
+      ],
+      "rows": [
+        [
+          "uganda_unified_roads_web",
+          92532.65
+        ],
+        [
+          "uganda_unified_roads_web_2026-05-05",
+          92532.65
+        ],
+        [
+          "uganda_unified_roads_web_2026-05-06",
+          92532.65
+        ],
+        [
+          "uganda_unified_roads_web_2026-05-13",
+          92532.65
+        ],
+        [
+          "uganda_network_edges_web",
+          92263.09
+        ],
+        [
+          "uganda_clean_road_routes_web",
+          92253.87
+        ],
+        [
+          "dcroads2025",
+          89077.36
+        ],
+        [
+          "dcroads",
+          86248.05
+        ],
+        [
+          "uganda_osm_major_roads_web",
+          40377.0
+        ],
+        [
+          "uganda_osm_major_roads_web_2026-05-05",
+          40377.0
+        ],
+        [
+          "uganda_osm_major_roads_web_2026-05-06",
+          40377.0
+        ],
+        [
+          "uganda_osm_major_roads_web_2026-05-13",
+          40377.0
+        ],
+        [
+          "district_roads_dissolved",
+          30824.11
+        ],
+        [
+          "network2025",
+          21091.24
+        ],
+        [
+          "network2026",
+          21091.24
+        ],
+        [
+          "networkfy25_26",
+          21091.24
+        ],
+        [
+          "uganda_national_roads_fy25_26",
+          20975.94
+        ],
+        [
+          "uganda_national_roads_fy25_26_2026-05-05",
+          20975.94
+        ],
+        [
+          "uganda_national_roads_fy25_26_2026-05-06",
+          20975.94
+        ],
+        [
+          "uganda_national_roads_fy25_26_2026-05-13",
+          20975.94
+        ],
+        [
+          "uganda_traffic_flows_web",
+          20921.06
+        ],
+        [
+          "national road network fy25-26",
+          17826.22
+        ],
+        [
+          "kcca_roads",
+          306.5
+        ],
+        [
+          "DUCAR_Programme_Roads",
+          77.75
+        ],
+        [
+          "selected_cbd_roads",
+          49.1
+        ],
+        [
+          "KCCA",
+          49.1
+        ],
+        [
+          "Selected_Roads_in_CBD",
+          49.1
+        ]
+      ]
+    },
+    "layerTable": {
+      "title": "Local spatial evidence layers",
+      "columns": [
+        "File",
+        "Layer",
+        "Source area",
+        "Type",
+        "Features",
+        "Line km",
+        "Area km2",
+        "Fields",
+        "Field sample",
+        "Status",
+        "Decision use"
+      ],
+      "rows": [
+        [
+          "uganda_network_nodes_web.geojson",
+          "uganda_network_nodes_web",
+          "Web data feeds",
+          "GEOJSON",
+          44972,
+          "",
+          "",
+          3,
+          "node_id, degree, junction_type",
+          "read",
+          "Road-network inventory, route length, topology and spatial coverage evidence."
+        ],
+        [
+          "uganda_network_edges_web.geojson",
+          "uganda_network_edges_web",
+          "Web data feeds",
+          "GEOJSON",
+          37352,
+          92263.09,
+          "",
+          14,
+          "edge_id, from_node, to_node, road_name, road_system",
+          "read",
+          "Road-network inventory, route length, topology and spatial coverage evidence."
+        ],
+        [
+          "dcroads2025.shp",
+          "dcroads2025",
+          "TOR and local source documents",
+          "SHP",
+          31106,
+          89077.36,
+          "",
+          46,
+          "RdCode, RdSect, ChainStart, ChainEnd, RoadLen_Km",
+          "read",
+          "District equity joins, regional aggregation and administrative boundary checks."
+        ],
+        [
+          "dcroads.shp",
+          "dcroads",
+          "TOR and local source documents",
+          "SHP",
+          21675,
+          86248.05,
+          "",
+          38,
+          "RdCode, RdSect, ChainStart, ChainEnd, RoadLen_Km",
+          "read",
+          "District equity joins, regional aggregation and administrative boundary checks."
+        ],
+        [
+          "uganda_unified_roads_web.geojson",
+          "uganda_unified_roads_web",
+          "Web data feeds",
+          "GEOJSON",
+          16319,
+          92532.65,
+          "",
+          21,
+          "road_uid, road_source, road_system, road_name, road_ref",
+          "read",
+          "Road-network inventory, route length, topology and spatial coverage evidence."
+        ],
+        [
+          "uganda_unified_roads_web_2026-05-05.geojson",
+          "uganda_unified_roads_web_2026-05-05",
+          "Web data feeds",
+          "GEOJSON",
+          16319,
+          92532.65,
+          "",
+          21,
+          "road_uid, road_source, road_system, road_name, road_ref",
+          "read",
+          "Road-network inventory, route length, topology and spatial coverage evidence."
+        ],
+        [
+          "uganda_unified_roads_web_2026-05-06.geojson",
+          "uganda_unified_roads_web_2026-05-06",
+          "Web data feeds",
+          "GEOJSON",
+          16319,
+          92532.65,
+          "",
+          21,
+          "road_uid, road_source, road_system, road_name, road_ref",
+          "read",
+          "Road-network inventory, route length, topology and spatial coverage evidence."
+        ],
+        [
+          "uganda_unified_roads_web_2026-05-13.geojson",
+          "uganda_unified_roads_web_2026-05-13",
+          "Web data feeds",
+          "GEOJSON",
+          16319,
+          92532.65,
+          "",
+          21,
+          "road_uid, road_source, road_system, road_name, road_ref",
+          "read",
+          "Road-network inventory, route length, topology and spatial coverage evidence."
+        ],
+        [
+          "uganda_osm_major_roads_web.geojson",
+          "uganda_osm_major_roads_web",
+          "Web data feeds",
+          "GEOJSON",
+          14821,
+          40377.0,
+          "",
+          12,
+          "road_uid, osm_id, osm_highway, road_name, road_ref",
+          "read",
+          "Road-network inventory, route length, topology and spatial coverage evidence."
+        ],
+        [
+          "uganda_osm_major_roads_web_2026-05-05.geojson",
+          "uganda_osm_major_roads_web_2026-05-05",
+          "Web data feeds",
+          "GEOJSON",
+          14821,
+          40377.0,
+          "",
+          12,
+          "road_uid, osm_id, osm_highway, road_name, road_ref",
+          "read",
+          "Road-network inventory, route length, topology and spatial coverage evidence."
+        ],
+        [
+          "uganda_osm_major_roads_web_2026-05-06.geojson",
+          "uganda_osm_major_roads_web_2026-05-06",
+          "Web data feeds",
+          "GEOJSON",
+          14821,
+          40377.0,
+          "",
+          12,
+          "road_uid, osm_id, osm_highway, road_name, road_ref",
+          "read",
+          "Road-network inventory, route length, topology and spatial coverage evidence."
+        ],
+        [
+          "uganda_osm_major_roads_web_2026-05-13.geojson",
+          "uganda_osm_major_roads_web_2026-05-13",
+          "Web data feeds",
+          "GEOJSON",
+          14821,
+          40377.0,
+          "",
+          12,
+          "road_uid, osm_id, osm_highway, road_name, road_ref",
+          "read",
+          "Road-network inventory, route length, topology and spatial coverage evidence."
+        ],
+        [
+          "uganda_clean_road_routes_web.geojson",
+          "uganda_clean_road_routes_web",
+          "Web data feeds",
+          "GEOJSON",
+          5604,
+          92253.87,
+          "",
+          14,
+          "route_id, route_key, road_name, road_system, road_source",
+          "read",
+          "Road-network inventory, route length, topology and spatial coverage evidence."
+        ],
+        [
+          "uganda_national_roads_fy25_26.geojson",
+          "uganda_national_roads_fy25_26",
+          "Web data feeds",
+          "GEOJSON",
+          1014,
+          20975.94,
+          "",
+          21,
+          "national_uid, road_no, link_id, road_class_code, road_class",
+          "read",
+          "National-road exclusion, coordination and double-counting controls."
+        ],
+        [
+          "uganda_national_roads_fy25_26_2026-05-05.geojson",
+          "uganda_national_roads_fy25_26_2026-05-05",
+          "Web data feeds",
+          "GEOJSON",
+          1014,
+          20975.94,
+          "",
+          21,
+          "national_uid, road_no, link_id, road_class_code, road_class",
+          "read",
+          "National-road exclusion, coordination and double-counting controls."
+        ],
+        [
+          "uganda_national_roads_fy25_26_2026-05-06.geojson",
+          "uganda_national_roads_fy25_26_2026-05-06",
+          "Web data feeds",
+          "GEOJSON",
+          1014,
+          20975.94,
+          "",
+          21,
+          "national_uid, road_no, link_id, road_class_code, road_class",
+          "read",
+          "National-road exclusion, coordination and double-counting controls."
+        ],
+        [
+          "uganda_national_roads_fy25_26_2026-05-13.geojson",
+          "uganda_national_roads_fy25_26_2026-05-13",
+          "Web data feeds",
+          "GEOJSON",
+          1014,
+          20975.94,
+          "",
+          21,
+          "national_uid, road_no, link_id, road_class_code, road_class",
+          "read",
+          "National-road exclusion, coordination and double-counting controls."
+        ],
+        [
+          "network2025.shp",
+          "network2025",
+          "GIS and road data",
+          "SHP",
+          1014,
+          21091.24,
+          "",
+          17,
+          "Unique_ID, Road_No, Link_ID, Road_Class, Link_Nam_1",
+          "read",
+          "Road-network inventory, route length, topology and spatial coverage evidence."
+        ],
+        [
+          "network2026.shp",
+          "network2026",
+          "GIS and road data",
+          "SHP",
+          1014,
+          21091.24,
+          "",
+          19,
+          "Unique_ID, Road_No_1, Link_ID_1, Road_Cla_1, Link_Name",
+          "read",
+          "Road-network inventory, route length, topology and spatial coverage evidence."
+        ],
+        [
+          "networkfy25_26.shp",
+          "networkfy25_26",
+          "GIS and road data",
+          "SHP",
+          1014,
+          21091.24,
+          "",
+          35,
+          "Road_No_1, Link_ID_1, Road_Cla_1, Link_Name, Chainage_1",
+          "read",
+          "Road-network inventory, route length, topology and spatial coverage evidence."
+        ],
+        [
+          "networkfy25_26.shp",
+          "networkfy25_26",
+          "GIS and road data",
+          "SHP",
+          1014,
+          21091.24,
+          "",
+          19,
+          "Unique_ID, Road_No_1, Link_ID_1, Road_Cla_1, Link_Name",
+          "read",
+          "Road-network inventory, route length, topology and spatial coverage evidence."
+        ],
+        [
+          "uganda_traffic_flows_web.geojson",
+          "uganda_traffic_flows_web",
+          "Web data feeds",
+          "GEOJSON",
+          900,
+          20921.06,
+          "",
+          14,
+          "route_id, route_key, road_name, road_system, road_source",
+          "read",
+          "Traffic-count placement, demand calibration and AADT validation."
+        ],
+        [
+          "national road network fy25-26.shp",
+          "national road network fy25-26",
+          "GIS and road data",
+          "SHP",
+          773,
+          17826.22,
+          "",
+          18,
+          "Unique_ID, Road_No_1, Link_ID_1, Road_Cla_1, Link_Name",
+          "read",
+          "National-road exclusion, coordination and double-counting controls."
+        ],
+        [
+          "district_roads_dissolved.geojson",
+          "district_roads_dissolved",
+          "Web data feeds",
+          "GEOJSON",
+          345,
+          30824.11,
+          "",
+          4,
+          "DistName, RdClass, length_km, Rdname",
+          "read",
+          "District equity joins, regional aggregation and administrative boundary checks."
+        ],
+        [
+          "district_roads_dissolved.geojson",
+          "district_roads_dissolved",
+          "Web data feeds",
+          "GEOJSON",
+          345,
+          30824.11,
+          "",
+          4,
+          "DistName, RdClass, length_km, Rdname",
+          "read",
+          "District equity joins, regional aggregation and administrative boundary checks."
+        ],
+        [
+          "districts.shp",
+          "districts",
+          "GIS and road data",
+          "SHP",
+          135,
+          "",
+          241470.49,
+          14,
+          "admin2Name, admin2Pcod, admin2RefN, admin2AltN, admin2Al_1",
+          "read",
+          "District equity joins, regional aggregation and administrative boundary checks."
+        ],
+        [
+          "districts.geojson",
+          "districts",
+          "Web data feeds",
+          "GEOJSON",
+          135,
+          "",
+          241471.42,
+          5,
+          "district, region, area, road_count, total_km",
+          "read",
+          "District equity joins, regional aggregation and administrative boundary checks."
+        ],
+        [
+          "districts.geojson",
+          "districts",
+          "Web data feeds",
+          "GEOJSON",
+          135,
+          "",
+          241471.42,
+          5,
+          "district, region, area, road_count, total_km",
+          "read",
+          "District equity joins, regional aggregation and administrative boundary checks."
+        ],
+        [
+          "uganda_roads_district_summary.geojson",
+          "uganda_roads_district_summary",
+          "Web data feeds",
+          "GEOJSON",
+          135,
+          "",
+          241471.42,
+          13,
+          "district, region, district_key, road_records, total_km",
+          "read",
+          "District equity joins, regional aggregation and administrative boundary checks."
+        ],
+        [
+          "uganda_roads_district_summary_2026-05-05.geojson",
+          "uganda_roads_district_summary_2026-05-05",
+          "Web data feeds",
+          "GEOJSON",
+          135,
+          "",
+          241471.42,
+          13,
+          "district, region, district_key, road_records, total_km",
+          "read",
+          "District equity joins, regional aggregation and administrative boundary checks."
+        ],
+        [
+          "uganda_roads_district_summary_2026-05-06.geojson",
+          "uganda_roads_district_summary_2026-05-06",
+          "Web data feeds",
+          "GEOJSON",
+          135,
+          "",
+          241471.42,
+          13,
+          "district, region, district_key, road_records, total_km",
+          "read",
+          "District equity joins, regional aggregation and administrative boundary checks."
+        ],
+        [
+          "uganda_roads_district_summary_2026-05-13.geojson",
+          "uganda_roads_district_summary_2026-05-13",
+          "Web data feeds",
+          "GEOJSON",
+          135,
+          "",
+          241471.42,
+          13,
+          "district, region, district_key, road_records, total_km",
+          "read",
+          "District equity joins, regional aggregation and administrative boundary checks."
+        ],
+        [
+          "kcca_roads.geojson",
+          "kcca_roads",
+          "Web data feeds",
+          "GEOJSON",
+          80,
+          306.5,
+          "",
+          5,
+          "Road_No_1, Link_Name, Road_Cla_1, Surface__1, Length_km_",
+          "read",
+          "Urban/KCCA road prioritisation, city access and CBD treatment context."
+        ],
+        [
+          "kcca_roads.geojson",
+          "kcca_roads",
+          "Web data feeds",
+          "GEOJSON",
+          80,
+          306.5,
+          "",
+          5,
+          "Road_No_1, Link_Name, Road_Cla_1, Surface__1, Length_km_",
+          "read",
+          "Urban/KCCA road prioritisation, city access and CBD treatment context."
+        ],
+        [
+          "selected_cbd_roads.geojson",
+          "selected_cbd_roads",
+          "Web data feeds",
+          "GEOJSON",
+          59,
+          49.1,
+          "",
+          28,
+          "Road_Name, Shape_Leng, Length_km, Start_X, Start_Y",
+          "read",
+          "Urban/KCCA road prioritisation, city access and CBD treatment context."
+        ],
+        [
+          "KCCA.shp",
+          "KCCA",
+          "TOR and local source documents",
+          "SHP",
+          59,
+          49.1,
+          "",
+          7,
+          "Road_Name, Shape_Leng, Length_km, Start_X, Start_Y",
+          "read",
+          "Urban/KCCA road prioritisation, city access and CBD treatment context."
+        ],
+        [
+          "Selected_Roads_in_CBD.shp",
+          "Selected_Roads_in_CBD",
+          "TOR and local source documents",
+          "SHP",
+          59,
+          49.1,
+          "",
+          0,
+          "",
+          "read",
+          "Urban/KCCA road prioritisation, city access and CBD treatment context."
+        ],
+        [
+          "sites.geojson",
+          "sites",
+          "Traffic count scratch dataset",
+          "GEOJSON",
+          10,
+          "",
+          "",
+          8,
+          "site_code, road_section, region, functional_class, aadt_2025",
+          "read",
+          "Traffic-count placement, demand calibration and AADT validation."
+        ],
+        [
+          "DUCAR_Programme_Roads.geojson",
+          "DUCAR_Programme_Roads",
+          "GIS and road data",
+          "GEOJSON",
+          5,
+          77.75,
+          "",
+          7,
+          "Road_ID, Admin_Area, Road_Class, Surface, Status",
+          "read",
+          "Road-network inventory, route length, topology and spatial coverage evidence."
+        ],
+        [
+          "DUCAR_Programme_Bridges.geojson",
+          "DUCAR_Programme_Bridges",
+          "GIS and road data",
+          "GEOJSON",
+          3,
+          "",
+          "",
+          6,
+          "Bridge_ID, Linked_Road_ID, Admin_Area, Status, Intervention",
+          "read",
+          "Bridge location evidence, structure screening and network criticality checks."
+        ],
+        [
+          "districts2020.shp",
+          "districts2020",
+          "GIS and road data",
+          "SHP",
+          1,
+          "",
+          1085.51,
+          14,
+          "admin2Name, admin2Pcod, admin2RefN, admin2AltN, admin2Al_1",
+          "read",
+          "District equity joins, regional aggregation and administrative boundary checks."
+        ],
+        [
+          "uganda_roads_master.gpkg",
+          "uganda_roads_master",
+          "Web data feeds",
+          "GPKG",
+          0,
+          "",
+          "",
+          0,
+          "",
+          "error: DataSourceError",
+          "Road-network inventory, route length, topology and spatial coverage evidence."
+        ],
+        [
+          "uganda_roads_master_2026-05-05.gpkg",
+          "uganda_roads_master_2026-05-05",
+          "Web data feeds",
+          "GPKG",
+          0,
+          "",
+          "",
+          0,
+          "",
+          "error: DataSourceError",
+          "Road-network inventory, route length, topology and spatial coverage evidence."
+        ]
+      ]
+    },
+    "records": [
+      {
+        "name": "dcroads.shp",
+        "layer": "dcroads",
+        "path": "district roads/dcroads.shp",
+        "source_area": "TOR and local source documents",
+        "extension": "SHP",
+        "bytes": 56244416,
+        "feature_count": 21675,
+        "geometry_types": [
+          [
+            "LineString",
+            21263
+          ],
+          [
+            "MultiLineString",
+            238
+          ]
+        ],
+        "columns": [
+          "RdCode",
+          "RdSect",
+          "ChainStart",
+          "ChainEnd",
+          "RoadLen_Km",
+          "RdType",
+          "DC_Left",
+          "DC_Right",
+          "SC_Left",
+          "SC_Right",
+          "SurFactor",
+          "CarWidth"
+        ],
+        "column_count": 38,
+        "crs": "COMPD_CS[\"WGS 84 / UTM zone 36N + WGS_1984_Geoid\",PROJCS[\"WGS 84 / UTM zone 36N\",GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",0],PARAMETER[\"central_meridian\",33],PARAMETER[\"scale_factor\",0.9996],PARAMETER[\"false_easting\",500000],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH],AUTHORITY[\"EPSG\",\"32636\"]],VERT_CS[\"WGS_1984_Geoid\",VERT_DATUM[\"WGS_1984_Geoid\",2005,AUTHORITY[\"ESRI\",\"105100\"]],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Gravity-related height\",UP],AUTHORITY[\"ESRI\",\"105700\"]]]",
+        "bounds": [
+          29.58307,
+          -1.45764,
+          35.03439,
+          3.78269
+        ],
+        "line_length_km": 86248.05,
+        "polygon_area_km2": 0,
+        "decision_use": "District equity joins, regional aggregation and administrative boundary checks.",
+        "status": "read"
+      },
+      {
+        "name": "dcroads2025.shp",
+        "layer": "dcroads2025",
+        "path": "district roads/dcroads2025.shp",
+        "source_area": "TOR and local source documents",
+        "extension": "SHP",
+        "bytes": 60361720,
+        "feature_count": 31106,
+        "geometry_types": [
+          [
+            "LineString",
+            30687
+          ],
+          [
+            "MultiLineString",
+            245
+          ]
+        ],
+        "columns": [
+          "RdCode",
+          "RdSect",
+          "ChainStart",
+          "ChainEnd",
+          "RoadLen_Km",
+          "RdType",
+          "DC_Left",
+          "DC_Right",
+          "SC_Left",
+          "SC_Right",
+          "SurFactor",
+          "CarWidth"
+        ],
+        "column_count": 46,
+        "crs": "COMPD_CS[\"WGS 84 / UTM zone 36N + WGS_1984_Geoid\",PROJCS[\"WGS 84 / UTM zone 36N\",GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",0],PARAMETER[\"central_meridian\",33],PARAMETER[\"scale_factor\",0.9996],PARAMETER[\"false_easting\",500000],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH],AUTHORITY[\"EPSG\",\"32636\"]],VERT_CS[\"WGS_1984_Geoid\",VERT_DATUM[\"WGS_1984_Geoid\",2005,AUTHORITY[\"ESRI\",\"105100\"]],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Gravity-related height\",UP],AUTHORITY[\"ESRI\",\"105700\"]]]",
+        "bounds": [
+          29.58307,
+          -1.45764,
+          35.03439,
+          3.78269
+        ],
+        "line_length_km": 89077.36,
+        "polygon_area_km2": 0,
+        "decision_use": "District equity joins, regional aggregation and administrative boundary checks.",
+        "status": "read"
+      },
+      {
+        "name": "districts.shp",
+        "layer": "districts",
+        "path": "Districts/districts.shp",
+        "source_area": "GIS and road data",
+        "extension": "SHP",
+        "bytes": 6958492,
+        "feature_count": 135,
+        "geometry_types": [
+          [
+            "Polygon",
+            135
+          ]
+        ],
+        "columns": [
+          "admin2Name",
+          "admin2Pcod",
+          "admin2RefN",
+          "admin2AltN",
+          "admin2Al_1",
+          "admin1Name",
+          "admin1Pcod",
+          "admin0Name",
+          "admin0Pcod",
+          "date",
+          "validOn",
+          "validTo"
+        ],
+        "column_count": 14,
+        "crs": "EPSG:4326",
+        "bounds": [
+          29.57216,
+          -1.48147,
+          35.00105,
+          4.23137
+        ],
+        "line_length_km": 0,
+        "polygon_area_km2": 241470.49,
+        "decision_use": "District equity joins, regional aggregation and administrative boundary checks.",
+        "status": "read"
+      },
+      {
+        "name": "districts2020.shp",
+        "layer": "districts2020",
+        "path": "Districts/districts2020.shp",
+        "source_area": "GIS and road data",
+        "extension": "SHP",
+        "bytes": 26076,
+        "feature_count": 1,
+        "geometry_types": [
+          [
+            "Polygon",
+            1
+          ]
+        ],
+        "columns": [
+          "admin2Name",
+          "admin2Pcod",
+          "admin2RefN",
+          "admin2AltN",
+          "admin2Al_1",
+          "admin1Name",
+          "admin1Pcod",
+          "admin0Name",
+          "admin0Pcod",
+          "date",
+          "validOn",
+          "validTo"
+        ],
+        "column_count": 14,
+        "crs": "EPSG:4326",
+        "bounds": [
+          32.86039,
+          1.70606,
+          33.29051,
+          2.10861
+        ],
+        "line_length_km": 0,
+        "polygon_area_km2": 1085.51,
+        "decision_use": "District equity joins, regional aggregation and administrative boundary checks.",
+        "status": "read"
+      },
+      {
+        "name": "DUCAR_Programme_Bridges.geojson",
+        "layer": "DUCAR_Programme_Bridges",
+        "path": "DUCAR_Framework_Tool/gis/DUCAR_Programme_Bridges.geojson",
+        "source_area": "GIS and road data",
+        "extension": "GEOJSON",
+        "bytes": 1447,
+        "feature_count": 3,
+        "geometry_types": [
+          [
+            "Point",
+            3
+          ]
+        ],
+        "columns": [
+          "Bridge_ID",
+          "Linked_Road_ID",
+          "Admin_Area",
+          "Status",
+          "Intervention",
+          "Cost_UGX"
+        ],
+        "column_count": 6,
+        "crs": "EPSG:4326",
+        "bounds": [
+          31.03,
+          0.86,
+          34.08,
+          3.45
+        ],
+        "line_length_km": 0,
+        "polygon_area_km2": 0,
+        "decision_use": "Bridge location evidence, structure screening and network criticality checks.",
+        "status": "read"
+      },
+      {
+        "name": "DUCAR_Programme_Roads.geojson",
+        "layer": "DUCAR_Programme_Roads",
+        "path": "DUCAR_Framework_Tool/gis/DUCAR_Programme_Roads.geojson",
+        "source_area": "GIS and road data",
+        "extension": "GEOJSON",
+        "bytes": 3198,
+        "feature_count": 5,
+        "geometry_types": [
+          [
+            "LineString",
+            5
+          ]
+        ],
+        "columns": [
+          "Road_ID",
+          "Admin_Area",
+          "Road_Class",
+          "Surface",
+          "Status",
+          "Intervention",
+          "Cost_UGX"
+        ],
+        "column_count": 7,
+        "crs": "EPSG:4326",
+        "bounds": [
+          30.64,
+          -0.61,
+          34.16,
+          3.5
+        ],
+        "line_length_km": 77.75,
+        "polygon_area_km2": 0,
+        "decision_use": "Road-network inventory, route length, topology and spatial coverage evidence.",
+        "status": "read"
+      },
+      {
+        "name": "district_roads_dissolved.geojson",
+        "layer": "district_roads_dissolved",
+        "path": "DUCAR_Framework_Tool/github_app/data/district_roads_dissolved.geojson",
+        "source_area": "Web data feeds",
+        "extension": "GEOJSON",
+        "bytes": 2061692,
+        "feature_count": 345,
+        "geometry_types": [
+          [
+            "MultiLineString",
+            317
+          ],
+          [
+            "LineString",
+            28
+          ]
+        ],
+        "columns": [
+          "DistName",
+          "RdClass",
+          "length_km",
+          "Rdname"
+        ],
+        "column_count": 4,
+        "crs": "EPSG:4326",
+        "bounds": [
+          29.58387,
+          -1.45764,
+          35.03439,
+          3.78131
+        ],
+        "line_length_km": 30824.11,
+        "polygon_area_km2": 0,
+        "decision_use": "District equity joins, regional aggregation and administrative boundary checks.",
+        "status": "read"
+      },
+      {
+        "name": "districts.geojson",
+        "layer": "districts",
+        "path": "DUCAR_Framework_Tool/github_app/data/districts.geojson",
+        "source_area": "Web data feeds",
+        "extension": "GEOJSON",
+        "bytes": 331588,
+        "feature_count": 135,
+        "geometry_types": [
+          [
+            "Polygon",
+            135
+          ]
+        ],
+        "columns": [
+          "district",
+          "region",
+          "area",
+          "road_count",
+          "total_km"
+        ],
+        "column_count": 5,
+        "crs": "EPSG:4326",
+        "bounds": [
+          29.57216,
+          -1.48136,
+          35.00105,
+          4.23137
+        ],
+        "line_length_km": 0,
+        "polygon_area_km2": 241471.42,
+        "decision_use": "District equity joins, regional aggregation and administrative boundary checks.",
+        "status": "read"
+      },
+      {
+        "name": "kcca_roads.geojson",
+        "layer": "kcca_roads",
+        "path": "DUCAR_Framework_Tool/github_app/data/kcca_roads.geojson",
+        "source_area": "Web data feeds",
+        "extension": "GEOJSON",
+        "bytes": 46257,
+        "feature_count": 80,
+        "geometry_types": [
+          [
+            "LineString",
+            78
+          ],
+          [
+            "MultiLineString",
+            2
+          ]
+        ],
+        "columns": [
+          "Road_No_1",
+          "Link_Name",
+          "Road_Cla_1",
+          "Surface__1",
+          "Length_km_"
+        ],
+        "column_count": 5,
+        "crs": "EPSG:4326",
+        "bounds": [
+          32.33534,
+          0.10286,
+          32.75137,
+          0.44812
+        ],
+        "line_length_km": 306.5,
+        "polygon_area_km2": 0,
+        "decision_use": "Urban/KCCA road prioritisation, city access and CBD treatment context.",
+        "status": "read"
+      },
+      {
+        "name": "uganda_roads_master.gpkg",
+        "layer": "uganda_roads_master",
+        "path": "DUCAR_Framework_Tool/github_app/data/uganda_roads_master.gpkg",
+        "source_area": "Web data feeds",
+        "extension": "GPKG",
+        "bytes": 554864640,
+        "feature_count": 0,
+        "geometry_types": [],
+        "columns": [],
+        "column_count": 0,
+        "crs": "",
+        "bounds": [],
+        "line_length_km": 0,
+        "polygon_area_km2": 0,
+        "decision_use": "Road-network inventory, route length, topology and spatial coverage evidence.",
+        "status": "error: DataSourceError"
+      },
+      {
+        "name": "uganda_roads_master_2026-05-05.gpkg",
+        "layer": "uganda_roads_master_2026-05-05",
+        "path": "DUCAR_Framework_Tool/github_app/data/uganda_roads_master_2026-05-05.gpkg",
+        "source_area": "Web data feeds",
+        "extension": "GPKG",
+        "bytes": 0,
+        "feature_count": 0,
+        "geometry_types": [],
+        "columns": [],
+        "column_count": 0,
+        "crs": "",
+        "bounds": [],
+        "line_length_km": 0,
+        "polygon_area_km2": 0,
+        "decision_use": "Road-network inventory, route length, topology and spatial coverage evidence.",
+        "status": "error: DataSourceError"
+      },
+      {
+        "name": "district_roads_dissolved.geojson",
+        "layer": "district_roads_dissolved",
+        "path": "DUCAR_Framework_Tool/github_app/public/data/district_roads_dissolved.geojson",
+        "source_area": "Web data feeds",
+        "extension": "GEOJSON",
+        "bytes": 2061692,
+        "feature_count": 345,
+        "geometry_types": [
+          [
+            "MultiLineString",
+            317
+          ],
+          [
+            "LineString",
+            28
+          ]
+        ],
+        "columns": [
+          "DistName",
+          "RdClass",
+          "length_km",
+          "Rdname"
+        ],
+        "column_count": 4,
+        "crs": "EPSG:4326",
+        "bounds": [
+          29.58387,
+          -1.45764,
+          35.03439,
+          3.78131
+        ],
+        "line_length_km": 30824.11,
+        "polygon_area_km2": 0,
+        "decision_use": "District equity joins, regional aggregation and administrative boundary checks.",
+        "status": "read"
+      },
+      {
+        "name": "districts.geojson",
+        "layer": "districts",
+        "path": "DUCAR_Framework_Tool/github_app/public/data/districts.geojson",
+        "source_area": "Web data feeds",
+        "extension": "GEOJSON",
+        "bytes": 331588,
+        "feature_count": 135,
+        "geometry_types": [
+          [
+            "Polygon",
+            135
+          ]
+        ],
+        "columns": [
+          "district",
+          "region",
+          "area",
+          "road_count",
+          "total_km"
+        ],
+        "column_count": 5,
+        "crs": "EPSG:4326",
+        "bounds": [
+          29.57216,
+          -1.48136,
+          35.00105,
+          4.23137
+        ],
+        "line_length_km": 0,
+        "polygon_area_km2": 241471.42,
+        "decision_use": "District equity joins, regional aggregation and administrative boundary checks.",
+        "status": "read"
+      },
+      {
+        "name": "kcca_roads.geojson",
+        "layer": "kcca_roads",
+        "path": "DUCAR_Framework_Tool/github_app/public/data/kcca_roads.geojson",
+        "source_area": "Web data feeds",
+        "extension": "GEOJSON",
+        "bytes": 46257,
+        "feature_count": 80,
+        "geometry_types": [
+          [
+            "LineString",
+            78
+          ],
+          [
+            "MultiLineString",
+            2
+          ]
+        ],
+        "columns": [
+          "Road_No_1",
+          "Link_Name",
+          "Road_Cla_1",
+          "Surface__1",
+          "Length_km_"
+        ],
+        "column_count": 5,
+        "crs": "EPSG:4326",
+        "bounds": [
+          32.33534,
+          0.10286,
+          32.75137,
+          0.44812
+        ],
+        "line_length_km": 306.5,
+        "polygon_area_km2": 0,
+        "decision_use": "Urban/KCCA road prioritisation, city access and CBD treatment context.",
+        "status": "read"
+      },
+      {
+        "name": "selected_cbd_roads.geojson",
+        "layer": "selected_cbd_roads",
+        "path": "DUCAR_Framework_Tool/github_app/public/data/selected_cbd_roads.geojson",
+        "source_area": "Web data feeds",
+        "extension": "GEOJSON",
+        "bytes": 361487,
+        "feature_count": 59,
+        "geometry_types": [
+          [
+            "LineString",
+            32
+          ],
+          [
+            "MultiLineString",
+            27
+          ]
+        ],
+        "columns": [
+          "Road_Name",
+          "Shape_Leng",
+          "Length_km",
+          "Start_X",
+          "Start_Y",
+          "End_X",
+          "End_Y",
+          "road_uid",
+          "road_source",
+          "road_system",
+          "road_name",
+          "road_ref"
+        ],
+        "column_count": 28,
+        "crs": "EPSG:4326",
+        "bounds": [
+          32.57115,
+          0.30724,
+          32.61717,
+          0.33355
+        ],
+        "line_length_km": 49.1,
+        "polygon_area_km2": 0,
+        "decision_use": "Urban/KCCA road prioritisation, city access and CBD treatment context.",
+        "status": "read"
+      },
+      {
+        "name": "uganda_clean_road_routes_web.geojson",
+        "layer": "uganda_clean_road_routes_web",
+        "path": "DUCAR_Framework_Tool/github_app/public/data/uganda_clean_road_routes_web.geojson",
+        "source_area": "Web data feeds",
+        "extension": "GEOJSON",
+        "bytes": 7352646,
+        "feature_count": 5604,
+        "geometry_types": [
+          [
+            "LineString",
+            4611
+          ],
+          [
+            "MultiLineString",
+            993
+          ]
+        ],
+        "columns": [
+          "route_id",
+          "route_key",
+          "road_name",
+          "road_system",
+          "road_source",
+          "road_class",
+          "network_category",
+          "surface",
+          "district",
+          "region",
+          "segment_count",
+          "length_km"
+        ],
+        "column_count": 14,
+        "crs": "EPSG:4326",
+        "bounds": [
+          29.58302,
+          -1.62903,
+          35.03439,
+          4.25015
+        ],
+        "line_length_km": 92253.87,
+        "polygon_area_km2": 0,
+        "decision_use": "Road-network inventory, route length, topology and spatial coverage evidence.",
+        "status": "read"
+      },
+      {
+        "name": "uganda_national_roads_fy25_26.geojson",
+        "layer": "uganda_national_roads_fy25_26",
+        "path": "DUCAR_Framework_Tool/github_app/public/data/uganda_national_roads_fy25_26.geojson",
+        "source_area": "Web data feeds",
+        "extension": "GEOJSON",
+        "bytes": 2211845,
+        "feature_count": 1014,
+        "geometry_types": [
+          [
+            "LineString",
+            980
+          ],
+          [
+            "MultiLineString",
+            34
+          ]
+        ],
+        "columns": [
+          "national_uid",
+          "road_no",
+          "link_id",
+          "road_class_code",
+          "road_class",
+          "road_name",
+          "length_km",
+          "surface",
+          "maintenance_district",
+          "maintenance_region",
+          "chainage_start",
+          "chainage_end"
+        ],
+        "column_count": 21,
+        "crs": "EPSG:4326",
+        "bounds": [
+          29.58302,
+          -1.46996,
+          35.00198,
+          3.85708
+        ],
+        "line_length_km": 20975.94,
+        "polygon_area_km2": 0,
+        "decision_use": "National-road exclusion, coordination and double-counting controls.",
+        "status": "read"
+      },
+      {
+        "name": "uganda_national_roads_fy25_26_2026-05-05.geojson",
+        "layer": "uganda_national_roads_fy25_26_2026-05-05",
+        "path": "DUCAR_Framework_Tool/github_app/public/data/uganda_national_roads_fy25_26_2026-05-05.geojson",
+        "source_area": "Web data feeds",
+        "extension": "GEOJSON",
+        "bytes": 2160029,
+        "feature_count": 1014,
+        "geometry_types": [
+          [
+            "LineString",
+            980
+          ],
+          [
+            "MultiLineString",
+            34
+          ]
+        ],
+        "columns": [
+          "national_uid",
+          "road_no",
+          "link_id",
+          "road_class_code",
+          "road_class",
+          "road_name",
+          "length_km",
+          "surface",
+          "maintenance_district",
+          "maintenance_region",
+          "chainage_start",
+          "chainage_end"
+        ],
+        "column_count": 21,
+        "crs": "EPSG:4326",
+        "bounds": [
+          29.58302,
+          -1.46996,
+          35.00198,
+          3.85708
+        ],
+        "line_length_km": 20975.94,
+        "polygon_area_km2": 0,
+        "decision_use": "National-road exclusion, coordination and double-counting controls.",
+        "status": "read"
+      },
+      {
+        "name": "uganda_national_roads_fy25_26_2026-05-06.geojson",
+        "layer": "uganda_national_roads_fy25_26_2026-05-06",
+        "path": "DUCAR_Framework_Tool/github_app/public/data/uganda_national_roads_fy25_26_2026-05-06.geojson",
+        "source_area": "Web data feeds",
+        "extension": "GEOJSON",
+        "bytes": 2160029,
+        "feature_count": 1014,
+        "geometry_types": [
+          [
+            "LineString",
+            980
+          ],
+          [
+            "MultiLineString",
+            34
+          ]
+        ],
+        "columns": [
+          "national_uid",
+          "road_no",
+          "link_id",
+          "road_class_code",
+          "road_class",
+          "road_name",
+          "length_km",
+          "surface",
+          "maintenance_district",
+          "maintenance_region",
+          "chainage_start",
+          "chainage_end"
+        ],
+        "column_count": 21,
+        "crs": "EPSG:4326",
+        "bounds": [
+          29.58302,
+          -1.46996,
+          35.00198,
+          3.85708
+        ],
+        "line_length_km": 20975.94,
+        "polygon_area_km2": 0,
+        "decision_use": "National-road exclusion, coordination and double-counting controls.",
+        "status": "read"
+      },
+      {
+        "name": "uganda_national_roads_fy25_26_2026-05-13.geojson",
+        "layer": "uganda_national_roads_fy25_26_2026-05-13",
+        "path": "DUCAR_Framework_Tool/github_app/public/data/uganda_national_roads_fy25_26_2026-05-13.geojson",
+        "source_area": "Web data feeds",
+        "extension": "GEOJSON",
+        "bytes": 2160029,
+        "feature_count": 1014,
+        "geometry_types": [
+          [
+            "LineString",
+            980
+          ],
+          [
+            "MultiLineString",
+            34
+          ]
+        ],
+        "columns": [
+          "national_uid",
+          "road_no",
+          "link_id",
+          "road_class_code",
+          "road_class",
+          "road_name",
+          "length_km",
+          "surface",
+          "maintenance_district",
+          "maintenance_region",
+          "chainage_start",
+          "chainage_end"
+        ],
+        "column_count": 21,
+        "crs": "EPSG:4326",
+        "bounds": [
+          29.58302,
+          -1.46996,
+          35.00198,
+          3.85708
+        ],
+        "line_length_km": 20975.94,
+        "polygon_area_km2": 0,
+        "decision_use": "National-road exclusion, coordination and double-counting controls.",
+        "status": "read"
+      },
+      {
+        "name": "uganda_network_edges_web.geojson",
+        "layer": "uganda_network_edges_web",
+        "path": "DUCAR_Framework_Tool/github_app/public/data/uganda_network_edges_web.geojson",
+        "source_area": "Web data feeds",
+        "extension": "GEOJSON",
+        "bytes": 23481261,
+        "feature_count": 37352,
+        "geometry_types": [
+          [
+            "LineString",
+            37352
+          ]
+        ],
+        "columns": [
+          "edge_id",
+          "from_node",
+          "to_node",
+          "road_name",
+          "road_system",
+          "road_source",
+          "road_class",
+          "network_category",
+          "surface",
+          "district",
+          "region",
+          "length_km"
+        ],
+        "column_count": 14,
+        "crs": "EPSG:4326",
+        "bounds": [
+          29.58302,
+          -1.62903,
+          35.03439,
+          4.25015
+        ],
+        "line_length_km": 92263.09,
+        "polygon_area_km2": 0,
+        "decision_use": "Road-network inventory, route length, topology and spatial coverage evidence.",
+        "status": "read"
+      },
+      {
+        "name": "uganda_network_nodes_web.geojson",
+        "layer": "uganda_network_nodes_web",
+        "path": "DUCAR_Framework_Tool/github_app/public/data/uganda_network_nodes_web.geojson",
+        "source_area": "Web data feeds",
+        "extension": "GEOJSON",
+        "bytes": 7916946,
+        "feature_count": 44972,
+        "geometry_types": [
+          [
+            "Point",
+            44972
+          ]
+        ],
+        "columns": [
+          "node_id",
+          "degree",
+          "junction_type"
+        ],
+        "column_count": 3,
+        "crs": "EPSG:4326",
+        "bounds": [
+          29.5835,
+          -1.629,
+          35.0344,
+          4.2501
+        ],
+        "line_length_km": 0,
+        "polygon_area_km2": 0,
+        "decision_use": "Road-network inventory, route length, topology and spatial coverage evidence.",
+        "status": "read"
+      },
+      {
+        "name": "uganda_osm_major_roads_web.geojson",
+        "layer": "uganda_osm_major_roads_web",
+        "path": "DUCAR_Framework_Tool/github_app/public/data/uganda_osm_major_roads_web.geojson",
+        "source_area": "Web data feeds",
+        "extension": "GEOJSON",
+        "bytes": 7980612,
+        "feature_count": 14821,
+        "geometry_types": [
+          [
+            "LineString",
+            14821
+          ]
+        ],
+        "columns": [
+          "road_uid",
+          "osm_id",
+          "osm_highway",
+          "road_name",
+          "road_ref",
+          "length_km",
+          "district",
+          "region",
+          "ducar_class",
+          "ducar_code",
+          "classification_confidence",
+          "data_quality_flag"
+        ],
+        "column_count": 12,
+        "crs": "EPSG:4326",
+        "bounds": [
+          29.58347,
+          -1.62903,
+          35.00206,
+          4.25015
+        ],
+        "line_length_km": 40377.0,
+        "polygon_area_km2": 0,
+        "decision_use": "Road-network inventory, route length, topology and spatial coverage evidence.",
+        "status": "read"
+      },
+      {
+        "name": "uganda_osm_major_roads_web_2026-05-05.geojson",
+        "layer": "uganda_osm_major_roads_web_2026-05-05",
+        "path": "DUCAR_Framework_Tool/github_app/public/data/uganda_osm_major_roads_web_2026-05-05.geojson",
+        "source_area": "Web data feeds",
+        "extension": "GEOJSON",
+        "bytes": 8217914,
+        "feature_count": 14821,
+        "geometry_types": [
+          [
+            "LineString",
+            14821
+          ]
+        ],
+        "columns": [
+          "road_uid",
+          "osm_id",
+          "osm_highway",
+          "road_name",
+          "road_ref",
+          "length_km",
+          "district",
+          "region",
+          "ducar_class",
+          "ducar_code",
+          "classification_confidence",
+          "data_quality_flag"
+        ],
+        "column_count": 12,
+        "crs": "EPSG:4326",
+        "bounds": [
+          29.58347,
+          -1.62903,
+          35.00206,
+          4.25015
+        ],
+        "line_length_km": 40377.0,
+        "polygon_area_km2": 0,
+        "decision_use": "Road-network inventory, route length, topology and spatial coverage evidence.",
+        "status": "read"
+      },
+      {
+        "name": "uganda_osm_major_roads_web_2026-05-06.geojson",
+        "layer": "uganda_osm_major_roads_web_2026-05-06",
+        "path": "DUCAR_Framework_Tool/github_app/public/data/uganda_osm_major_roads_web_2026-05-06.geojson",
+        "source_area": "Web data feeds",
+        "extension": "GEOJSON",
+        "bytes": 8217914,
+        "feature_count": 14821,
+        "geometry_types": [
+          [
+            "LineString",
+            14821
+          ]
+        ],
+        "columns": [
+          "road_uid",
+          "osm_id",
+          "osm_highway",
+          "road_name",
+          "road_ref",
+          "length_km",
+          "district",
+          "region",
+          "ducar_class",
+          "ducar_code",
+          "classification_confidence",
+          "data_quality_flag"
+        ],
+        "column_count": 12,
+        "crs": "EPSG:4326",
+        "bounds": [
+          29.58347,
+          -1.62903,
+          35.00206,
+          4.25015
+        ],
+        "line_length_km": 40377.0,
+        "polygon_area_km2": 0,
+        "decision_use": "Road-network inventory, route length, topology and spatial coverage evidence.",
+        "status": "read"
+      },
+      {
+        "name": "uganda_osm_major_roads_web_2026-05-13.geojson",
+        "layer": "uganda_osm_major_roads_web_2026-05-13",
+        "path": "DUCAR_Framework_Tool/github_app/public/data/uganda_osm_major_roads_web_2026-05-13.geojson",
+        "source_area": "Web data feeds",
+        "extension": "GEOJSON",
+        "bytes": 8217914,
+        "feature_count": 14821,
+        "geometry_types": [
+          [
+            "LineString",
+            14821
+          ]
+        ],
+        "columns": [
+          "road_uid",
+          "osm_id",
+          "osm_highway",
+          "road_name",
+          "road_ref",
+          "length_km",
+          "district",
+          "region",
+          "ducar_class",
+          "ducar_code",
+          "classification_confidence",
+          "data_quality_flag"
+        ],
+        "column_count": 12,
+        "crs": "EPSG:4326",
+        "bounds": [
+          29.58347,
+          -1.62903,
+          35.00206,
+          4.25015
+        ],
+        "line_length_km": 40377.0,
+        "polygon_area_km2": 0,
+        "decision_use": "Road-network inventory, route length, topology and spatial coverage evidence.",
+        "status": "read"
+      },
+      {
+        "name": "uganda_roads_district_summary.geojson",
+        "layer": "uganda_roads_district_summary",
+        "path": "DUCAR_Framework_Tool/github_app/public/data/uganda_roads_district_summary.geojson",
+        "source_area": "Web data feeds",
+        "extension": "GEOJSON",
+        "bytes": 354425,
+        "feature_count": 135,
+        "geometry_types": [
+          [
+            "Polygon",
+            135
+          ]
+        ],
+        "columns": [
+          "district",
+          "region",
+          "district_key",
+          "road_records",
+          "total_km",
+          "osm_km",
+          "ducar_km",
+          "national_count",
+          "district_count",
+          "urban_count",
+          "car_count",
+          "verify_count"
+        ],
+        "column_count": 13,
+        "crs": "EPSG:4326",
+        "bounds": [
+          29.57216,
+          -1.48136,
+          35.00105,
+          4.23137
+        ],
+        "line_length_km": 0,
+        "polygon_area_km2": 241471.42,
+        "decision_use": "District equity joins, regional aggregation and administrative boundary checks.",
+        "status": "read"
+      },
+      {
+        "name": "uganda_roads_district_summary_2026-05-05.geojson",
+        "layer": "uganda_roads_district_summary_2026-05-05",
+        "path": "DUCAR_Framework_Tool/github_app/public/data/uganda_roads_district_summary_2026-05-05.geojson",
+        "source_area": "Web data feeds",
+        "extension": "GEOJSON",
+        "bytes": 342777,
+        "feature_count": 135,
+        "geometry_types": [
+          [
+            "Polygon",
+            135
+          ]
+        ],
+        "columns": [
+          "district",
+          "region",
+          "district_key",
+          "road_records",
+          "total_km",
+          "osm_km",
+          "ducar_km",
+          "national_count",
+          "district_count",
+          "urban_count",
+          "car_count",
+          "verify_count"
+        ],
+        "column_count": 13,
+        "crs": "EPSG:4326",
+        "bounds": [
+          29.57216,
+          -1.48136,
+          35.00105,
+          4.23137
+        ],
+        "line_length_km": 0,
+        "polygon_area_km2": 241471.42,
+        "decision_use": "District equity joins, regional aggregation and administrative boundary checks.",
+        "status": "read"
+      },
+      {
+        "name": "uganda_roads_district_summary_2026-05-06.geojson",
+        "layer": "uganda_roads_district_summary_2026-05-06",
+        "path": "DUCAR_Framework_Tool/github_app/public/data/uganda_roads_district_summary_2026-05-06.geojson",
+        "source_area": "Web data feeds",
+        "extension": "GEOJSON",
+        "bytes": 342777,
+        "feature_count": 135,
+        "geometry_types": [
+          [
+            "Polygon",
+            135
+          ]
+        ],
+        "columns": [
+          "district",
+          "region",
+          "district_key",
+          "road_records",
+          "total_km",
+          "osm_km",
+          "ducar_km",
+          "national_count",
+          "district_count",
+          "urban_count",
+          "car_count",
+          "verify_count"
+        ],
+        "column_count": 13,
+        "crs": "EPSG:4326",
+        "bounds": [
+          29.57216,
+          -1.48136,
+          35.00105,
+          4.23137
+        ],
+        "line_length_km": 0,
+        "polygon_area_km2": 241471.42,
+        "decision_use": "District equity joins, regional aggregation and administrative boundary checks.",
+        "status": "read"
+      },
+      {
+        "name": "uganda_roads_district_summary_2026-05-13.geojson",
+        "layer": "uganda_roads_district_summary_2026-05-13",
+        "path": "DUCAR_Framework_Tool/github_app/public/data/uganda_roads_district_summary_2026-05-13.geojson",
+        "source_area": "Web data feeds",
+        "extension": "GEOJSON",
+        "bytes": 342777,
+        "feature_count": 135,
+        "geometry_types": [
+          [
+            "Polygon",
+            135
+          ]
+        ],
+        "columns": [
+          "district",
+          "region",
+          "district_key",
+          "road_records",
+          "total_km",
+          "osm_km",
+          "ducar_km",
+          "national_count",
+          "district_count",
+          "urban_count",
+          "car_count",
+          "verify_count"
+        ],
+        "column_count": 13,
+        "crs": "EPSG:4326",
+        "bounds": [
+          29.57216,
+          -1.48136,
+          35.00105,
+          4.23137
+        ],
+        "line_length_km": 0,
+        "polygon_area_km2": 241471.42,
+        "decision_use": "District equity joins, regional aggregation and administrative boundary checks.",
+        "status": "read"
+      },
+      {
+        "name": "uganda_traffic_flows_web.geojson",
+        "layer": "uganda_traffic_flows_web",
+        "path": "DUCAR_Framework_Tool/github_app/public/data/uganda_traffic_flows_web.geojson",
+        "source_area": "Web data feeds",
+        "extension": "GEOJSON",
+        "bytes": 1843403,
+        "feature_count": 900,
+        "geometry_types": [
+          [
+            "LineString",
+            879
+          ],
+          [
+            "MultiLineString",
+            21
+          ]
+        ],
+        "columns": [
+          "route_id",
+          "route_key",
+          "road_name",
+          "road_system",
+          "road_source",
+          "road_class",
+          "network_category",
+          "surface",
+          "district",
+          "region",
+          "segment_count",
+          "length_km"
+        ],
+        "column_count": 14,
+        "crs": "EPSG:4326",
+        "bounds": [
+          29.58302,
+          -1.46996,
+          35.00198,
+          3.85708
+        ],
+        "line_length_km": 20921.06,
+        "polygon_area_km2": 0,
+        "decision_use": "Traffic-count placement, demand calibration and AADT validation.",
+        "status": "read"
+      },
+      {
+        "name": "uganda_unified_roads_web.geojson",
+        "layer": "uganda_unified_roads_web",
+        "path": "DUCAR_Framework_Tool/github_app/public/data/uganda_unified_roads_web.geojson",
+        "source_area": "Web data feeds",
+        "extension": "GEOJSON",
+        "bytes": 21005048,
+        "feature_count": 16319,
+        "geometry_types": [
+          [
+            "LineString",
+            15939
+          ],
+          [
+            "MultiLineString",
+            380
+          ]
+        ],
+        "columns": [
+          "road_uid",
+          "road_source",
+          "road_system",
+          "road_name",
+          "road_ref",
+          "road_class",
+          "surface",
+          "district",
+          "region",
+          "length_km",
+          "quality_flag",
+          "mapping_status"
+        ],
+        "column_count": 21,
+        "crs": "EPSG:4326",
+        "bounds": [
+          29.58302,
+          -1.62903,
+          35.03439,
+          4.25015
+        ],
+        "line_length_km": 92532.65,
+        "polygon_area_km2": 0,
+        "decision_use": "Road-network inventory, route length, topology and spatial coverage evidence.",
+        "status": "read"
+      },
+      {
+        "name": "uganda_unified_roads_web_2026-05-05.geojson",
+        "layer": "uganda_unified_roads_web_2026-05-05",
+        "path": "DUCAR_Framework_Tool/github_app/public/data/uganda_unified_roads_web_2026-05-05.geojson",
+        "source_area": "Web data feeds",
+        "extension": "GEOJSON",
+        "bytes": 21206315,
+        "feature_count": 16319,
+        "geometry_types": [
+          [
+            "LineString",
+            15939
+          ],
+          [
+            "MultiLineString",
+            380
+          ]
+        ],
+        "columns": [
+          "road_uid",
+          "road_source",
+          "road_system",
+          "road_name",
+          "road_ref",
+          "road_class",
+          "surface",
+          "district",
+          "region",
+          "length_km",
+          "quality_flag",
+          "mapping_status"
+        ],
+        "column_count": 21,
+        "crs": "EPSG:4326",
+        "bounds": [
+          29.58302,
+          -1.62903,
+          35.03439,
+          4.25015
+        ],
+        "line_length_km": 92532.65,
+        "polygon_area_km2": 0,
+        "decision_use": "Road-network inventory, route length, topology and spatial coverage evidence.",
+        "status": "read"
+      },
+      {
+        "name": "uganda_unified_roads_web_2026-05-06.geojson",
+        "layer": "uganda_unified_roads_web_2026-05-06",
+        "path": "DUCAR_Framework_Tool/github_app/public/data/uganda_unified_roads_web_2026-05-06.geojson",
+        "source_area": "Web data feeds",
+        "extension": "GEOJSON",
+        "bytes": 21206315,
+        "feature_count": 16319,
+        "geometry_types": [
+          [
+            "LineString",
+            15939
+          ],
+          [
+            "MultiLineString",
+            380
+          ]
+        ],
+        "columns": [
+          "road_uid",
+          "road_source",
+          "road_system",
+          "road_name",
+          "road_ref",
+          "road_class",
+          "surface",
+          "district",
+          "region",
+          "length_km",
+          "quality_flag",
+          "mapping_status"
+        ],
+        "column_count": 21,
+        "crs": "EPSG:4326",
+        "bounds": [
+          29.58302,
+          -1.62903,
+          35.03439,
+          4.25015
+        ],
+        "line_length_km": 92532.65,
+        "polygon_area_km2": 0,
+        "decision_use": "Road-network inventory, route length, topology and spatial coverage evidence.",
+        "status": "read"
+      },
+      {
+        "name": "uganda_unified_roads_web_2026-05-13.geojson",
+        "layer": "uganda_unified_roads_web_2026-05-13",
+        "path": "DUCAR_Framework_Tool/github_app/public/data/uganda_unified_roads_web_2026-05-13.geojson",
+        "source_area": "Web data feeds",
+        "extension": "GEOJSON",
+        "bytes": 21206315,
+        "feature_count": 16319,
+        "geometry_types": [
+          [
+            "LineString",
+            15939
+          ],
+          [
+            "MultiLineString",
+            380
+          ]
+        ],
+        "columns": [
+          "road_uid",
+          "road_source",
+          "road_system",
+          "road_name",
+          "road_ref",
+          "road_class",
+          "surface",
+          "district",
+          "region",
+          "length_km",
+          "quality_flag",
+          "mapping_status"
+        ],
+        "column_count": 21,
+        "crs": "EPSG:4326",
+        "bounds": [
+          29.58302,
+          -1.62903,
+          35.03439,
+          4.25015
+        ],
+        "line_length_km": 92532.65,
+        "polygon_area_km2": 0,
+        "decision_use": "Road-network inventory, route length, topology and spatial coverage evidence.",
+        "status": "read"
+      },
+      {
+        "name": "national road network fy25-26.shp",
+        "layer": "national road network fy25-26",
+        "path": "Roads/national road network fy25-26.shp",
+        "source_area": "GIS and road data",
+        "extension": "SHP",
+        "bytes": 24084168,
+        "feature_count": 773,
+        "geometry_types": [
+          [
+            "LineString",
+            747
+          ],
+          [
+            "MultiLineString",
+            26
+          ]
+        ],
+        "columns": [
+          "Unique_ID",
+          "Road_No_1",
+          "Link_ID_1",
+          "Road_Cla_1",
+          "Link_Name",
+          "Chainage_1",
+          "Chainage_2",
+          "Length_km_",
+          "Surface__1",
+          "Maintena_2",
+          "Maintena_3",
+          "Completi_1"
+        ],
+        "column_count": 18,
+        "crs": "EPSG:32636",
+        "bounds": [
+          29.58302,
+          -1.46999,
+          35.00199,
+          3.85708
+        ],
+        "line_length_km": 17826.22,
+        "polygon_area_km2": 0,
+        "decision_use": "National-road exclusion, coordination and double-counting controls.",
+        "status": "read"
+      },
+      {
+        "name": "network2025.shp",
+        "layer": "network2025",
+        "path": "Roads/network2025.shp",
+        "source_area": "GIS and road data",
+        "extension": "SHP",
+        "bytes": 27829784,
+        "feature_count": 1014,
+        "geometry_types": [
+          [
+            "LineString",
+            980
+          ],
+          [
+            "MultiLineString",
+            34
+          ]
+        ],
+        "columns": [
+          "Unique_ID",
+          "Road_No",
+          "Link_ID",
+          "Road_Class",
+          "Link_Nam_1",
+          "Chainage_F",
+          "Chainage_T",
+          "Length_km1",
+          "Surface_Ty",
+          "Maintenanc",
+          "Maintena_1",
+          "Completion"
+        ],
+        "column_count": 17,
+        "crs": "EPSG:32636",
+        "bounds": [
+          29.58302,
+          -1.46999,
+          35.00199,
+          3.85708
+        ],
+        "line_length_km": 21091.24,
+        "polygon_area_km2": 0,
+        "decision_use": "Road-network inventory, route length, topology and spatial coverage evidence.",
+        "status": "read"
+      },
+      {
+        "name": "network2026.shp",
+        "layer": "network2026",
+        "path": "Roads/network2026/network2026.shp",
+        "source_area": "GIS and road data",
+        "extension": "SHP",
+        "bytes": 27829784,
+        "feature_count": 1014,
+        "geometry_types": [
+          [
+            "LineString",
+            980
+          ],
+          [
+            "MultiLineString",
+            34
+          ]
+        ],
+        "columns": [
+          "Unique_ID",
+          "Road_No_1",
+          "Link_ID_1",
+          "Road_Cla_1",
+          "Link_Name",
+          "Chainage_1",
+          "Chainage_2",
+          "Length_km_",
+          "Surface__1",
+          "Maintena_2",
+          "Maintena_3",
+          "Completi_1"
+        ],
+        "column_count": 19,
+        "crs": "EPSG:32636",
+        "bounds": [
+          29.58302,
+          -1.46999,
+          35.00199,
+          3.85708
+        ],
+        "line_length_km": 21091.24,
+        "polygon_area_km2": 0,
+        "decision_use": "Road-network inventory, route length, topology and spatial coverage evidence.",
+        "status": "read"
+      },
+      {
+        "name": "networkfy25_26.shp",
+        "layer": "networkfy25_26",
+        "path": "Roads/networkfy25_26.shp",
+        "source_area": "GIS and road data",
+        "extension": "SHP",
+        "bytes": 27829784,
+        "feature_count": 1014,
+        "geometry_types": [
+          [
+            "LineString",
+            980
+          ],
+          [
+            "MultiLineString",
+            34
+          ]
+        ],
+        "columns": [
+          "Road_No_1",
+          "Link_ID_1",
+          "Road_Cla_1",
+          "Link_Name",
+          "Chainage_1",
+          "Chainage_2",
+          "Length_km_",
+          "Surface__1",
+          "Maintena_2",
+          "Maintena_3",
+          "Completi_1",
+          "Rehabili_1"
+        ],
+        "column_count": 35,
+        "crs": "EPSG:32636",
+        "bounds": [
+          29.58302,
+          -1.46999,
+          35.00199,
+          3.85708
+        ],
+        "line_length_km": 21091.24,
+        "polygon_area_km2": 0,
+        "decision_use": "Road-network inventory, route length, topology and spatial coverage evidence.",
+        "status": "read"
+      },
+      {
+        "name": "networkfy25_26.shp",
+        "layer": "networkfy25_26",
+        "path": "Roads/networkfy25_26/networkfy25_26.shp",
+        "source_area": "GIS and road data",
+        "extension": "SHP",
+        "bytes": 27829784,
+        "feature_count": 1014,
+        "geometry_types": [
+          [
+            "LineString",
+            980
+          ],
+          [
+            "MultiLineString",
+            34
+          ]
+        ],
+        "columns": [
+          "Unique_ID",
+          "Road_No_1",
+          "Link_ID_1",
+          "Road_Cla_1",
+          "Link_Name",
+          "Chainage_1",
+          "Chainage_2",
+          "Length_km_",
+          "Surface__1",
+          "Maintena_2",
+          "Maintena_3",
+          "Completi_1"
+        ],
+        "column_count": 19,
+        "crs": "EPSG:32636",
+        "bounds": [
+          29.58302,
+          -1.46999,
+          35.00199,
+          3.85708
+        ],
+        "line_length_km": 21091.24,
+        "polygon_area_km2": 0,
+        "decision_use": "Road-network inventory, route length, topology and spatial coverage evidence.",
+        "status": "read"
+      },
+      {
+        "name": "sites.geojson",
+        "layer": "sites",
+        "path": "scratch/uganda_atc/public/data/sites.geojson",
+        "source_area": "Traffic count scratch dataset",
+        "extension": "GEOJSON",
+        "bytes": 5127,
+        "feature_count": 10,
+        "geometry_types": [
+          [
+            "Point",
+            10
+          ]
+        ],
+        "columns": [
+          "site_code",
+          "road_section",
+          "region",
+          "functional_class",
+          "aadt_2025",
+          "predicted_aadt_2030",
+          "congestion_index",
+          "current_speed_kmh"
+        ],
+        "column_count": 8,
+        "crs": "EPSG:4326",
+        "bounds": [
+          30.1236,
+          -0.52679,
+          33.5143,
+          2.42511
+        ],
+        "line_length_km": 0,
+        "polygon_area_km2": 0,
+        "decision_use": "Traffic-count placement, demand calibration and AADT validation.",
+        "status": "read"
+      },
+      {
+        "name": "KCCA.shp",
+        "layer": "KCCA",
+        "path": "Selected Roads in CBD/KCCA.shp",
+        "source_area": "TOR and local source documents",
+        "extension": "SHP",
+        "bytes": 201076,
+        "feature_count": 59,
+        "geometry_types": [
+          [
+            "LineString",
+            32
+          ],
+          [
+            "MultiLineString",
+            27
+          ]
+        ],
+        "columns": [
+          "Road_Name",
+          "Shape_Leng",
+          "Length_km",
+          "Start_X",
+          "Start_Y",
+          "End_X",
+          "End_Y"
+        ],
+        "column_count": 7,
+        "crs": "EPSG:4326",
+        "bounds": [
+          32.57115,
+          0.30724,
+          32.61717,
+          0.33355
+        ],
+        "line_length_km": 49.1,
+        "polygon_area_km2": 0,
+        "decision_use": "Urban/KCCA road prioritisation, city access and CBD treatment context.",
+        "status": "read"
+      },
+      {
+        "name": "Selected_Roads_in_CBD.shp",
+        "layer": "Selected_Roads_in_CBD",
+        "path": "Selected Roads in CBD/Selected_Roads_in_CBD.shp",
+        "source_area": "TOR and local source documents",
+        "extension": "SHP",
+        "bytes": 201076,
+        "feature_count": 59,
+        "geometry_types": [
+          [
+            "LineString",
+            32
+          ],
+          [
+            "MultiLineString",
+            27
+          ]
+        ],
+        "columns": [],
+        "column_count": 0,
+        "crs": "EPSG:21096",
+        "bounds": [
+          32.57115,
+          0.30724,
+          32.61717,
+          0.33355
+        ],
+        "line_length_km": 49.1,
+        "polygon_area_km2": 0,
+        "decision_use": "Urban/KCCA road prioritisation, city access and CBD treatment context.",
+        "status": "read"
+      }
+    ]
   },
   "tabularExtracts": [
     {
@@ -7838,15 +14050,15 @@
   "storyCards": [
     {
       "title": "Local evidence corpus",
-      "metric": "109",
+      "metric": "114",
       "label": "files indexed",
       "story": "TORs, manuals, policy notes, budget reports, web data feeds, spreadsheets and global case package files are now read into one evidence dataset.",
-      "evidence": "109 files yielded text or tables; leading type: JSON.",
+      "evidence": "114 files yielded text or tables; leading type: JSON.",
       "tone": "blue"
     },
     {
       "title": "Decision-topic spine",
-      "metric": "21,426",
+      "metric": "21,427",
       "label": "Construction QA",
       "story": "Design, material, testing, supervision and quality acceptance rules.",
       "evidence": "Keyword counts are calculated across the extracted local evidence text.",
@@ -7859,6 +14071,14 @@
       "story": "The international case package translates country practices into DUCAR-specific lessons and adaptation rules.",
       "evidence": "10 decision assumptions are linked back to APA source keys.",
       "tone": "gold"
+    },
+    {
+      "title": "Spatial evidence atlas",
+      "metric": "277,045",
+      "label": "GIS features",
+      "story": "Shapefiles, GeoJSON and GeoPackage layers are converted into a spatial evidence register for route, district and network checks.",
+      "evidence": "41 layers read, including 30 line-network layers and district boundary evidence.",
+      "tone": "purple"
     },
     {
       "title": "Transport demand signal",
@@ -9100,28 +15320,23 @@
       "agency": "Austroads",
       "url": "https://austroads.gov.au/infrastructure/asset-management/guide-to-asset-management",
       "apa": "Austroads. (n.d.). Guide to asset management.",
-      "status": "read",
-      "bytes": 36515,
-      "words": 781,
+      "status": "unavailable: HTTPError",
+      "bytes": 0,
+      "words": 0,
       "topic_counts": {
         "PIMS appraisal": 0,
         "Budget monitoring": 0,
-        "Road condition": 1,
-        "RAM and lifecycle": 30,
-        "Traffic and axle load": 2,
-        "GIS and network": 2,
+        "Road condition": 0,
+        "RAM and lifecycle": 0,
+        "Traffic and axle load": 0,
+        "GIS and network": 0,
         "Construction QA": 0,
         "Climate and drainage": 0,
-        "Safety and NMT": 6,
+        "Safety and NMT": 0,
         "Bridge and structures": 0,
         "Procurement and contracts": 0
       },
-      "evidence_score": 66,
-      "dominant_topic": "RAM and lifecycle",
-      "summary_points": [
-        "Environment & Sustainability Task Force and Projects Austroads' Work on Sustainability Road Safety & Design Toggle Road Safety & Design This section covers safety barrier assessments, and the work of the Road Safety Task Force and Road Design Task Force.",
-        "The GAM also documents the outcomes of Austroads funded research undertaken since 2009 covering asset condition monitoring equipment, asset performance prediction models and practices that account for risk."
-      ]
+      "evidence_score": 0
     },
     {
       "group": "Global RAM",
@@ -9245,8 +15460,8 @@
       "agency": "World Bank",
       "url": "https://documents1.worldbank.org/curated/en/413451468336612648/pdf/689620ESW0P102002012000Final0Report.pdf",
       "apa": "World Bank. (2012). Performance-based contracting for preservation and improvement of road assets.",
-      "status": "unavailable: URLError",
-      "bytes": 0,
+      "status": "fetched",
+      "bytes": 1500000,
       "words": 0,
       "topic_counts": {
         "PIMS appraisal": 0,
@@ -9261,7 +15476,9 @@
         "Bridge and structures": 0,
         "Procurement and contracts": 0
       },
-      "evidence_score": 0
+      "evidence_score": 35,
+      "dominant_topic": "PIMS appraisal",
+      "summary_points": []
     },
     {
       "group": "National planning and budget",
@@ -9270,8 +15487,8 @@
       "url": "https://budget.finance.go.ug/content/approved-budget-estimates-1241",
       "apa": "Ministry of Finance, Planning and Economic Development. (2024). Approved budget estimates, central governments FY 2024/25. The Republic of Uganda.",
       "status": "read",
-      "bytes": 26741,
-      "words": 1167,
+      "bytes": 26746,
+      "words": 1168,
       "topic_counts": {
         "PIMS appraisal": 2,
         "Budget monitoring": 38,
@@ -9299,8 +15516,8 @@
       "url": "https://budget.finance.go.ug/content/background-budget-10",
       "apa": "Ministry of Finance, Planning and Economic Development. (2024). Background to the Budget FY 2024/25. The Republic of Uganda.",
       "status": "read",
-      "bytes": 26611,
-      "words": 1166,
+      "bytes": 26618,
+      "words": 1167,
       "topic_counts": {
         "PIMS appraisal": 5,
         "Budget monitoring": 36,
@@ -9327,23 +15544,28 @@
       "agency": "Ministry of Finance, Planning and Economic Development",
       "url": "https://www.budget.finance.go.ug/content/budget-speech-12",
       "apa": "Ministry of Finance, Planning and Economic Development. (2024). Budget Speech FY 2024/25. The Republic of Uganda.",
-      "status": "unavailable: URLError",
-      "bytes": 0,
-      "words": 0,
+      "status": "read",
+      "bytes": 23531,
+      "words": 873,
       "topic_counts": {
-        "PIMS appraisal": 0,
-        "Budget monitoring": 0,
+        "PIMS appraisal": 2,
+        "Budget monitoring": 37,
         "Road condition": 0,
         "RAM and lifecycle": 0,
         "Traffic and axle load": 0,
         "GIS and network": 0,
-        "Construction QA": 0,
+        "Construction QA": 1,
         "Climate and drainage": 0,
         "Safety and NMT": 0,
-        "Bridge and structures": 0,
+        "Bridge and structures": 4,
         "Procurement and contracts": 0
       },
-      "evidence_score": 0
+      "evidence_score": 62,
+      "dominant_topic": "Budget monitoring",
+      "summary_points": [
+        "Document Title: Budget Speech 2024/25 Financial Year: 2024/25 Period: Annual Download: Budget Speech FY 2024-25.pdf Add new comment Your name Subject Comment * More information about text formats CAPTCHA This question is for testing whether or not you are a human visitor and to prevent automated spam submissions.",
+        "The Budget Speech is presented to Parliament on or before the 15th of June each year."
+      ]
     },
     {
       "group": "National planning and budget",
@@ -9377,23 +15599,28 @@
       "agency": "Ministry of Finance, Planning and Economic Development",
       "url": "https://www.budget.finance.go.ug/content/national-budget-framework-paper-15",
       "apa": "Ministry of Finance, Planning and Economic Development. (2024). National budget framework paper FY 2024/25. The Republic of Uganda.",
-      "status": "unavailable: URLError",
-      "bytes": 0,
-      "words": 0,
+      "status": "read",
+      "bytes": 23722,
+      "words": 888,
       "topic_counts": {
-        "PIMS appraisal": 0,
-        "Budget monitoring": 0,
+        "PIMS appraisal": 2,
+        "Budget monitoring": 35,
         "Road condition": 0,
         "RAM and lifecycle": 0,
         "Traffic and axle load": 0,
         "GIS and network": 0,
-        "Construction QA": 0,
+        "Construction QA": 1,
         "Climate and drainage": 0,
         "Safety and NMT": 0,
-        "Bridge and structures": 0,
+        "Bridge and structures": 4,
         "Procurement and contracts": 0
       },
-      "evidence_score": 0
+      "evidence_score": 62,
+      "dominant_topic": "Budget monitoring",
+      "summary_points": [
+        "Document Title: BFP Data FY 2024/25 Financial Year: 2024/25 Period: Annual Download: BFP DATA 2024-2025.pdf Add new comment Your name Subject Comment * More information about text formats CAPTCHA This question is for testing whether or not you are a human visitor and to prevent automated spam submissions.",
+        "It is presented to the Parliament by the 31st of March each year, prior to the finalisation of the Annual Budget."
+      ]
     },
     {
       "group": "National planning and budget",
@@ -9503,10 +15730,10 @@
           "Global RAM",
           "Austroads Guide to Asset Management",
           "Austroads",
-          "read",
-          781,
-          "RAM and lifecycle",
-          66
+          "unavailable: HTTPError",
+          0,
+          "",
+          0
         ],
         [
           "Global RAM",
@@ -9548,17 +15775,17 @@
           "Global RAM",
           "World Bank performance-based maintenance study",
           "World Bank",
-          "unavailable: URLError",
+          "fetched",
           0,
-          "",
-          0
+          "PIMS appraisal",
+          35
         ],
         [
           "National planning and budget",
           "Approved Budget Estimates FY 2024/25",
           "Ministry of Finance, Planning and Economic Development",
           "read",
-          1167,
+          1168,
           "Budget monitoring",
           64
         ],
@@ -9567,7 +15794,7 @@
           "Background to the Budget FY 2024/25",
           "Ministry of Finance, Planning and Economic Development",
           "read",
-          1166,
+          1167,
           "Budget monitoring",
           64
         ],
@@ -9575,10 +15802,10 @@
           "National planning and budget",
           "Budget Speech FY 2024/25",
           "Ministry of Finance, Planning and Economic Development",
-          "unavailable: URLError",
-          0,
-          "",
-          0
+          "read",
+          873,
+          "Budget monitoring",
+          62
         ],
         [
           "National planning and budget",
@@ -9593,10 +15820,10 @@
           "National planning and budget",
           "National Budget Framework Paper FY 2024/25",
           "Ministry of Finance, Planning and Economic Development",
-          "unavailable: URLError",
-          0,
-          "",
-          0
+          "read",
+          888,
+          "Budget monitoring",
+          62
         ],
         [
           "National planning and budget",
@@ -9638,12 +15865,12 @@
         [
           "Global RAM",
           7,
-          67.3
+          62.9
         ],
         [
           "National planning and budget",
           6,
-          41.7
+          62.3
         ],
         [
           "Traffic and geospatial",
