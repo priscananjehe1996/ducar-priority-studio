@@ -14,9 +14,27 @@
     "pims_framework_steps": 6,
     "hdm4_indicators": 6,
     "file_inventory": 345,
-    "programme_assets": 8
+    "programme_assets": 8,
+    "bot_sync_runs": 1,
+    "document_summary_points": 301,
+    "document_topic_summary": 11,
+    "hdm4_model_inputs": 9,
+    "metadata": 3,
+    "network_prediction_context": 7,
+    "pims_gate_controls": 5,
+    "prediction_calibration_signals": 6,
+    "prediction_feature_matrix": 8,
+    "raw_json_payloads": 2,
+    "source_coverage": 29,
+    "source_sync_state": 813,
+    "spatial_geometry_counts": 65,
+    "sql_population_log": 3,
+    "story_cards": 6,
+    "table_catalog": 37,
+    "uganda_crash_trend": 5,
+    "uganda_paved_trend": 5
   },
-  "size_bytes": 1490944,
+  "size_bytes": 1851392,
   "sql_examples": {
     "executive": "SELECT title, metric, story FROM story_cards ORDER BY title;",
     "spatial": "SELECT layer_name, feature_count, line_length_km FROM spatial_layers WHERE status = 'read' ORDER BY feature_count DESC LIMIT 8;",
@@ -25,5 +43,23 @@
     "pims": "SELECT title, phase, readiness_score FROM pims_framework_steps ORDER BY step_order;",
     "hdm4": "SELECT indicator, readiness_score FROM hdm4_indicators ORDER BY readiness_score DESC;",
     "raw_tables": "SELECT table_group, table_name, COUNT(*) AS cells FROM raw_table_cells GROUP BY table_group, table_name ORDER BY cells DESC;"
+  },
+  "bot": {
+    "run_id": "20260514T144511Z",
+    "started_at_utc": "2026-05-14T14:45:11+00:00",
+    "completed_at_utc": "2026-05-14T14:45:30+00:00",
+    "source_roots": [
+      "D:\\OneDrive\\Procurements\\TOR - DUCACR",
+      "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\data",
+      "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\data",
+      "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\docs"
+    ],
+    "source_files_indexed": 813,
+    "changed_source_files": 1,
+    "materialized_queries": {
+      "network_prediction_context": 7,
+      "prediction_feature_matrix": 8,
+      "prediction_calibration_signals": 6
+    }
   }
 }

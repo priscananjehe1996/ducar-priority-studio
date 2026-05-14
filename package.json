@@ -10,6 +10,9 @@
     "evidence": "python scripts/build_evidence_synthesis.py",
     "product-insights": "python scripts/build_product_insights.py",
     "database": "python scripts/build_unified_database.py",
+    "sync-bot": "python scripts/database_sync_bot.py",
+    "sync-bot:local": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run_database_sync_bot.ps1",
+    "sync-bot:install": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/install_database_sync_bot.ps1",
     "layer-status": "python scripts/build_layer_status.py",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1 --port 4173"

@@ -1,0 +1,51 @@
+{
+  "run_id": "20260514T144511Z",
+  "status": "success",
+  "source_roots": [
+    "D:\\OneDrive\\Procurements\\TOR - DUCACR",
+    "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\data",
+    "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\data",
+    "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\docs"
+  ],
+  "source_files_indexed": 813,
+  "changed_source_files": 1,
+  "materialized_queries": {
+    "network_prediction_context": 7,
+    "prediction_feature_matrix": 8,
+    "prediction_calibration_signals": 6
+  },
+  "database_size_bytes": 1851392,
+  "manifest_tables": {
+    "evidence_documents": 114,
+    "document_topic_counts": 1254,
+    "raw_table_cells": 1187,
+    "online_sources": 15,
+    "spatial_layers": 43,
+    "map_surface_features": 815,
+    "uganda_network_kpis": 5,
+    "uganda_network_categories": 7,
+    "uganda_road_condition": 7,
+    "pims_framework_steps": 6,
+    "hdm4_indicators": 6,
+    "file_inventory": 345,
+    "programme_assets": 8,
+    "bot_sync_runs": 1,
+    "document_summary_points": 301,
+    "document_topic_summary": 11,
+    "hdm4_model_inputs": 9,
+    "metadata": 3,
+    "network_prediction_context": 7,
+    "pims_gate_controls": 5,
+    "prediction_calibration_signals": 6,
+    "prediction_feature_matrix": 8,
+    "raw_json_payloads": 2,
+    "source_coverage": 29,
+    "source_sync_state": 813,
+    "spatial_geometry_counts": 65,
+    "sql_population_log": 3,
+    "story_cards": 6,
+    "table_catalog": 37,
+    "uganda_crash_trend": 5,
+    "uganda_paved_trend": 5
+  }
+}

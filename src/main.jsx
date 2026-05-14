@@ -4048,6 +4048,7 @@ function useUnifiedDatabase() {
           const name = row.name;
           return [name, Number(runSqlValue(db, `SELECT COUNT(*) FROM ${name}`) || 0)];
         });
+        const tableSet = new Set(tableCounts.map(([name]) => name));
         const summary = runSqlRows(db, `
           SELECT
             (SELECT COUNT(*) FROM evidence_documents) AS core_documents_read,
@@ -4103,6 +4104,24 @@ function useUnifiedDatabase() {
         const hdm4Indicators = runSqlRows(db, "SELECT indicator, description, readiness_score FROM hdm4_indicators ORDER BY readiness_score DESC");
         const hdm4InputRows = runSqlRows(db, "SELECT model_input, unit, assumption, evidence_topic FROM hdm4_model_inputs ORDER BY model_input")
           .map((row) => [row.model_input, row.unit, row.assumption, row.evidence_topic]);
+        const predictionFeatures = tableSet.has("prediction_feature_matrix")
+          ? runSqlRows(db, `
+            SELECT asset_id, risk_probability, recommended_status, monitoring_tier, pims_gate_score, hdm4_readiness_score, network_pressure_score
+            FROM prediction_feature_matrix
+            ORDER BY risk_probability DESC
+          `)
+          : [];
+        const calibrationSignals = tableSet.has("prediction_calibration_signals")
+          ? runSqlRows(db, "SELECT signal, value, basis FROM prediction_calibration_signals ORDER BY signal")
+          : [];
+        const botSync = tableSet.has("bot_sync_runs")
+          ? runSqlRows(db, `
+            SELECT run_id, completed_at_utc, source_file_count, changed_file_count, status
+            FROM bot_sync_runs
+            ORDER BY completed_at_utc DESC
+            LIMIT 1
+          `)[0]
+          : null;
         const storyCards = runSqlRows(db, "SELECT title, metric, label, story, evidence, tone FROM story_cards ORDER BY rowid")
           .map((row) => ({ title: row.title, metric: row.metric, label: row.label, story: row.story, evidence: row.evidence, tone: row.tone }));
         const spatialLayerTableRows = runSqlRows(db, `
@@ -4196,6 +4215,11 @@ function useUnifiedDatabase() {
               rows: hdm4InputRows,
             },
           },
+          predictions: {
+            features: predictionFeatures,
+            calibrationSignals,
+          },
+          botSync,
         };
         db.close();
         if (active) setStore(payload);
@@ -4229,7 +4253,22 @@ function countBy(items, keyFn) {
 }
 
 function buildProductInsights(analysis, evidence) {
-  const programme = analysis.programme || [];
+  const predictionMap = new Map((evidence?.predictions?.features || []).map((item) => [item.asset_id, item]));
+  const programme = (analysis.programme || []).map((item) => {
+    const prediction = predictionMap.get(item.assetId);
+    if (!prediction) return item;
+    const mlRisk = Number(prediction.risk_probability || item.mlRisk || 0);
+    return {
+      ...item,
+      mlRisk,
+      riskBand: mlRisk > 0.72 ? "High" : mlRisk > 0.55 ? "Medium" : "Low",
+      predictionStatus: prediction.recommended_status,
+      monitoringTier: prediction.monitoring_tier || item.monitoringTier,
+      pimsGateScore: Number(prediction.pims_gate_score || 0),
+      hdm4ReadinessScore: Number(prediction.hdm4_readiness_score || 0),
+      networkPressureScore: Number(prediction.network_pressure_score || 0),
+    };
+  });
   const selected = programme.filter((item) => item.status === "Selected");
   const totalDemand = programme.reduce((sum, item) => sum + Number(item.cost || 0), 0);
   const selectedCost = selected.reduce((sum, item) => sum + Number(item.cost || 0), 0);
@@ -4247,7 +4286,7 @@ function buildProductInsights(analysis, evidence) {
   const riskTable = programme
     .toSorted((a, b) => Number(b.mlRisk || 0) - Number(a.mlRisk || 0))
     .slice(0, 7)
-    .map((item) => [item.assetId, item.admin, item.intervention, `${Math.round(Number(item.mlRisk || 0) * 100)}%`, item.status]);
+    .map((item) => [item.assetId, item.admin, item.intervention, `${Math.round(Number(item.mlRisk || 0) * 100)}%`, item.predictionStatus || item.status]);
   const selectedTable = selected
     .toSorted((a, b) => a.rank - b.rank)
     .slice(0, 8)
@@ -4321,6 +4360,8 @@ function buildProductInsights(analysis, evidence) {
     frameworkFlow: evidence?.frameworkFlow || [],
     pims: evidence?.pims || {},
     hdm4: evidence?.hdm4 || {},
+    predictions: evidence?.predictions || {},
+    botSync: evidence?.botSync || {},
     databaseLoaded: Boolean(evidence?.loadedFromDatabase),
   };
 }
@@ -4854,6 +4895,7 @@ function EvidenceView({ insights }) {
         <ProductStat label="Tables read" value={formatCount(insights.evidenceSummary.local_tables_read)} note="local workbook and DOCX tables" tone="gold" />
         <ProductStat label="Slides read" value={formatCount(insights.evidenceSummary.presentation_slides_read)} note={`${formatCount(insights.evidenceSummary.presentation_decks_read)} decks`} tone="purple" />
         <ProductStat label="Online sources" value={formatCount(insights.evidenceSummary.online_sources_read)} note="live read checks" tone="green" />
+        <ProductStat label="Sync bot" value={insights.botSync?.status || "ready"} note={`${formatCount(insights.botSync?.source_file_count)} source files fingerprinted`} tone="cyan" />
       </section>
       <section className="story-row">
         {insights.stories.map((card) => (

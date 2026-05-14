@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import time
 from pathlib import Path
 from typing import Any
 
@@ -91,6 +92,19 @@ def execute_many(conn: sqlite3.Connection, sql: str, rows: list[tuple]) -> int:
         return 0
     conn.executemany(sql, rows)
     return len(rows)
+
+
+def unlink_with_retry(path: Path, attempts: int = 8) -> None:
+    if not path.exists():
+        return
+    for attempt in range(attempts):
+        try:
+            path.unlink()
+            return
+        except PermissionError:
+            if attempt == attempts - 1:
+                raise
+            time.sleep(0.35 * (attempt + 1))
 
 
 def sample_items(items: list[Any], limit: int) -> list[Any]:
@@ -473,8 +487,7 @@ def build_database() -> dict[str, Any]:
     product = load_json(PRODUCT_JSON, {})
     sample_assets = load_json(SAMPLE_ASSETS, [])
 
-    if OUT_DATA.exists():
-        OUT_DATA.unlink()
+    unlink_with_retry(OUT_DATA)
     conn = sqlite3.connect(OUT_DATA)
     try:
         create_schema(conn)

@@ -1,0 +1,46 @@
+name: DUCAR Database Sync Bot
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 2 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: database-sync-bot
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Run SQLite sync bot
+        run: npm run sync-bot
+      - name: Verify app
+        run: |
+          npm test
+          npm run build
+      - name: Commit refreshed database
+        run: |
+          git config user.name "ducar-sync-bot"
+          git config user.email "ducar-sync-bot@users.noreply.github.com"
+          git add data/ducar_unified.sqlite data/ducar_unified_manifest.json data/ducar_sync_report.json public/data/ducar_unified.sqlite public/data/ducar_unified_manifest.json public/data/ducar_sync_report.json
+          if git diff --cached --quiet; then
+            echo "No database changes to commit."
+          else
+            git commit -m "Sync DUCAR SQLite database [bot]"
+            git push
+          fi
