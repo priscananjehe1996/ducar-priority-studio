@@ -1066,49 +1066,49 @@ const ROAD_CATEGORY_STYLE_KEY = ["coalesce", ["get", "network_category"], ["get"
 const ROAD_CATEGORY_COLORS = [
   "match",
   ROAD_CATEGORY_STYLE_KEY,
-  "National Roads", "#fde047",
-  "National", "#fde047",
-  "District Roads", "#38bdf8",
-  "DUCAR", "#38bdf8",
-  "Open mapping", "#38bdf8",
-  "KCCA", "#c084fc",
-  "City Roads", "#fb7185",
-  "Urban", "#fb7185",
-  "Urban Road", "#fb7185",
-  "Community Access Roads", "#34d399",
-  "Community Access Road", "#34d399",
-  "CAR", "#34d399",
-  "Town Council Roads", "#fb923c",
-  "Town Council Road", "#fb923c",
-  "TC", "#fb923c",
-  "Municipal Roads", "#22d3ee",
-  "Municipal Road", "#22d3ee",
-  "M", "#22d3ee",
-  "#cbd5e1",
+  "National Roads", "#facc15",
+  "National", "#facc15",
+  "District Roads", "#2563eb",
+  "DUCAR", "#2563eb",
+  "Open mapping", "#2563eb",
+  "KCCA", "#a855f7",
+  "City Roads", "#e11d48",
+  "Urban", "#e11d48",
+  "Urban Road", "#e11d48",
+  "Community Access Roads", "#16a34a",
+  "Community Access Road", "#16a34a",
+  "CAR", "#16a34a",
+  "Town Council Roads", "#ea580c",
+  "Town Council Road", "#ea580c",
+  "TC", "#ea580c",
+  "Municipal Roads", "#0891b2",
+  "Municipal Road", "#0891b2",
+  "M", "#0891b2",
+  "#64748b",
 ];
 
 const ROAD_CATEGORY_WIDTHS = [
   "match",
   ROAD_CATEGORY_STYLE_KEY,
-  "National Roads", 6.2,
-  "National", 6.2,
-  "District Roads", 3.65,
-  "DUCAR", 3.65,
-  "Open mapping", 3.65,
-  "KCCA", 4.4,
-  "City Roads", 4.15,
-  "Urban", 4.15,
-  "Urban Road", 4.15,
-  "Community Access Roads", 2.8,
-  "Community Access Road", 2.8,
-  "CAR", 2.8,
-  "Town Council Roads", 3.25,
-  "Town Council Road", 3.25,
-  "TC", 3.25,
-  "Municipal Roads", 3.45,
-  "Municipal Road", 3.45,
-  "M", 3.45,
-  2.55,
+  "National Roads", 2.4,
+  "National", 2.4,
+  "District Roads", 1.55,
+  "DUCAR", 1.55,
+  "Open mapping", 1.55,
+  "KCCA", 1.85,
+  "City Roads", 1.75,
+  "Urban", 1.75,
+  "Urban Road", 1.75,
+  "Community Access Roads", 1.05,
+  "Community Access Road", 1.05,
+  "CAR", 1.05,
+  "Town Council Roads", 1.25,
+  "Town Council Road", 1.25,
+  "TC", 1.25,
+  "Municipal Roads", 1.35,
+  "Municipal Road", 1.35,
+  "M", 1.35,
+  0.95,
 ];
 
 const TRAFFIC_FLOW_COLOR = [
@@ -2713,9 +2713,9 @@ function MapScene3D({ programme }) {
           source: "roads",
           paint: {
             "line-color": ROAD_CATEGORY_COLORS,
-            "line-width": ["+", ROAD_CATEGORY_WIDTHS, 9],
-            "line-opacity": ["case", ["==", ["get", "network_category"], "National Roads"], 0.34, 0.42],
-            "line-blur": 4.2,
+            "line-width": ["+", ROAD_CATEGORY_WIDTHS, 2.2],
+            "line-opacity": ["case", ["==", ["get", "network_category"], "National Roads"], 0.18, 0.24],
+            "line-blur": 2.1,
           },
         });
         map.addLayer({
@@ -2725,9 +2725,9 @@ function MapScene3D({ programme }) {
           maxzoom: 8.5,
           paint: {
             "line-color": ROAD_CATEGORY_COLORS,
-            "line-width": ["interpolate", ["linear"], ["zoom"], 5, 6.2, 7, 4.5, 8.5, 2.8],
-            "line-opacity": 0.62,
-            "line-blur": 0.45,
+            "line-width": ["interpolate", ["linear"], ["zoom"], 5, 2.3, 7, 1.7, 8.5, 1.15],
+            "line-opacity": 0.74,
+            "line-blur": 0.18,
           },
         });
         map.addLayer({
@@ -2737,9 +2737,9 @@ function MapScene3D({ programme }) {
           filter: ["!=", ["get", "road_system"], "National"],
           paint: {
             "line-color": "#020617",
-            "line-width": ["+", ROAD_CATEGORY_WIDTHS, 2.8],
-            "line-opacity": 0.38,
-            "line-blur": 0.55,
+            "line-width": ["+", ROAD_CATEGORY_WIDTHS, 0.9],
+            "line-opacity": 0.3,
+            "line-blur": 0.18,
           },
         });
         map.addLayer({
@@ -2758,9 +2758,9 @@ function MapScene3D({ programme }) {
           source: "traffic-flows",
           paint: {
             "line-color": TRAFFIC_FLOW_COLOR,
-            "line-width": ["interpolate", ["linear"], ["coalesce", ["get", "traffic_flow_index"], 45], 30, 3, 60, 7.5, 100, 13],
-            "line-opacity": 0.28,
-            "line-blur": 4.2,
+            "line-width": ["interpolate", ["linear"], ["coalesce", ["get", "traffic_flow_index"], 45], 30, 1.6, 60, 3.2, 100, 5.6],
+            "line-opacity": 0.34,
+            "line-blur": 2.5,
           },
         });
         map.addLayer({
@@ -2769,9 +2769,9 @@ function MapScene3D({ programme }) {
           source: "traffic-flows",
           paint: {
             "line-color": "#020617",
-            "line-width": ["interpolate", ["linear"], ["coalesce", ["get", "traffic_flow_index"], 45], 30, 1.8, 60, 3.7, 100, 6.4],
-            "line-opacity": 0.44,
-            "line-blur": 0.34,
+            "line-width": ["interpolate", ["linear"], ["coalesce", ["get", "traffic_flow_index"], 45], 30, 1.2, 60, 2.4, 100, 3.9],
+            "line-opacity": 0.38,
+            "line-blur": 0.2,
           },
         });
         map.addLayer({
@@ -2780,9 +2780,9 @@ function MapScene3D({ programme }) {
           source: "traffic-flows",
           paint: {
             "line-color": TRAFFIC_FLOW_COLOR,
-            "line-width": ["interpolate", ["linear"], ["coalesce", ["get", "traffic_flow_index"], 45], 30, 1, 60, 2.5, 100, 4.7],
-            "line-opacity": 0.92,
-            "line-dasharray": [1.7, 0.9],
+            "line-width": ["interpolate", ["linear"], ["coalesce", ["get", "traffic_flow_index"], 45], 30, 0.75, 60, 1.55, 100, 2.8],
+            "line-opacity": 0.94,
+            "line-dasharray": [1.4, 1],
           },
         });
         map.addLayer({
@@ -2790,7 +2790,7 @@ function MapScene3D({ programme }) {
           type: "line",
           source: "roads",
           filter: ["==", ["get", "road_system"], "National"],
-          paint: { "line-color": "#fef3c7", "line-width": 2.1, "line-opacity": 0.96, "line-dasharray": [1.4, 0.9] },
+          paint: { "line-color": "#fef3c7", "line-width": 1.15, "line-opacity": 0.96, "line-dasharray": [1.4, 0.9] },
         });
         map.addLayer({
           id: "programme-assets-halo",
@@ -4606,6 +4606,28 @@ function buildProductInsights(analysis, evidence) {
     .toSorted((a, b) => Number(b.mlRisk || 0) - Number(a.mlRisk || 0))
     .slice(0, 7)
     .map((item) => [item.assetId, item.admin, item.intervention, `${Math.round(Number(item.mlRisk || 0) * 100)}%`, item.predictionStatus || item.status]);
+  const priorityLinks = programme
+    .toSorted((a, b) => Number(a.rank || 9999) - Number(b.rank || 9999))
+    .map((item) => ({
+      assetId: item.assetId,
+      district: item.admin,
+      region: item.region,
+      className: item.functionalClass,
+      treatment: item.intervention,
+      status: item.predictionStatus || item.status,
+      score: Number(item.score || 0),
+      cost: Number(item.cost || 0),
+      risk: Number(item.mlRisk || 0),
+      traffic: Number(item.traffic || 0),
+      condition: Number(item.condition || 0),
+      criticality: Number(item.criticality || 0),
+      climate: Number(item.climate || 0),
+      safety: Number(item.safety || 0),
+      evidence: Number(item.evidenceScore || 0),
+      readiness: Number(item.readiness || 0),
+      maintainable: item.maintainable,
+      monitoringTier: item.monitoringTier || "Tier pending",
+    }));
   const selectedTable = selected
     .toSorted((a, b) => a.rank - b.rank)
     .slice(0, 8)
@@ -4731,6 +4753,7 @@ function buildProductInsights(analysis, evidence) {
         rows: riskTable,
       },
     },
+    priorityLinks,
     evidenceSummary,
     spatialSummary,
     inventorySummary: evidence?.fileInventory?.summary || {},
@@ -4825,9 +4848,57 @@ function ProductBarChart({ title, subtitle, rows, formatValue = (value) => forma
       <div className="product-bars">
         {visible.map((row, index) => (
           <article key={`${title}-${row.label}-${index}`} style={{ "--accent": productChartColor(index), "--delay": `${index * 70}ms` }}>
-            <span>{row.label}</span>
+            <span>{row.label}{row.detail && <small>{row.detail}</small>}</span>
             <i><b style={{ width: `${Math.max(4, (Number(row.value || 0) / maxValue) * 100)}%` }} /></i>
             <strong>{formatValue(row.value)}</strong>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function PriorityDecisionBars({ links = [] }) {
+  const visible = links;
+  if (!visible.length) return null;
+  const maxScore = Math.max(1, ...visible.map((item) => Number(item.score || 0)));
+  const maxCost = Math.max(1, ...visible.map((item) => Number(item.cost || 0)));
+  const metrics = (item) => [
+    ["Priority", Number(item.score || 0) / maxScore, Math.round(Number(item.score || 0)).toLocaleString(), "#2563eb"],
+    ["ML risk", Number(item.risk || 0), `${Math.round(Number(item.risk || 0) * 100)}%`, "#dc2626"],
+    ["Traffic", Number(item.traffic || 0) / 5, `${Number(item.traffic || 0)}/5`, "#0891b2"],
+    ["Condition", Number(item.condition || 0) / 5, `${Number(item.condition || 0)}/5`, "#f59e0b"],
+    ["Criticality", Number(item.criticality || 0) / 5, `${Number(item.criticality || 0)}/5`, "#7c3aed"],
+    ["Evidence", Number(item.evidence || 0) / 100, `${Math.round(Number(item.evidence || 0))}%`, "#059669"],
+    ["Readiness", Number(item.readiness || 0) / 5, `${Number(item.readiness || 0)}/5`, "#16a34a"],
+    ["Cost", Number(item.cost || 0) / maxCost, formatMoneyCompact(item.cost), "#ea580c"],
+  ];
+  return (
+    <section className="query-panel priority-link-panel">
+      <div className="product-panel-head">
+        <h3>Priority Decisions by Road Link</h3>
+        <span>Score, risk, traffic, condition, evidence, readiness and cost for every active road link</span>
+      </div>
+      <div className="priority-link-list">
+        {visible.map((item, index) => (
+          <article key={item.assetId} style={{ "--delay": `${index * 70}ms` }}>
+            <div className="priority-link-head">
+              <div>
+                <strong>{item.assetId}</strong>
+                <span>{item.district} / {item.className} / {item.treatment}</span>
+              </div>
+              <em>{item.status}</em>
+            </div>
+            <div className="priority-metric-grid">
+              {metrics(item).map(([label, ratio, value, color]) => (
+                <div key={`${item.assetId}-${label}`} style={{ "--accent": color }}>
+                  <span>{label}</span>
+                  <i><b style={{ width: `${Math.max(4, Math.min(100, Number(ratio || 0) * 100))}%` }} /></i>
+                  <strong>{value}</strong>
+                </div>
+              ))}
+            </div>
+            <p>{item.region} region / {item.monitoringTier} / maintainable: {item.maintainable || "pending"}</p>
           </article>
         ))}
       </div>
@@ -4962,16 +5033,43 @@ function QueryBadge({ label, sql }) {
 }
 
 function FrameworkFlow({ steps = [] }) {
+  const [activeStep, setActiveStep] = useState(0);
+  useEffect(() => {
+    if (!steps.length) return undefined;
+    const timer = window.setInterval(() => {
+      setActiveStep((step) => (step + 1) % steps.length);
+    }, 1900);
+    return () => window.clearInterval(timer);
+  }, [steps.length]);
   if (!steps.length) return null;
+  const active = steps[Math.min(activeStep, steps.length - 1)] || steps[0];
   return (
-    <section className="framework-flow-panel">
+    <section className="framework-flow-panel vivid-framework-flow">
       <div className="product-panel-head">
         <h3>Framework Animation Flow</h3>
-        <span>PIMS, HDM-4, RAM, budget and monitoring gates as a light decision chain</span>
+        <span>PIMS, HDM-4, RAM, budget and monitoring gates as a high-contrast decision cycle</span>
+      </div>
+      <div className="framework-cycle-stage" style={{ "--active": activeStep }}>
+        <div className="framework-bot-orbit" aria-hidden="true">
+          <Bot size={32} />
+          <i />
+          <i />
+          <i />
+        </div>
+        <div>
+          <span>Active cycle step {String(activeStep + 1).padStart(2, "0")}</span>
+          <strong>{active.title}</strong>
+          <p>{active.phase}</p>
+        </div>
       </div>
       <div className="framework-flow-track">
         {steps.map((step, index) => (
-          <article key={`${step.title}-${index}`} style={{ "--delay": `${index * 120}ms` }}>
+          <article
+            key={`${step.title}-${index}`}
+            className={`${index === activeStep ? "active" : ""} ${index < activeStep ? "visited" : ""}`}
+            style={{ "--delay": `${index * 120}ms`, "--accent": productChartColor(index) }}
+            onMouseEnter={() => setActiveStep(index)}
+          >
             <em>{String(index + 1).padStart(2, "0")}</em>
             <span>{step.discipline}</span>
             <strong>{step.title}</strong>
@@ -5271,6 +5369,7 @@ function CommandView({ insights }) {
         <ProductBarChart title="Budget by Region" subtitle="Selected assets only" rows={insights.charts.regionAllocation} formatValue={(value) => `UGX ${currency.format(value)}`} />
         <ProductBarChart title="Decision Topics" subtitle="Materialized from extracted evidence text" rows={insights.charts.topics} />
       </div>
+      <PriorityDecisionBars links={insights.priorityLinks} />
       <div className="product-grid two">
         <ProductFunnelChart title="Model Feature Coverage" subtitle="PIMS, HDM-4, network pressure and monitoring signal completeness" rows={insights.charts.modelFunnel} />
         <ProductPieChart title="Prediction Status" subtitle="Recommended model action by asset" rows={insights.charts.predictionStatusSplit} />
@@ -5455,6 +5554,278 @@ function EvidenceView({ insights }) {
   );
 }
 
+function TrafficGeoMap() {
+  const mapRef = useRef(null);
+  const mapInstance = useRef(null);
+  const [roads, setRoads] = useState({ type: "FeatureCollection", features: [] });
+  const [flows, setFlows] = useState({ type: "FeatureCollection", features: [] });
+  const [roadTypeFilter, setRoadTypeFilter] = useState("All");
+  const [selectedFlow, setSelectedFlow] = useState(null);
+  const [mapReady, setMapReady] = useState(false);
+  const [loadState, setLoadState] = useState({ stage: "loading", message: "Loading traffic geospatial layer" });
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadTrafficData() {
+      try {
+        const manifest = await fetchUgandaLayersManifest();
+        const [roadData, flowData] = await Promise.all([
+          fetchManifestJson(manifest, "cartographic_roads_geojson", "uganda_clean_road_routes_web.geojson")
+            .catch(() => fetchManifestJson(manifest, "unified_roads_geojson", "uganda_unified_roads_web.geojson")),
+          fetchManifestJson(manifest, "traffic_flows_geojson", "uganda_traffic_flows_web.geojson"),
+        ]);
+        if (cancelled) return;
+        setRoads(roadData || { type: "FeatureCollection", features: [] });
+        setFlows(flowData || { type: "FeatureCollection", features: [] });
+        setLoadState({ stage: "ready", message: `${formatCount(flowData?.features?.length)} traffic flow links ready` });
+      } catch (error) {
+        if (!cancelled) setLoadState({ stage: "error", message: error.message || "Traffic layer unavailable" });
+      }
+    }
+    loadTrafficData();
+    return () => { cancelled = true; };
+  }, []);
+
+  const roadTypes = useMemo(() => {
+    const values = new Set();
+    for (const feature of [...(roads.features || []), ...(flows.features || [])]) {
+      const value = feature.properties?.network_category || feature.properties?.road_class || feature.properties?.road_system;
+      if (value) values.add(value);
+    }
+    return ["All", ...Array.from(values).sort()];
+  }, [roads, flows]);
+
+  const typeMatches = useCallback((feature) => {
+    if (roadTypeFilter === "All") return true;
+    const props = feature.properties || {};
+    return props.network_category === roadTypeFilter || props.road_class === roadTypeFilter || props.road_system === roadTypeFilter;
+  }, [roadTypeFilter]);
+
+  const filteredRoads = useMemo(() => (roads.features || []).filter(typeMatches), [roads, typeMatches]);
+  const filteredFlows = useMemo(() => (flows.features || []).filter(typeMatches), [flows, typeMatches]);
+
+  const trafficStats = useMemo(() => {
+    const count = filteredFlows.length;
+    const totalKm = filteredFlows.reduce((sum, feature) => sum + Number(feature.properties?.length_km || 0), 0);
+    const avg = count ? Math.round(filteredFlows.reduce((sum, feature) => sum + Number(feature.properties?.traffic_flow_index || 0), 0) / count) : 0;
+    const high = filteredFlows.filter((feature) => Number(feature.properties?.traffic_flow_index || 0) >= 75).length;
+    return { count, totalKm, avg, high };
+  }, [filteredFlows]);
+
+  const topTrafficLinks = useMemo(() => filteredFlows
+    .slice()
+    .sort((a, b) => Number(b.properties?.traffic_flow_index || 0) - Number(a.properties?.traffic_flow_index || 0))
+    .slice(0, 6), [filteredFlows]);
+
+  useEffect(() => {
+    if (mapInstance.current || !mapRef.current) return;
+    let cancelled = false;
+    let map = null;
+    async function initialiseTrafficMap() {
+      const maplibregl = await loadMapLibre();
+      if (cancelled || !mapRef.current) return;
+      map = new maplibregl.Map({
+        container: mapRef.current,
+        center: UGANDA_MAP_VIEW.center,
+        zoom: 6.45,
+        pitch: 0,
+        bearing: 0,
+        attributionControl: false,
+        style: imageryWithLabelsStyle(),
+      });
+      addOperationalMapControls(maplibregl, map);
+      mapInstance.current = map;
+      map.on("load", () => {
+        if (cancelled) return;
+        setMapReady(true);
+        map.addSource("traffic-base-roads", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+        map.addSource("traffic-flow-lines", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+        map.addSource("selected-traffic-flow", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+        map.addLayer({
+          id: "traffic-base-road-casing",
+          type: "line",
+          source: "traffic-base-roads",
+          paint: {
+            "line-color": "#020617",
+            "line-width": ["+", ROAD_CATEGORY_WIDTHS, 0.55],
+            "line-opacity": 0.28,
+            "line-blur": 0.15,
+          },
+        });
+        map.addLayer({
+          id: "traffic-base-roads",
+          type: "line",
+          source: "traffic-base-roads",
+          paint: {
+            "line-color": ROAD_CATEGORY_COLORS,
+            "line-width": ROAD_CATEGORY_WIDTHS,
+            "line-opacity": 0.9,
+          },
+        });
+        map.addLayer({
+          id: "traffic-flow-casing-live",
+          type: "line",
+          source: "traffic-flow-lines",
+          paint: {
+            "line-color": "#020617",
+            "line-width": ["interpolate", ["linear"], ["coalesce", ["get", "traffic_flow_index"], 45], 30, 1.05, 60, 2.2, 100, 3.6],
+            "line-opacity": 0.38,
+            "line-blur": 0.18,
+          },
+        });
+        map.addLayer({
+          id: "traffic-flow-live",
+          type: "line",
+          source: "traffic-flow-lines",
+          paint: {
+            "line-color": TRAFFIC_FLOW_COLOR,
+            "line-width": ["interpolate", ["linear"], ["coalesce", ["get", "traffic_flow_index"], 45], 30, 0.75, 60, 1.6, 100, 2.7],
+            "line-opacity": 0.96,
+          },
+        });
+        map.addLayer({
+          id: "selected-traffic-flow-halo",
+          type: "line",
+          source: "selected-traffic-flow",
+          paint: { "line-color": "#ffffff", "line-width": 6, "line-opacity": 0.92, "line-blur": 0.24 },
+        });
+        map.addLayer({
+          id: "selected-traffic-flow",
+          type: "line",
+          source: "selected-traffic-flow",
+          paint: { "line-color": "#0f172a", "line-width": 3.2, "line-opacity": 1 },
+        });
+        map.on("click", "traffic-flow-live", (event) => {
+          const raw = event.features?.[0];
+          if (!raw) return;
+          const feature = JSON.parse(JSON.stringify(raw));
+          setSelectedFlow(feature);
+          map.getSource("selected-traffic-flow")?.setData({ type: "FeatureCollection", features: [feature] });
+        });
+        map.on("mouseenter", "traffic-flow-live", () => { map.getCanvas().style.cursor = "pointer"; });
+        map.on("mouseleave", "traffic-flow-live", () => { map.getCanvas().style.cursor = ""; });
+      });
+    }
+    initialiseTrafficMap().catch((error) => setLoadState({ stage: "error", message: error.message || "Unable to initialise traffic map" }));
+    return () => {
+      cancelled = true;
+      setMapReady(false);
+      map?.remove();
+      mapInstance.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    const map = mapInstance.current;
+    if (!mapReady || !map?.isStyleLoaded() || !map.getSource("traffic-flow-lines")) return;
+    map.getSource("traffic-base-roads")?.setData({ type: "FeatureCollection", features: filteredRoads });
+    map.getSource("traffic-flow-lines")?.setData({ type: "FeatureCollection", features: filteredFlows });
+    if (!selectedFlow) map.getSource("selected-traffic-flow")?.setData({ type: "FeatureCollection", features: [] });
+    fitMapToFeatures(map, filteredFlows.length ? filteredFlows.slice(0, 900) : filteredRoads.slice(0, 900), { padding: 76, duration: 700, maxZoom: 9.8 });
+  }, [filteredRoads, filteredFlows, selectedFlow, mapReady]);
+
+  function clearSelectedFlow() {
+    setSelectedFlow(null);
+    mapInstance.current?.getSource("selected-traffic-flow")?.setData({ type: "FeatureCollection", features: [] });
+  }
+
+  const selectedProps = selectedFlow?.properties || null;
+  return (
+    <section className="panel map-panel traffic-geo-panel">
+      <div className="map-header">
+        <div className="panel-title" style={{ borderBottom: "none", marginBottom: 0, paddingBottom: 0 }}>
+          <Truck size={18} />
+          <h2>Geospatial Traffic Flow Layer</h2>
+        </div>
+        <div className="map-toolbar">
+          <div className="layer-toggles">
+            <button className="layer-btn active flow" title="Traffic flow links are loaded from the traffic GeoJSON layer">
+              <Eye size={14} /> Traffic Flow
+            </button>
+          </div>
+          <label className="traffic-type-filter">
+            Road type
+            <select value={roadTypeFilter} onChange={(event) => { setRoadTypeFilter(event.target.value); clearSelectedFlow(); }}>
+              {roadTypes.map((type) => <option key={type}>{type}</option>)}
+            </select>
+          </label>
+        </div>
+      </div>
+      <div className="map-stat-strip">
+        <article className="map-stat cyan"><span>Flow links</span><strong>{formatCount(trafficStats.count)}</strong></article>
+        <article className="map-stat green"><span>Analysed length</span><strong>{formatKm(trafficStats.totalKm)}</strong></article>
+        <article className="map-stat dark"><span>Mean flow</span><strong>{trafficStats.avg}%</strong></article>
+        <article className="map-stat red"><span>High pressure</span><strong>{formatCount(trafficStats.high)}</strong></article>
+      </div>
+      <div className="scene-shell traffic-scene-shell">
+        <div className="maplibre-container traffic-maplibre-container" ref={mapRef} />
+        {loadState.stage !== "ready" && (
+          <div className={`map-loading map-loading-card ${loadState.stage === "error" ? "error" : ""}`}>
+            {loadState.stage !== "error" && <div className="spinner" />}
+            <div>
+              <strong>{loadState.stage === "error" ? "Traffic layer unavailable" : "Loading traffic layer"}</strong>
+              <span>{loadState.message}</span>
+            </div>
+          </div>
+        )}
+        <div className="scene-hud">
+          <strong>Traffic pressure overlay</strong>
+          <span>Thin road lines are colour-coded by road type.</span>
+          <span>Traffic links use green-to-red flow pressure.</span>
+          <span>Click a traffic line for road-link attributes.</span>
+        </div>
+        {selectedProps && (
+          <aside className="road-info-pane open" aria-live="polite">
+            <div className="road-info-header">
+              <div>
+                <p className="eyebrow">Traffic road link</p>
+                <h3>{selectedProps.road_name || selectedProps.name || "Selected traffic link"}</h3>
+              </div>
+              <button className="pane-close" onClick={clearSelectedFlow} aria-label="Clear selected traffic road">x</button>
+            </div>
+            <div className="road-badges">
+              <span>{selectedProps.network_category || selectedProps.road_class || "Road type pending"}</span>
+              <span>{selectedProps.district || selectedProps.region || "District pending"}</span>
+              <span>Flow {Math.round(Number(selectedProps.traffic_flow_index || 0))}%</span>
+            </div>
+            <div className="attribute-grid">
+              {Object.entries(selectedProps).slice(0, 14).map(([key, value]) => (
+                <div key={key}>
+                  <span>{key.replaceAll("_", " ")}</span>
+                  <strong>{formatEvidenceCell(value)}</strong>
+                </div>
+              ))}
+            </div>
+          </aside>
+        )}
+      </div>
+      <div className="map-legend logical-legend modern-legend">
+        <strong>Legend</strong>
+        <div className="legend-grid">
+          <span><i className="line-swatch national-roads-line" /> National Roads</span>
+          <span><i className="line-swatch district-roads-line" /> District Roads</span>
+          <span><i className="line-swatch kcca-roads-line" /> KCCA</span>
+          <span><i className="line-swatch city-roads-line" /> City Roads</span>
+          <span><i className="line-swatch community-roads-line" /> Community Access</span>
+          <span><i className="line-swatch town-roads-line" /> Town Council</span>
+          <span><i className="line-swatch municipal-roads-line" /> Municipal</span>
+          <span><i className="line-swatch traffic-flow-line" /> Traffic Flow Index</span>
+        </div>
+      </div>
+      <div className="traffic-link-strip">
+        {topTrafficLinks.map((feature) => (
+          <article key={feature.properties?.route_id || feature.properties?.route_key || feature.properties?.name}>
+            <strong>{feature.properties?.road_name || feature.properties?.name || "Unnamed link"}</strong>
+            <span>{feature.properties?.district || feature.properties?.region || "Location pending"} / {feature.properties?.network_category || feature.properties?.road_class || "Road type pending"}</span>
+            <i><b style={{ width: `${Math.max(4, Number(feature.properties?.traffic_flow_index || 0))}%` }} /></i>
+            <em>{Math.round(Number(feature.properties?.traffic_flow_index || 0))}% flow</em>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function TrafficView({ insights }) {
   const trafficStats = insights.traffic?.stats || {};
   const avgFlow = Math.round(Number(trafficStats.avg_flow_index || 0));
@@ -5470,11 +5841,13 @@ function TrafficView({ insights }) {
         <ProductStat label="Flow links" value={formatCount(trafficStats.flow_links)} note="traffic-flow geometries queried" tone="cyan" />
         <ProductStat label="Mean flow index" value={avgFlow ? `${avgFlow}%` : "Loading"} note={`max ${maxFlow || 0}%`} tone="green" />
       </section>
+      <TrafficGeoMap />
       <div className="chart-showcase">
         <ProductFunnelChart title="Traffic Pressure Funnel" subtitle="Flow coverage, high-pressure links, crash trend and poor-condition load" rows={insights.charts.trafficFunnel} />
         <ProductBarChart title="Highest Flow Links" subtitle="Average traffic-flow index by extracted link name" rows={insights.charts.trafficFlow} formatValue={(value) => `${Math.round(Number(value || 0))}%`} maxRows={8} />
         <ProductPieChart title="Network Length Share" subtitle="Road length context used to interpret traffic pressure" rows={insights.charts.networkCategory} formatValue={(value) => formatKm(value)} />
       </div>
+      <PriorityDecisionBars links={insights.priorityLinks} />
       <div className="product-grid two">
         <TrendLinePanel title="Crash Trend" subtitle="Road traffic crashes by nature, CY 2019-2023" rows={insights.ugandaNetwork?.crashTrend || []} labelKey="year" valueKey="total" />
         <TrendLinePanel title="Paved National Stock" subtitle="Paved national road network trend used as traffic context" rows={insights.ugandaNetwork?.pavedTrend || []} labelKey="fy" valueKey="paved_stock_km" formatValue={(value) => formatKm(value)} tone="green" />
