@@ -4550,6 +4550,9 @@ function buildProductInsights(analysis, evidence) {
   const classAllocation = sumBy(selected, (item) => item.functionalClass, (item) => item.cost).slice(0, 6);
   const interventions = sumBy(programme, (item) => item.intervention, (item) => item.cost).slice(0, 5);
   const statusSplit = countBy(programme, (item) => item.status);
+  const riskSplit = countBy(programme, (item) => item.riskBand);
+  const monitoringSplit = countBy(programme, (item) => item.monitoringTier || "Tier pending");
+  const predictionStatusSplit = countBy(programme, (item) => item.predictionStatus || item.status);
   const riskTable = programme
     .toSorted((a, b) => Number(b.mlRisk || 0) - Number(a.mlRisk || 0))
     .slice(0, 7)
@@ -4560,6 +4563,39 @@ function buildProductInsights(analysis, evidence) {
     .map((item) => [item.rank, item.assetId, item.admin, item.functionalClass, item.intervention, `UGX ${currency.format(item.cost)}`]);
   const spatialRows = evidence?.spatialEvidence?.featureChart?.rows || [];
   const geometryRows = evidence?.spatialEvidence?.geometryChart?.rows || [];
+  const rawCatalogRows = evidence?.rawTables?.catalog?.rows || [];
+  const tableGroupRows = sumBy(
+    rawCatalogRows.map((row) => ({ group: row[0], rows: Number(row[2] || 0) })),
+    (item) => item.group,
+    (item) => item.rows,
+  ).slice(0, 6);
+  const pimsReadinessRows = (evidence?.frameworkFlow || []).map((row) => [row.title, Number(row.readiness_score || 0), row.phase]);
+  const hdm4ReadinessRows = (evidence?.hdm4?.indicators || []).map((row) => [row.indicator, Number(row.readiness_score || 0), row.description]);
+  const networkPoorRows = (evidence?.ugandaNetwork?.conditionRows || [])
+    .map((row) => [row.category, Number(row.poor_km || 0), `${Math.round(Number(row.poor_share || 0) * 100)}% poor`])
+    .sort((a, b) => b[1] - a[1]);
+  const calibrationRows = (evidence?.predictions?.calibrationSignals || [])
+    .map((row) => [row.signal, Number(row.value || 0), row.basis])
+    .sort((a, b) => b[1] - a[1]);
+  const programmeFunnel = [
+    ["Candidate assets", programme.length, "All assets submitted into the fiscal gate"],
+    ["Selected package", selected.length, "Assets affordable inside the net budget"],
+    ["High-risk watchlist", highRisk.length, "Assets needing design, scope or assurance checks"],
+    ["Prediction referrals", programme.filter((item) => (item.predictionStatus || item.status) === "Referred").length, "Model-recommended follow-up"],
+  ];
+  const evidenceFunnel = [
+    ["Files indexed", evidence?.fileInventory?.summary?.files_indexed || evidenceSummary.local_inventory_files || 0, "Local source files fingerprinted"],
+    ["Documents queried", evidenceSummary.core_documents_read || 0, "Core TOR and evidence documents"],
+    ["Raw table cells", evidenceSummary.raw_table_cells || 0, "Workbook, DOCX and case table cells"],
+    ["Spatial features", spatialSummary.feature_count || 0, "GIS features retained in SQLite"],
+    ["Online sources", evidenceSummary.online_sources_read || 0, "Live source checks"],
+  ];
+  const modelFunnel = [
+    ["PIMS features", programme.filter((item) => Number(item.pimsGateScore || 0) > 0).length, "Assets with PIMS gate score"],
+    ["HDM-4 features", programme.filter((item) => Number(item.hdm4ReadinessScore || 0) > 0).length, "Assets with economic model readiness"],
+    ["Network pressure", programme.filter((item) => Number(item.networkPressureScore || 0) > 0).length, "Assets connected to network pressure"],
+    ["Monitoring tiers", programme.filter((item) => item.monitoringTier).length, "Assets assigned to a monitoring tier"],
+  ];
   const stories = (evidence?.storyCards || []).filter((card) => [
     "Local evidence corpus",
     "Decision-topic spine",
@@ -4604,6 +4640,17 @@ function buildProductInsights(analysis, evidence) {
       spatial: spatialRows,
       geometry: geometryRows,
       networkCategory: evidence?.ugandaNetwork?.categoryChart?.rows || [],
+      riskSplit,
+      monitoringSplit,
+      predictionStatusSplit,
+      tableGroups: tableGroupRows,
+      pimsReadiness: pimsReadinessRows,
+      hdm4Readiness: hdm4ReadinessRows,
+      networkPoor: networkPoorRows,
+      calibration: calibrationRows,
+      programmeFunnel,
+      evidenceFunnel,
+      modelFunnel,
     },
     tables: {
       selected: {
@@ -4667,9 +4714,39 @@ function ProductStat({ label, value, note, tone = "blue" }) {
   );
 }
 
+const PRODUCT_CHART_COLORS = ["#2563eb", "#059669", "#dc2626", "#f59e0b", "#0891b2", "#7c3aed", "#16a34a", "#ea580c"];
+
+function productChartColor(index) {
+  return PRODUCT_CHART_COLORS[index % PRODUCT_CHART_COLORS.length];
+}
+
+function normalizeChartRows(rows = [], maxRows = 6) {
+  return rows
+    .map((row, index) => {
+      if (Array.isArray(row)) {
+        return {
+          label: formatEvidenceCell(row[0] || `Item ${index + 1}`),
+          value: Number(row[1] || 0),
+          detail: row[2] ? formatEvidenceCell(row[2]) : "",
+        };
+      }
+      const value = row.value ?? row.count ?? row.total ?? row.total_km ?? row.length_km ?? row.readiness_score ?? row.feature_count ?? 0;
+      const label = row.label ?? row.name ?? row.title ?? row.category ?? row.indicator ?? row.gate ?? row.signal ?? `Item ${index + 1}`;
+      const detail = row.detail ?? row.note ?? row.phase ?? row.description ?? row.decision_use ?? row.basis ?? "";
+      return {
+        label: formatEvidenceCell(label),
+        value: Number(value || 0),
+        detail: detail ? formatEvidenceCell(detail) : "",
+      };
+    })
+    .filter((row) => row.label && Number.isFinite(row.value) && row.value > 0)
+    .slice(0, maxRows);
+}
+
 function ProductBarChart({ title, subtitle, rows, formatValue = (value) => formatCount(value), maxRows = 6 }) {
-  const visible = (rows || []).slice(0, maxRows);
-  const maxValue = Math.max(1, ...visible.map((row) => Number(row[1] || 0)));
+  const visible = normalizeChartRows(rows, maxRows);
+  const maxValue = Math.max(1, ...visible.map((row) => Number(row.value || 0)));
+  if (!visible.length) return null;
   return (
     <section className="query-panel">
       <div className="product-panel-head">
@@ -4678,12 +4755,103 @@ function ProductBarChart({ title, subtitle, rows, formatValue = (value) => forma
       </div>
       <div className="product-bars">
         {visible.map((row, index) => (
-          <article key={`${title}-${row[0]}-${index}`} style={{ "--accent": ["#2563eb", "#059669", "#dc2626", "#f59e0b", "#0891b2", "#7c3aed"][index % 6] }}>
-            <span>{formatEvidenceCell(row[0])}</span>
-            <i><b style={{ width: `${Math.max(4, (Number(row[1] || 0) / maxValue) * 100)}%` }} /></i>
-            <strong>{formatValue(row[1])}</strong>
+          <article key={`${title}-${row.label}-${index}`} style={{ "--accent": productChartColor(index), "--delay": `${index * 70}ms` }}>
+            <span>{row.label}</span>
+            <i><b style={{ width: `${Math.max(4, (Number(row.value || 0) / maxValue) * 100)}%` }} /></i>
+            <strong>{formatValue(row.value)}</strong>
           </article>
         ))}
+      </div>
+    </section>
+  );
+}
+
+function ProductPieChart({ title, subtitle, rows, formatValue = (value) => formatCount(value), maxRows = 6 }) {
+  const visible = normalizeChartRows(rows, maxRows);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  if (!visible.length) return null;
+  const total = visible.reduce((sum, row) => sum + Number(row.value || 0), 0) || 1;
+  let cursor = 0;
+  const segments = visible.map((row, index) => {
+    const start = cursor;
+    cursor += (Number(row.value || 0) / total) * 360;
+    return `${productChartColor(index)} ${start.toFixed(2)}deg ${cursor.toFixed(2)}deg`;
+  }).join(", ");
+  const selected = visible[Math.min(selectedIndex, visible.length - 1)] || visible[0];
+  const selectedPercent = Math.round((Number(selected.value || 0) / total) * 100);
+  return (
+    <section className="query-panel pie-chart">
+      <div className="product-panel-head">
+        <h3>{title}</h3>
+        <span>{subtitle}</span>
+      </div>
+      <div className="pie-chart-layout">
+        <div className="pie-disc" style={{ background: `conic-gradient(${segments})` }} role="img" aria-label={`${title}: ${visible.length} categories`}>
+          <div className="pie-center">
+            <strong>{selectedPercent}%</strong>
+            <span>{selected.label}</span>
+            <em>{formatValue(selected.value)}</em>
+          </div>
+        </div>
+        <div className="pie-legend">
+          {visible.map((row, index) => {
+            const percent = Math.round((Number(row.value || 0) / total) * 100);
+            return (
+              <button
+                key={`${title}-${row.label}-${index}`}
+                className={index === selectedIndex ? "active" : ""}
+                type="button"
+                onClick={() => setSelectedIndex(index)}
+                onFocus={() => setSelectedIndex(index)}
+                style={{ "--accent": productChartColor(index), "--delay": `${index * 60}ms` }}
+              >
+                <i />
+                <span>{row.label}</span>
+                <strong>{percent}%</strong>
+                <em>{formatValue(row.value)}</em>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ProductFunnelChart({ title, subtitle, rows, formatValue = (value) => formatCount(value), maxRows = 6 }) {
+  const visible = normalizeChartRows(rows, maxRows);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  if (!visible.length) return null;
+  const maxValue = Math.max(1, ...visible.map((row) => Number(row.value || 0)));
+  const selected = visible[Math.min(selectedIndex, visible.length - 1)] || visible[0];
+  return (
+    <section className="query-panel funnel-chart">
+      <div className="product-panel-head">
+        <h3>{title}</h3>
+        <span>{subtitle}</span>
+      </div>
+      <div className="funnel-list">
+        {visible.map((row, index) => {
+          const width = Math.max(16, (Number(row.value || 0) / maxValue) * 100);
+          return (
+            <button
+              key={`${title}-${row.label}-${index}`}
+              className={index === selectedIndex ? "active" : ""}
+              type="button"
+              onClick={() => setSelectedIndex(index)}
+              onFocus={() => setSelectedIndex(index)}
+              style={{ "--accent": productChartColor(index), "--width": `${width}%`, "--delay": `${index * 70}ms` }}
+            >
+              <span className="funnel-label"><i>{String(index + 1).padStart(2, "0")}</i>{row.label}</span>
+              <span className="funnel-track"><span className="funnel-fill" /></span>
+              <strong>{formatValue(row.value)}</strong>
+            </button>
+          );
+        })}
+      </div>
+      <div className="funnel-focus">
+        <strong>{selected.label}</strong>
+        <span>{selected.detail || `${formatValue(selected.value)} records from the unified database`}</span>
       </div>
     </section>
   );
@@ -5033,9 +5201,18 @@ function CommandView({ insights }) {
         ))}
       </section>
       <FrameworkFlow steps={insights.frameworkFlow} />
+      <div className="chart-showcase">
+        <ProductPieChart title="Decision Share" subtitle="Programme status split from the SQL-backed priority run" rows={insights.charts.statusSplit} />
+        <ProductFunnelChart title="Priority Funnel" subtitle="Candidate assets through selection, risk and referral gates" rows={insights.charts.programmeFunnel} />
+        <ProductPieChart title="Evidence Mix" subtitle="Source areas retained behind the interface" rows={insights.charts.sourceCoverage} />
+      </div>
       <div className="product-grid two">
         <ProductBarChart title="Budget by Region" subtitle="Selected assets only" rows={insights.charts.regionAllocation} formatValue={(value) => `UGX ${currency.format(value)}`} />
         <ProductBarChart title="Decision Topics" subtitle="Materialized from extracted evidence text" rows={insights.charts.topics} />
+      </div>
+      <div className="product-grid two">
+        <ProductFunnelChart title="Model Feature Coverage" subtitle="PIMS, HDM-4, network pressure and monitoring signal completeness" rows={insights.charts.modelFunnel} />
+        <ProductPieChart title="Prediction Status" subtitle="Recommended model action by asset" rows={insights.charts.predictionStatusSplit} />
       </div>
       <div className="product-grid two">
         <ProductTable table={insights.tables.selected} />
@@ -5078,9 +5255,18 @@ function PortfolioView({ insights, budget, reservePercent, onBudgetChange, onRes
         <ReadinessBars title="PIMS Gate Readiness" subtitle="Project admission to final investment decision" items={insights.frameworkFlow} />
         <ReadinessBars title="HDM-4 Model Readiness" subtitle="Economic and pavement model inputs retained from the evidence store" items={insights.hdm4?.indicators || []} />
       </div>
+      <div className="chart-showcase">
+        <ProductPieChart title="Risk Band Mix" subtitle="Machine-learning risk bands across the candidate programme" rows={insights.charts.riskSplit} />
+        <ProductFunnelChart title="Investment Readiness Funnel" subtitle="PIMS gates used as a compact readiness sequence" rows={insights.charts.pimsReadiness} formatValue={(value) => `${Math.round(Number(value || 0))}%`} />
+        <ProductPieChart title="Monitoring Tiers" subtitle="Post-selection oversight groupings generated from prediction features" rows={insights.charts.monitoringSplit} />
+      </div>
       <div className="product-grid two">
         <ProductBarChart title="Allocation by Road Class" subtitle="Selected programme cost" rows={insights.charts.classAllocation} formatValue={(value) => `UGX ${currency.format(value)}`} />
         <ProductBarChart title="Treatment Demand" subtitle="All candidate costs by intervention" rows={insights.charts.interventions} formatValue={(value) => `UGX ${currency.format(value)}`} />
+      </div>
+      <div className="product-grid two">
+        <ProductFunnelChart title="HDM-4 Readiness Funnel" subtitle="Economic and pavement model indicators by retained readiness score" rows={insights.charts.hdm4Readiness} formatValue={(value) => `${Math.round(Number(value || 0))}%`} />
+        <ProductPieChart title="Programme Status" subtitle="Selected, deferred and referred assets after the fiscal gate" rows={insights.charts.statusSplit} />
       </div>
       <div className="product-grid two">
         <ProductTable table={insights.tables.selected} />
@@ -5115,9 +5301,18 @@ function NetworkView({ insights, programme }) {
         {(insights.ugandaNetwork?.kpis || []).map((item) => <ProductStat key={item.label} {...item} />)}
       </section>
       <MapScene3D programme={programme} />
+      <div className="chart-showcase">
+        <ProductPieChart title="Road Network Share" subtitle="ITIS/URF FY 2022/23 length by category" rows={insights.charts.networkCategory} formatValue={(value) => formatKm(value)} />
+        <ProductFunnelChart title="Poor Condition Pressure" subtitle="Poor kilometres by network category" rows={insights.charts.networkPoor} formatValue={(value) => formatKm(value)} />
+        <ProductPieChart title="GIS Geometry Mix" subtitle="Feature geometry types extracted from local spatial evidence" rows={insights.charts.geometry} />
+      </div>
       <div className="product-grid two">
         <ProductBarChart title="Uganda Road Network" subtitle="ITIS/URF FY 2022/23 length by category" rows={insights.charts.networkCategory} formatValue={(value) => formatKm(value)} />
         <ConditionStackChart rows={insights.ugandaNetwork?.conditionRows || []} />
+      </div>
+      <div className="product-grid two">
+        <ProductPieChart title="Spatial Evidence Share" subtitle="Readable local GIS feature coverage by layer" rows={insights.charts.spatial} />
+        <ProductFunnelChart title="Network Data Pipeline" subtitle="Files, tables, features and online checks retained by the sync store" rows={insights.charts.evidenceFunnel} />
       </div>
       <div className="product-grid two">
         <TrendLinePanel title="Crash Trend" subtitle="Road traffic crashes by nature, CY 2019-2023" rows={insights.ugandaNetwork?.crashTrend || []} labelKey="year" valueKey="total" />
@@ -5174,9 +5369,18 @@ function EvidenceView({ insights }) {
           </article>
         ))}
       </section>
+      <div className="chart-showcase">
+        <ProductFunnelChart title="Evidence Pipeline" subtitle="Indexed files, documents, raw cells, spatial features and online checks" rows={insights.charts.evidenceFunnel} />
+        <ProductPieChart title="Raw Table Families" subtitle="Extracted table groups summarized from the SQLite catalog" rows={insights.charts.tableGroups} />
+        <ProductPieChart title="Decision Topics" subtitle="Top text-derived evidence topics by mentions" rows={insights.charts.topics} />
+      </div>
       <div className="product-grid two">
         <ProductBarChart title="Evidence Coverage" subtitle="Source areas visible as query results" rows={insights.charts.sourceCoverage} />
         <ProductBarChart title="Decision Topics" subtitle="Top text-derived decision signals" rows={insights.charts.topics} />
+      </div>
+      <div className="product-grid two">
+        <ProductPieChart title="Source Coverage Share" subtitle="Local, global, spatial and online evidence footprint" rows={insights.charts.sourceCoverage} />
+        <ProductFunnelChart title="Prediction Calibration" subtitle="Calibration signals available to the scoring model" rows={insights.charts.calibration} formatValue={(value) => Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} />
       </div>
       <div className="product-grid two">
         <ProductBarChart title="Raw Table Cells" subtitle="All extracted workbook, case, ITIS and local table cells in SQLite" rows={insights.rawTables?.cellChart?.rows || []} />

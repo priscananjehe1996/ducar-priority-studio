@@ -379,6 +379,13 @@ button {
   align-items: start;
 }
 
+.chart-showcase {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+
 .query-panel {
   --accent: var(--blue);
   position: relative;
@@ -425,6 +432,15 @@ button {
   padding: 8px 10px;
   border-radius: 12px;
   background: #f8fafc;
+  transition: background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+  animation: chartRowIn 0.48s ease both;
+  animation-delay: var(--delay, 0ms);
+}
+
+.product-bars article:hover {
+  background: #ffffff;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+  transform: translateY(-2px);
 }
 
 .product-bars span,
@@ -448,11 +464,236 @@ button {
   border-radius: inherit;
   background: var(--accent);
   animation: queryBar 0.65s ease both;
+  animation-delay: var(--delay, 0ms);
 }
 
 .product-bars strong {
   color: var(--accent);
   text-align: right;
+}
+
+.pie-chart,
+.funnel-chart {
+  min-height: 360px;
+}
+
+.pie-chart-layout {
+  display: grid;
+  grid-template-columns: minmax(168px, 0.86fr) minmax(0, 1.14fr);
+  gap: 18px;
+  align-items: center;
+}
+
+.pie-disc {
+  position: relative;
+  display: grid;
+  width: min(220px, 100%);
+  aspect-ratio: 1;
+  place-items: center;
+  justify-self: center;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08), 0 18px 36px rgba(15, 23, 42, 0.12);
+  animation: pieReveal 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.pie-center {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 58%;
+  aspect-ratio: 1;
+  place-items: center;
+  padding: 14px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.13);
+  text-align: center;
+}
+
+.pie-center strong {
+  color: var(--ink);
+  font-size: 30px;
+  line-height: 0.95;
+  font-weight: 950;
+}
+
+.pie-center span,
+.pie-center em {
+  max-width: 112px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.2;
+  font-style: normal;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+  text-transform: uppercase;
+}
+
+.pie-center em {
+  color: var(--cyan);
+}
+
+.pie-legend,
+.funnel-list {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+}
+
+.pie-legend button,
+.funnel-list button {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid transparent;
+  background: #f8fafc;
+  color: var(--ink);
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  animation: chartRowIn 0.48s ease both;
+  animation-delay: var(--delay, 0ms);
+}
+
+.pie-legend button {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr) 42px minmax(58px, auto);
+  gap: 8px;
+  align-items: center;
+  min-height: 38px;
+  padding: 8px 9px;
+  border-radius: 12px;
+  text-align: left;
+}
+
+.pie-legend button:hover,
+.pie-legend button:focus-visible,
+.pie-legend button.active,
+.funnel-list button:hover,
+.funnel-list button:focus-visible,
+.funnel-list button.active {
+  border-color: color-mix(in srgb, var(--accent) 42%, #ffffff);
+  background: #ffffff;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.pie-legend i {
+  display: block;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.pie-legend span,
+.pie-legend strong,
+.pie-legend em {
+  min-width: 0;
+  color: #1f2937;
+  font-size: 11px;
+  line-height: 1.15;
+  font-style: normal;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.pie-legend strong,
+.pie-legend em {
+  color: var(--accent);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.pie-legend em {
+  color: var(--muted);
+}
+
+.funnel-list button {
+  display: grid;
+  grid-template-columns: minmax(128px, 0.9fr) minmax(120px, 1fr) minmax(64px, auto);
+  gap: 11px;
+  align-items: center;
+  min-height: 48px;
+  padding: 9px 10px;
+  border-radius: 13px;
+  text-align: left;
+}
+
+.funnel-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 920;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.funnel-label i {
+  flex: 0 0 auto;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, #ffffff);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 950;
+}
+
+.funnel-track {
+  position: relative;
+  display: block;
+  height: 11px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e5e7eb;
+}
+
+.funnel-fill {
+  display: block;
+  width: var(--width);
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 80%, #ffffff), var(--accent));
+  animation: funnelReveal 0.78s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+.funnel-list strong {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 950;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.funnel-focus {
+  display: grid;
+  gap: 5px;
+  min-height: 58px;
+  padding: 12px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(8, 145, 178, 0.08));
+}
+
+.funnel-focus strong {
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.15;
+  font-weight: 950;
+}
+
+.funnel-focus span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 780;
 }
 
 .product-table-panel {
@@ -1604,7 +1845,27 @@ button {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes chartRowIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @keyframes queryBar {
+  from { width: 0; }
+}
+
+@keyframes pieReveal {
+  from {
+    opacity: 0;
+    transform: rotate(-18deg) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+@keyframes funnelReveal {
   from { width: 0; }
 }
 
@@ -1621,6 +1882,9 @@ button {
   }
   .framework-flow-track {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .chart-showcase {
+    grid-template-columns: minmax(0, 1fr);
   }
   .command-hero,
   .network-brief,
@@ -1677,7 +1941,8 @@ button {
   .product-stat-grid,
   .decision-grid,
   .story-row,
-  .scenario-row {
+  .scenario-row,
+  .chart-showcase {
     width: min(342px, calc(100vw - 24px));
     max-width: min(342px, calc(100vw - 24px));
     justify-items: stretch;
@@ -1732,6 +1997,19 @@ button {
   }
   .product-bars article {
     grid-template-columns: 1fr;
+  }
+  .pie-chart-layout,
+  .pie-legend button,
+  .funnel-list button {
+    grid-template-columns: 1fr;
+  }
+  .pie-legend strong,
+  .pie-legend em,
+  .funnel-list strong {
+    text-align: left;
+  }
+  .pie-disc {
+    width: min(224px, calc(100vw - 86px));
   }
   .network-kpis,
   .framework-flow-track,
