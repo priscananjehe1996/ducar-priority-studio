@@ -235,6 +235,10 @@ const NAV_ITEMS = [
   { id: "command", label: "Command", icon: LayoutDashboard },
   { id: "portfolio", label: "Portfolio", icon: CircleDollarSign },
   { id: "network", label: "Network", icon: MapIcon },
+  { id: "traffic", label: "Traffic", icon: Truck },
+  { id: "pims", label: "PIMS", icon: ClipboardCheck },
+  { id: "hdm4", label: "HDM-4", icon: LineChart },
+  { id: "framework", label: "Framework", icon: GitBranch },
   { id: "evidence", label: "Evidence", icon: Database },
 ];
 
@@ -4255,12 +4259,20 @@ LIMIT 815;`,
   network: `SELECT category, length_km, ducar_scope
 FROM uganda_network_categories
 ORDER BY length_km DESC;`,
+  traffic: `SELECT name, metric AS traffic_flow_index, source_file
+FROM map_surface_features
+WHERE feature_group = 'flow'
+ORDER BY traffic_flow_index DESC
+LIMIT 10;`,
   pims: `SELECT title, phase, readiness_score
 FROM pims_framework_steps
 ORDER BY step_order;`,
   hdm4: `SELECT indicator, readiness_score
 FROM hdm4_indicators
 ORDER BY readiness_score DESC;`,
+  framework: `SELECT discipline, title, phase, readiness_score
+FROM pims_framework_steps
+ORDER BY step_order;`,
 };
 
 function runSqlRows(db, sql, params = []) {
@@ -4343,11 +4355,51 @@ function useUnifiedDatabase() {
         const crashTrendRows = runSqlRows(db, "SELECT year, fatal, serious, minor, total FROM uganda_crash_trend ORDER BY year");
         const pavedTrendRows = runSqlRows(db, "SELECT fy, annual_increase_km, paved_stock_km, percent_paved FROM uganda_paved_trend ORDER BY fy");
         const pimsFlow = runSqlRows(db, "SELECT title, phase, description, readiness_score, discipline FROM pims_framework_steps ORDER BY step_order");
+        const pimsGateChartRows = chartFromSql(
+          runSqlRows(db, "SELECT gate, readiness_score, decision_use FROM pims_gate_controls ORDER BY readiness_score DESC"),
+          "gate",
+          "readiness_score",
+          "decision_use",
+        );
         const pimsGateRows = runSqlRows(db, "SELECT gate, required_evidence, decision_use, readiness_score FROM pims_gate_controls ORDER BY readiness_score DESC")
           .map((row) => [row.gate, row.required_evidence, row.decision_use, `${Math.round(Number(row.readiness_score || 0))}%`]);
         const hdm4Indicators = runSqlRows(db, "SELECT indicator, description, readiness_score FROM hdm4_indicators ORDER BY readiness_score DESC");
         const hdm4InputRows = runSqlRows(db, "SELECT model_input, unit, assumption, evidence_topic FROM hdm4_model_inputs ORDER BY model_input")
           .map((row) => [row.model_input, row.unit, row.assumption, row.evidence_topic]);
+        const trafficStats = runSqlRows(db, `
+          SELECT
+            COUNT(*) AS flow_links,
+            COALESCE(ROUND(AVG(metric), 1), 0) AS avg_flow_index,
+            COALESCE(ROUND(MAX(metric), 1), 0) AS max_flow_index,
+            COUNT(CASE WHEN metric >= 75 THEN 1 END) AS high_pressure_links
+          FROM map_surface_features
+          WHERE feature_group = 'flow'
+        `)[0] || {};
+        const trafficFlowRows = chartFromSql(
+          runSqlRows(db, `
+            SELECT COALESCE(NULLIF(name, ''), source_file) AS label,
+                   ROUND(AVG(metric), 1) AS flow_index,
+                   COUNT(*) AS links
+            FROM map_surface_features
+            WHERE feature_group = 'flow'
+            GROUP BY label
+            ORDER BY flow_index DESC
+            LIMIT 10
+          `),
+          "label",
+          "flow_index",
+          "links",
+        );
+        const trafficFlowTableRows = runSqlRows(db, `
+          SELECT COALESCE(NULLIF(name, ''), 'Unnamed flow link') AS name,
+                 source_file,
+                 geometry_type,
+                 ROUND(metric, 1) AS traffic_flow_index
+          FROM map_surface_features
+          WHERE feature_group = 'flow'
+          ORDER BY metric DESC
+          LIMIT 10
+        `).map((row) => [row.name, row.source_file, row.geometry_type, row.traffic_flow_index]);
         const predictionFeatures = tableSet.has("prediction_feature_matrix")
           ? runSqlRows(db, `
             SELECT asset_id, risk_probability, recommended_status, monitoring_tier, pims_gate_score, hdm4_readiness_score, network_pressure_score
@@ -4445,6 +4497,7 @@ function useUnifiedDatabase() {
           },
           frameworkFlow: pimsFlow,
           pims: {
+            gateChart: { rows: pimsGateChartRows },
             gates: {
               title: "PIMS gate controls",
               columns: ["Gate", "Required evidence", "Decision use", "Readiness"],
@@ -4453,11 +4506,30 @@ function useUnifiedDatabase() {
           },
           hdm4: {
             indicators: hdm4Indicators,
+            indicatorTable: {
+              title: "HDM-4 readiness indicators",
+              columns: ["Indicator", "Description", "Readiness"],
+              rows: hdm4Indicators.map((row) => [row.indicator, row.description, `${Math.round(Number(row.readiness_score || 0))}%`]),
+            },
             inputs: {
               title: "HDM-4 model input register",
               columns: ["Input", "Unit", "Assumption", "Evidence topic"],
               rows: hdm4InputRows,
             },
+          },
+          traffic: {
+            stats: trafficStats,
+            flowChart: { rows: trafficFlowRows },
+            flowTable: {
+              title: "Top traffic flow links",
+              columns: ["Link", "Source", "Geometry", "Flow index"],
+              rows: trafficFlowTableRows,
+            },
+          },
+          frameworkTable: {
+            title: "Framework decision steps",
+            columns: ["Discipline", "Step", "Phase", "Readiness", "Description"],
+            rows: pimsFlow.map((row) => [row.discipline, row.title, row.phase, `${Math.round(Number(row.readiness_score || 0))}%`, row.description]),
           },
           predictions: {
             features: predictionFeatures,
@@ -4554,6 +4626,10 @@ function buildProductInsights(analysis, evidence) {
   const calibrationRows = (evidence?.predictions?.calibrationSignals || [])
     .map((row) => [row.signal, Number(row.value || 0), row.basis])
     .sort((a, b) => b[1] - a[1]);
+  const trafficStats = evidence?.traffic?.stats || {};
+  const trafficFlowRows = evidence?.traffic?.flowChart?.rows || [];
+  const latestCrashTotal = Number((evidence?.ugandaNetwork?.crashTrend || []).at?.(-1)?.total || 0);
+  const poorKm = networkPoorRows.reduce((sum, row) => sum + Number(row[1] || 0), 0);
   const programmeFunnel = [
     ["Candidate assets", programme.length, "All assets submitted into the fiscal gate"],
     ["Selected package", selected.length, "Assets affordable inside the net budget"],
@@ -4573,6 +4649,15 @@ function buildProductInsights(analysis, evidence) {
     ["Network pressure", programme.filter((item) => Number(item.networkPressureScore || 0) > 0).length, "Assets connected to network pressure"],
     ["Monitoring tiers", programme.filter((item) => item.monitoringTier).length, "Assets assigned to a monitoring tier"],
   ];
+  const trafficFunnel = [
+    ["Flow links", Number(trafficStats.flow_links || trafficFlowRows.length || 0), "Traffic-flow geometries available to the map and analytics layer"],
+    ["High pressure links", Number(trafficStats.high_pressure_links || 0), "Links with flow index at or above 75"],
+    ["Latest crash total", latestCrashTotal, "Latest crash trend total from the national road safety table"],
+    ["Poor condition km", poorKm, "Poor road condition kilometres by network category"],
+  ];
+  const staticHdm4Tables = HDM4_INPUT_TABLES.map((table) => [table.title, table.rows.length, table.unit]);
+  const pimsGateRows = evidence?.pims?.gateChart?.rows || [];
+  const frameworkStepRows = (evidence?.frameworkFlow || []).map((row) => [row.title, Number(row.readiness_score || 0), row.discipline]);
   const stories = (evidence?.storyCards || []).filter((card) => [
     "Local evidence corpus",
     "Decision-topic spine",
@@ -4628,6 +4713,11 @@ function buildProductInsights(analysis, evidence) {
       programmeFunnel,
       evidenceFunnel,
       modelFunnel,
+      trafficFlow: trafficFlowRows,
+      trafficFunnel,
+      staticHdm4Tables,
+      pimsGates: pimsGateRows,
+      frameworkSteps: frameworkStepRows,
     },
     tables: {
       selected: {
@@ -4649,8 +4739,10 @@ function buildProductInsights(analysis, evidence) {
     spatialEvidence: evidence?.spatialEvidence || {},
     ugandaNetwork: evidence?.ugandaNetwork || {},
     frameworkFlow: evidence?.frameworkFlow || [],
+    frameworkTable: evidence?.frameworkTable,
     pims: evidence?.pims || {},
     hdm4: evidence?.hdm4 || {},
+    traffic: evidence?.traffic || {},
     predictions: evidence?.predictions || {},
     botSync: evidence?.botSync || {},
     databaseLoaded: Boolean(evidence?.loadedFromDatabase),
@@ -5363,6 +5455,183 @@ function EvidenceView({ insights }) {
   );
 }
 
+function TrafficView({ insights }) {
+  const trafficStats = insights.traffic?.stats || {};
+  const avgFlow = Math.round(Number(trafficStats.avg_flow_index || 0));
+  const maxFlow = Math.round(Number(trafficStats.max_flow_index || 0));
+  return (
+    <div className="product-view">
+      <section className="network-brief">
+        <div>
+          <p className="product-eyebrow">Traffic analytics</p>
+          <h2>Traffic pressure without map clutter.</h2>
+          <span>Flow links, crash trend, OD pressure and condition stress are kept in the backend and surfaced as compact decision charts.</span>
+        </div>
+        <ProductStat label="Flow links" value={formatCount(trafficStats.flow_links)} note="traffic-flow geometries queried" tone="cyan" />
+        <ProductStat label="Mean flow index" value={avgFlow ? `${avgFlow}%` : "Loading"} note={`max ${maxFlow || 0}%`} tone="green" />
+      </section>
+      <div className="chart-showcase">
+        <ProductFunnelChart title="Traffic Pressure Funnel" subtitle="Flow coverage, high-pressure links, crash trend and poor-condition load" rows={insights.charts.trafficFunnel} />
+        <ProductBarChart title="Highest Flow Links" subtitle="Average traffic-flow index by extracted link name" rows={insights.charts.trafficFlow} formatValue={(value) => `${Math.round(Number(value || 0))}%`} maxRows={8} />
+        <ProductPieChart title="Network Length Share" subtitle="Road length context used to interpret traffic pressure" rows={insights.charts.networkCategory} formatValue={(value) => formatKm(value)} />
+      </div>
+      <div className="product-grid two">
+        <TrendLinePanel title="Crash Trend" subtitle="Road traffic crashes by nature, CY 2019-2023" rows={insights.ugandaNetwork?.crashTrend || []} labelKey="year" valueKey="total" />
+        <TrendLinePanel title="Paved National Stock" subtitle="Paved national road network trend used as traffic context" rows={insights.ugandaNetwork?.pavedTrend || []} labelKey="fy" valueKey="paved_stock_km" formatValue={(value) => formatKm(value)} tone="green" />
+      </div>
+      <div className="product-grid two">
+        <ConditionStackChart rows={insights.ugandaNetwork?.conditionRows || []} />
+        <ProductTable table={insights.traffic?.flowTable} />
+      </div>
+      <section className="query-strip">
+        <QueryBadge label="traffic query" sql={insights.sql.traffic} />
+        <QueryBadge label="network query" sql={insights.sql.network} />
+      </section>
+    </div>
+  );
+}
+
+function PimsView({ insights }) {
+  const gateRows = insights.pims?.gates?.rows || [];
+  const readinessRows = insights.charts.pimsReadiness || [];
+  const averageReadiness = readinessRows.length
+    ? Math.round(readinessRows.reduce((sum, row) => sum + Number(row[1] || 0), 0) / readinessRows.length)
+    : 0;
+  return (
+    <div className="product-view">
+      <section className="network-brief">
+        <div>
+          <p className="product-eyebrow">Public investment management</p>
+          <h2>PIMS gates as a clear investment filter.</h2>
+          <span>Project admission, evidence checks and approval logic are exposed as readiness signals, with the gate controls still available underneath.</span>
+        </div>
+        <ProductStat label="Framework steps" value={formatCount(insights.frameworkFlow.length)} note="ordered PIMS decision chain" tone="blue" />
+        <ProductStat label="Avg readiness" value={`${averageReadiness}%`} note={`${formatCount(gateRows.length)} gate controls`} tone="green" />
+      </section>
+      <div className="chart-showcase">
+        <ProductFunnelChart title="PIMS Readiness Funnel" subtitle="Step readiness from concept through monitoring" rows={insights.charts.pimsReadiness} formatValue={(value) => `${Math.round(Number(value || 0))}%`} />
+        <ProductPieChart title="Gate Control Readiness" subtitle="Readiness share across PIMS gate controls" rows={insights.charts.pimsGates} formatValue={(value) => `${Math.round(Number(value || 0))}%`} />
+        <ProductFunnelChart title="Model Feature Coverage" subtitle="PIMS score, HDM-4 score, network pressure and monitoring tiers" rows={insights.charts.modelFunnel} />
+      </div>
+      <div className="product-grid two">
+        <ReadinessBars title="PIMS Framework Steps" subtitle="Project admission to final investment decision" items={insights.frameworkFlow} />
+        <ProductTable table={insights.pims?.gates} />
+      </div>
+      <ProductTable table={insights.frameworkTable} />
+      <section className="query-strip">
+        <QueryBadge label="pims query" sql={insights.sql.pims} />
+        <QueryBadge label="framework query" sql={insights.sql.framework} />
+      </section>
+    </div>
+  );
+}
+
+function Hdm4ReferenceLibrary() {
+  const totalRows = HDM4_INPUT_TABLES.reduce((sum, table) => sum + table.rows.length, 0);
+  return (
+    <section className="query-panel reference-library">
+      <div className="product-panel-head">
+        <h3>HDM-4 Reference Library</h3>
+        <span>{formatCount(totalRows)} rows across {formatCount(HDM4_INPUT_TABLES.length)} input groups</span>
+      </div>
+      <div className="reference-list">
+        {HDM4_INPUT_TABLES.map((table) => (
+          <details key={table.title} className="reference-item">
+            <summary>
+              <strong>{table.title}</strong>
+              <span>{table.rows.length} rows / {table.unit}</span>
+            </summary>
+            <div className="product-table-wrap">
+              <table>
+                <thead>
+                  <tr>{table.columns.map((column) => <th key={column}>{column}</th>)}</tr>
+                </thead>
+                <tbody>
+                  {table.rows.map((row, rowIndex) => (
+                    <tr key={`${table.title}-${rowIndex}`}>
+                      {row.map((cell, cellIndex) => <td key={`${rowIndex}-${cellIndex}`}>{formatEvidenceCell(cell)}</td>)}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </details>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Hdm4View({ insights }) {
+  const indicatorRows = insights.charts.hdm4Readiness || [];
+  const averageReadiness = indicatorRows.length
+    ? Math.round(indicatorRows.reduce((sum, row) => sum + Number(row[1] || 0), 0) / indicatorRows.length)
+    : 0;
+  const staticRows = HDM4_INPUT_TABLES.reduce((sum, table) => sum + table.rows.length, 0);
+  return (
+    <div className="product-view">
+      <section className="network-brief">
+        <div>
+          <p className="product-eyebrow">HDM-4 analytics</p>
+          <h2>Economic and pavement inputs, compressed.</h2>
+          <span>Traffic loading, deterioration, work effects, road-user costs and economic assumptions remain available as structured model inputs.</span>
+        </div>
+        <ProductStat label="Readiness" value={`${averageReadiness}%`} note={`${formatCount(indicatorRows.length)} model indicators`} tone="green" />
+        <ProductStat label="Input library" value={formatCount(staticRows)} note={`${formatCount(HDM4_INPUT_TABLES.length)} reference tables`} tone="purple" />
+      </section>
+      <div className="chart-showcase">
+        <ProductFunnelChart title="HDM-4 Readiness Funnel" subtitle="Economic and pavement model indicators by readiness score" rows={insights.charts.hdm4Readiness} formatValue={(value) => `${Math.round(Number(value || 0))}%`} />
+        <ProductPieChart title="Input Coverage" subtitle="Rows available in each HDM-4 reference table" rows={insights.charts.staticHdm4Tables} />
+        <ProductFunnelChart title="Prediction Calibration" subtitle="Calibration signals linked to model scoring" rows={insights.charts.calibration} formatValue={(value) => Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} />
+      </div>
+      <div className="product-grid two">
+        <ProductTable table={insights.hdm4?.indicatorTable} />
+        <ProductTable table={insights.hdm4?.inputs} />
+      </div>
+      <Hdm4ReferenceLibrary />
+      <section className="query-strip">
+        <QueryBadge label="hdm4 query" sql={insights.sql.hdm4} />
+        <QueryBadge label="traffic query" sql={insights.sql.traffic} />
+      </section>
+    </div>
+  );
+}
+
+function FrameworkView({ insights }) {
+  const frameworkRows = insights.charts.frameworkSteps || [];
+  const averageReadiness = frameworkRows.length
+    ? Math.round(frameworkRows.reduce((sum, row) => sum + Number(row[1] || 0), 0) / frameworkRows.length)
+    : 0;
+  return (
+    <div className="product-view">
+      <section className="network-brief">
+        <div>
+          <p className="product-eyebrow">Framework flow</p>
+          <h2>The decision framework as an animated operating model.</h2>
+          <span>PIMS, HDM-4, road asset management, budget control and monitoring are shown as a linked flow with the supporting data kept queryable.</span>
+        </div>
+        <ProductStat label="Framework steps" value={formatCount(frameworkRows.length)} note="ordered decision chain" tone="blue" />
+        <ProductStat label="Flow readiness" value={`${averageReadiness}%`} note="average step readiness" tone="green" />
+      </section>
+      <FrameworkFlow steps={insights.frameworkFlow} />
+      <div className="chart-showcase">
+        <ProductFunnelChart title="Framework Readiness" subtitle="Readiness by step in the operating model" rows={insights.charts.frameworkSteps} formatValue={(value) => `${Math.round(Number(value || 0))}%`} />
+        <ProductFunnelChart title="Evidence Pipeline" subtitle="Files, documents, raw cells, spatial features and online checks" rows={insights.charts.evidenceFunnel} />
+        <ProductPieChart title="Decision Topics" subtitle="Evidence topics that support the framework" rows={insights.charts.topics} />
+      </div>
+      <div className="product-grid two">
+        <ReadinessBars title="PIMS Steps" subtitle="Investment-management stages retained in the flow" items={insights.frameworkFlow} />
+        <ReadinessBars title="HDM-4 Inputs" subtitle="Economic and pavement model readiness" items={insights.hdm4?.indicators || []} />
+      </div>
+      <ProductTable table={insights.frameworkTable} />
+      <section className="query-strip">
+        <QueryBadge label="framework query" sql={insights.sql.framework} />
+        <QueryBadge label="evidence query" sql={insights.sql.evidence} />
+      </section>
+    </div>
+  );
+}
+
 function LegacyApp() {
   const [records, setRecords] = useState(sample);
   const [budget, setBudget] = useState(250000000);
@@ -5829,14 +6098,12 @@ function App() {
       const aliases = {
         overview: "command",
         controls: "portfolio",
-        pim: "command",
+        pim: "pims",
         analytics: "command",
         allocation: "portfolio",
         programme: "portfolio",
         gis: "network",
-        traffic: "network",
-        hdm4: "portfolio",
-        framework: "evidence",
+        pims: "pims",
         "case-studies": "evidence",
         sources: "evidence",
       };
@@ -5889,6 +6156,10 @@ function App() {
           />
         )}
         {activeView === "network" && <NetworkView insights={insights} programme={analysis.programme || []} />}
+        {activeView === "traffic" && <TrafficView insights={insights} />}
+        {activeView === "pims" && <PimsView insights={insights} />}
+        {activeView === "hdm4" && <Hdm4View insights={insights} />}
+        {activeView === "framework" && <FrameworkView insights={insights} />}
         {activeView === "evidence" && <EvidenceView insights={insights} />}
       </main>
     </div>

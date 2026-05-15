@@ -92,6 +92,12 @@ button {
   display: grid;
   align-content: start;
   gap: 10px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.product-nav nav::-webkit-scrollbar {
+  display: none;
 }
 
 .product-nav nav a:hover,
@@ -729,6 +735,75 @@ button {
 
 .product-table-wrap tr:hover td {
   background: #f8fafc;
+}
+
+.reference-library {
+  min-height: auto;
+}
+
+.reference-list {
+  display: grid;
+  gap: 10px;
+}
+
+.reference-item {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.reference-item summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 52px;
+  padding: 12px 14px;
+  cursor: pointer;
+  color: var(--ink);
+  list-style: none;
+}
+
+.reference-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.reference-item summary::after {
+  content: "+";
+  display: grid;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 999px;
+  color: var(--blue);
+  background: #ffffff;
+  font-weight: 950;
+}
+
+.reference-item[open] summary::after {
+  content: "-";
+}
+
+.reference-item summary strong {
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 950;
+  overflow-wrap: anywhere;
+}
+
+.reference-item summary span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.reference-item .product-table-wrap {
+  max-height: 360px;
+  padding: 0 12px 12px;
 }
 
 .query-strip,
@@ -1945,6 +2020,7 @@ button {
   .query-panel,
   .framework-flow-panel,
   .geo-command-map,
+  .reference-library,
   .product-stat {
     width: 100%;
     max-width: min(342px, calc(100vw - 24px));
@@ -1994,9 +2070,14 @@ button {
   .funnel-list button {
     grid-template-columns: 1fr;
   }
+  .reference-item summary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
   .pie-legend strong,
   .pie-legend em,
-  .funnel-list strong {
+  .funnel-list strong,
+  .reference-item summary span {
     text-align: left;
   }
   .pie-disc {
