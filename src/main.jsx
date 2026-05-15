@@ -2789,29 +2789,6 @@ function MapScene3D({ programme }) {
           paint: { "line-color": "#fef3c7", "line-width": 2.1, "line-opacity": 0.96, "line-dasharray": [1.4, 0.9] },
         });
         map.addLayer({
-          id: "network-node-halo",
-          type: "circle",
-          source: "network-nodes",
-          paint: {
-            "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 4, 9, 9],
-            "circle-color": "#06b6d4",
-            "circle-opacity": 0.22,
-            "circle-blur": 0.65,
-          },
-        });
-        map.addLayer({
-          id: "network-nodes",
-          type: "circle",
-          source: "network-nodes",
-          paint: {
-            "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 2.3, 9, 4.8],
-            "circle-color": "#f8fafc",
-            "circle-opacity": 0.92,
-            "circle-stroke-color": "#06b6d4",
-            "circle-stroke-width": 1.8,
-          },
-        });
-        map.addLayer({
           id: "programme-assets-halo",
           type: "circle",
           source: "programme-assets",
@@ -2983,7 +2960,7 @@ function MapScene3D({ programme }) {
   const hudRoadText = roadsReady
     ? `${formatCount(filteredRoads.length)} visible road routes`
     : `${formatCount(displayedRoadCount)} road routes queued`;
-  const hudNodeText = nodes?.features?.length ? `${formatCount(nodes.features.length)} analysis nodes` : "Network nodes loading";
+  const hudNodeText = nodes?.features?.length ? `${formatCount(nodes.features.length)} backend-only nodes` : "Node graph loading backend-only";
   const hudRouteText = routeMatrix?.routes?.length ? `${formatCount(routeMatrix.routes.length)} OD route pairs` : "OD route matrix loading";
   const mapStatusText = mapLoadState.stage === "ready" ? "Road layer ready" : mapLoadState.message;
 
@@ -5085,7 +5062,6 @@ function ModernGeoMap({ features = [], programme = [] }) {
     route: features.filter((item) => item.group === "route" && item.geometryType === "LineString"),
     national: features.filter((item) => item.group === "national" && item.geometryType === "LineString"),
     flow: features.filter((item) => item.group === "flow" && item.geometryType === "LineString"),
-    node: features.filter((item) => item.group === "node" && item.geometryType === "Point"),
   }), [features]);
   const routeFeatures = grouped.route.length
     ? grouped.route
@@ -5100,7 +5076,7 @@ function ModernGeoMap({ features = [], programme = [] }) {
     <section className="geo-command-map">
       <div className="product-panel-head">
         <h3>Modern Geospatial Surface</h3>
-        <span>SQL-drawn roads, national reference, network nodes and programme assets</span>
+        <span>SQL-drawn roads, national reference and programme assets; nodes stay backend-only</span>
       </div>
       <div className="geo-map-canvas">
         <svg className="geo-surface-svg" viewBox={`0 0 ${GEO_FRAME.width} ${GEO_FRAME.height}`} role="img" aria-label="DUCAR geospatial evidence surface">
@@ -5146,12 +5122,6 @@ function ModernGeoMap({ features = [], programme = [] }) {
             })}
           </g>
           <g>
-            {grouped.node.slice(0, 360).map((item, index) => {
-              const point = projectGeo(item.coordinates, frame);
-              return point ? <circle key={`${item.source}-node-${index}`} className="geo-node" cx={point[0]} cy={point[1]} r="2.3"><title>{item.name || "Network node"}</title></circle> : null;
-            })}
-          </g>
-          <g>
             {assetPoints.map((item) => (
               <circle key={item.assetId} className={`geo-asset ${item.status === "Selected" ? "selected" : item.status === "Referred" ? "referred" : "candidate"}`} cx={item.point[0]} cy={item.point[1]} r={item.status === "Selected" ? 9 : 7}>
                 <title>{`${item.assetId} - ${item.admin} - ${item.status}`}</title>
@@ -5167,7 +5137,6 @@ function ModernGeoMap({ features = [], programme = [] }) {
       <div className="geo-layer-strip">
         <span><i className="route" /> DUCAR / unified routes</span>
         <span><i className="national" /> National reference</span>
-        <span><i className="node" /> Network nodes</span>
         <span><i className="asset" /> Programme assets</span>
       </div>
     </section>

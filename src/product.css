@@ -908,11 +908,6 @@ button {
   animation: geo-route-flow 4.8s linear infinite;
 }
 
-.geo-node {
-  fill: #0f172a;
-  opacity: 0.2;
-}
-
 .geo-asset {
   stroke: #ffffff;
   stroke-width: 3;
@@ -1003,10 +998,6 @@ button {
 
 .geo-layer-strip .national {
   background: var(--gold);
-}
-
-.geo-layer-strip .node {
-  background: var(--ink);
 }
 
 .geo-layer-strip .asset {
