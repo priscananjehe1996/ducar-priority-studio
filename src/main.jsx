@@ -38,6 +38,17 @@ import { WORLD_COUNTRIES_BY_REGION } from "./worldCountries.js";
 import "./product.css";
 
 const BASE = import.meta.env.BASE_URL || "/ducar-priority-studio/";
+let mapLibreLoader;
+
+function loadMapLibre() {
+  if (!mapLibreLoader) {
+    mapLibreLoader = Promise.all([
+      import("maplibre-gl"),
+      import("maplibre-gl/dist/maplibre-gl.css"),
+    ]).then(([module]) => module.default || module);
+  }
+  return mapLibreLoader;
+}
 
 async function fetchUgandaLayersManifest() {
   try {
@@ -949,6 +960,7 @@ const MAPILLARY_UGANDA_URL = "https://www.mapillary.com/app/?lat=1.3293399051176
 function imageryWithLabelsStyle() {
   return {
     version: 8,
+    glyphs: "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
     sources: {
       esriImagery: {
         type: "raster",
@@ -962,10 +974,17 @@ function imageryWithLabelsStyle() {
         tileSize: 256,
         attribution: "Labels &copy; Esri",
       },
+      esriTransportation: {
+        type: "raster",
+        tiles: ["https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}"],
+        tileSize: 256,
+        attribution: "Transportation labels &copy; Esri",
+      },
     },
     layers: [
-      { id: "esri-imagery", type: "raster", source: "esriImagery", paint: { "raster-opacity": 0.94, "raster-contrast": 0.08, "raster-saturation": -0.08 } },
-      { id: "esri-labels", type: "raster", source: "esriLabels", paint: { "raster-opacity": 0.9 } },
+      { id: "esri-imagery", type: "raster", source: "esriImagery", paint: { "raster-opacity": 0.98, "raster-contrast": 0.16, "raster-saturation": 0.12, "raster-brightness-min": 0.06, "raster-brightness-max": 0.96 } },
+      { id: "esri-transportation-labels", type: "raster", source: "esriTransportation", paint: { "raster-opacity": 0.58 } },
+      { id: "esri-labels", type: "raster", source: "esriLabels", paint: { "raster-opacity": 0.88 } },
     ],
   };
 }
@@ -1038,31 +1057,120 @@ const ROAD_CATEGORY_EXPRESSION = [
   "District Roads",
 ];
 
+const ROAD_CATEGORY_STYLE_KEY = ["coalesce", ["get", "network_category"], ["get", "road_system"], ["get", "road_class"], "District Roads"];
+
 const ROAD_CATEGORY_COLORS = [
   "match",
-  ROAD_CATEGORY_EXPRESSION,
-  "National Roads", "#111827",
-  "District Roads", "#2563eb",
-  "KCCA", "#7c3aed",
-  "City Roads", "#e11d48",
-  "Community Access Roads", "#16a34a",
-  "Town Council Roads", "#d97706",
-  "Municipal Roads", "#0891b2",
-  "#64748b",
+  ROAD_CATEGORY_STYLE_KEY,
+  "National Roads", "#fde047",
+  "National", "#fde047",
+  "District Roads", "#38bdf8",
+  "DUCAR", "#38bdf8",
+  "Open mapping", "#38bdf8",
+  "KCCA", "#c084fc",
+  "City Roads", "#fb7185",
+  "Urban", "#fb7185",
+  "Urban Road", "#fb7185",
+  "Community Access Roads", "#34d399",
+  "Community Access Road", "#34d399",
+  "CAR", "#34d399",
+  "Town Council Roads", "#fb923c",
+  "Town Council Road", "#fb923c",
+  "TC", "#fb923c",
+  "Municipal Roads", "#22d3ee",
+  "Municipal Road", "#22d3ee",
+  "M", "#22d3ee",
+  "#cbd5e1",
 ];
 
 const ROAD_CATEGORY_WIDTHS = [
   "match",
-  ROAD_CATEGORY_EXPRESSION,
-  "National Roads", 3.8,
-  "District Roads", 1.45,
-  "KCCA", 2.1,
-  "City Roads", 1.95,
-  "Community Access Roads", 0.95,
-  "Town Council Roads", 1.2,
-  "Municipal Roads", 1.55,
-  1.05,
+  ROAD_CATEGORY_STYLE_KEY,
+  "National Roads", 6.2,
+  "National", 6.2,
+  "District Roads", 3.65,
+  "DUCAR", 3.65,
+  "Open mapping", 3.65,
+  "KCCA", 4.4,
+  "City Roads", 4.15,
+  "Urban", 4.15,
+  "Urban Road", 4.15,
+  "Community Access Roads", 2.8,
+  "Community Access Road", 2.8,
+  "CAR", 2.8,
+  "Town Council Roads", 3.25,
+  "Town Council Road", 3.25,
+  "TC", 3.25,
+  "Municipal Roads", 3.45,
+  "Municipal Road", 3.45,
+  "M", 3.45,
+  2.55,
 ];
+
+const TRAFFIC_FLOW_COLOR = [
+  "interpolate",
+  ["linear"],
+  ["coalesce", ["get", "traffic_flow_index"], 45],
+  25, "#22c55e",
+  48, "#06b6d4",
+  70, "#f59e0b",
+  92, "#ef4444",
+];
+
+const UGANDA_MAP_VIEW = {
+  center: [32.5, 1.3],
+  zoom: 6.75,
+  pitch: 0,
+  bearing: 0,
+};
+
+function extendBoundsWithCoordinates(bounds, coordinates) {
+  if (!coordinates) return false;
+  if (typeof coordinates[0] === "number" && typeof coordinates[1] === "number") {
+    const lng = Number(coordinates[0]);
+    const lat = Number(coordinates[1]);
+    if (!Number.isFinite(lng) || !Number.isFinite(lat)) return false;
+    bounds.minLng = Math.min(bounds.minLng, lng);
+    bounds.minLat = Math.min(bounds.minLat, lat);
+    bounds.maxLng = Math.max(bounds.maxLng, lng);
+    bounds.maxLat = Math.max(bounds.maxLat, lat);
+    return true;
+  }
+  return coordinates.reduce((hasBounds, item) => extendBoundsWithCoordinates(bounds, item) || hasBounds, false);
+}
+
+function fitMapToFeatures(map, features, options = {}) {
+  if (!map || !features?.length) return false;
+  const bounds = { minLng: Infinity, minLat: Infinity, maxLng: -Infinity, maxLat: -Infinity };
+  const hasBounds = features.reduce((found, feature) => extendBoundsWithCoordinates(bounds, feature.geometry?.coordinates) || found, false);
+  if (!hasBounds) return false;
+  map.fitBounds([[bounds.minLng, bounds.minLat], [bounds.maxLng, bounds.maxLat]], {
+    padding: options.padding || 78,
+    duration: options.duration ?? 700,
+    maxZoom: options.maxZoom || 10.8,
+  });
+  return true;
+}
+
+function addOperationalMapControls(maplibregl, map) {
+  map.addControl(new maplibregl.NavigationControl({ showCompass: true, showZoom: true, visualizePitch: true }), "top-right");
+  if (maplibregl.FullscreenControl) {
+    map.addControl(new maplibregl.FullscreenControl(), "top-right");
+  }
+  if (maplibregl.GeolocateControl) {
+    map.addControl(new maplibregl.GeolocateControl({
+      positionOptions: { enableHighAccuracy: true },
+      trackUserLocation: true,
+      showAccuracyCircle: true,
+      showUserHeading: true,
+    }), "top-right");
+  }
+  map.addControl(new maplibregl.ScaleControl({ maxWidth: 140, unit: "metric" }), "bottom-left");
+  map.addControl(new maplibregl.AttributionControl({
+    compact: true,
+    customAttribution: "DUCAR GIS evidence database",
+  }), "bottom-right");
+}
 
 function classifyRoadCategory(properties = {}) {
   const roadClass = String(properties.road_class || "");
@@ -1539,77 +1647,90 @@ function TrafficAnalyticsPanel() {
 
   useEffect(() => {
     if (mapInstance.current || !mapRef.current) return;
-    const map = new maplibregl.Map({
-      container: mapRef.current,
-      style: imageryWithLabelsStyle(),
-      center: [32.4, 1.35],
-      zoom: 6,
-      pitch: 0,
-      bearing: 0,
-      attributionControl: true,
-    });
-    mapInstance.current = map;
-    map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), "top-left");
-    map.on("load", () => {
-      mapLoaded.current = true;
-      setMapReady(true);
-      map.addSource("traffic-roads", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
-      map.addSource("traffic-flow-lines", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
-      map.addSource("selected-traffic-line", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
-      map.addLayer({
-        id: "traffic-road-network",
-        type: "line",
-        source: "traffic-roads",
-        paint: {
-          "line-color": ["case", ["==", ["get", "network_category"], "National Roads"], "#f8fafc", "#cbd5e1"],
-          "line-width": ["case", ["==", ["get", "network_category"], "National Roads"], 1.45, 0.55],
-          "line-opacity": ["case", ["==", ["get", "network_category"], "National Roads"], 0.72, 0.36],
-        },
+    let cancelled = false;
+    let map = null;
+    async function initialiseTrafficMap() {
+      const maplibregl = await loadMapLibre();
+      if (cancelled || !mapRef.current) return;
+      map = new maplibregl.Map({
+        container: mapRef.current,
+        style: imageryWithLabelsStyle(),
+        center: [32.4, 1.35],
+        zoom: 6,
+        pitch: 0,
+        bearing: 0,
+        attributionControl: false,
       });
-      map.addLayer({
-        id: "traffic-flow-casing-live",
-        type: "line",
-        source: "traffic-flow-lines",
-        paint: {
-          "line-color": "#0f172a",
-          "line-width": ["interpolate", ["linear"], ["get", "traffic_flow_index"], 30, 1.4, 60, 2.5, 100, 4.9],
-          "line-opacity": 0.48,
-          "line-blur": 0.25,
-        },
+      mapInstance.current = map;
+      addOperationalMapControls(maplibregl, map);
+      map.on("load", () => {
+        mapLoaded.current = true;
+        setMapReady(true);
+        map.addSource("traffic-roads", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+        map.addSource("traffic-flow-lines", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+        map.addSource("selected-traffic-line", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+        map.addLayer({
+          id: "traffic-road-network",
+          type: "line",
+          source: "traffic-roads",
+          paint: {
+            "line-color": ["case", ["==", ["get", "network_category"], "National Roads"], "#f8fafc", "#cbd5e1"],
+            "line-width": ["case", ["==", ["get", "network_category"], "National Roads"], 1.45, 0.55],
+            "line-opacity": ["case", ["==", ["get", "network_category"], "National Roads"], 0.72, 0.36],
+          },
+        });
+        map.addLayer({
+          id: "traffic-flow-casing-live",
+          type: "line",
+          source: "traffic-flow-lines",
+          paint: {
+            "line-color": "#0f172a",
+            "line-width": ["interpolate", ["linear"], ["get", "traffic_flow_index"], 30, 1.4, 60, 2.5, 100, 4.9],
+            "line-opacity": 0.48,
+            "line-blur": 0.25,
+          },
+        });
+        map.addLayer({
+          id: "traffic-flow-live",
+          type: "line",
+          source: "traffic-flow-lines",
+          paint: {
+            "line-color": TRAFFIC_FLOW_COLOR,
+            "line-width": ["interpolate", ["linear"], ["get", "traffic_flow_index"], 30, 0.9, 60, 1.9, 100, 3.8],
+            "line-opacity": 0.86,
+          },
+        });
+        map.addLayer({
+          id: "selected-traffic-halo",
+          type: "line",
+          source: "selected-traffic-line",
+          paint: { "line-color": "#ffffff", "line-width": 7.5, "line-opacity": 0.94, "line-blur": 0.28 },
+        });
+        map.addLayer({
+          id: "selected-traffic",
+          type: "line",
+          source: "selected-traffic-line",
+          paint: { "line-color": "#111827", "line-width": 3.9, "line-opacity": 1 },
+        });
+        map.on("click", "traffic-flow-live", (event) => {
+          const raw = event.features?.[0];
+          if (!raw) return;
+          const feature = JSON.parse(JSON.stringify(raw));
+          setSelectedTraffic(feature);
+          map.getSource("selected-traffic-line")?.setData({ type: "FeatureCollection", features: [feature] });
+        });
+        map.on("mouseenter", "traffic-flow-live", () => { map.getCanvas().style.cursor = "pointer"; });
+        map.on("mouseleave", "traffic-flow-live", () => { map.getCanvas().style.cursor = ""; });
       });
-      map.addLayer({
-        id: "traffic-flow-live",
-        type: "line",
-        source: "traffic-flow-lines",
-        paint: {
-          "line-color": ["interpolate", ["linear"], ["get", "traffic_flow_index"], 30, "#22c55e", 55, "#06b6d4", 75, "#f59e0b", 100, "#ef4444"],
-          "line-width": ["interpolate", ["linear"], ["get", "traffic_flow_index"], 30, 0.9, 60, 1.9, 100, 3.8],
-          "line-opacity": 0.86,
-        },
-      });
-      map.addLayer({
-        id: "selected-traffic-halo",
-        type: "line",
-        source: "selected-traffic-line",
-        paint: { "line-color": "#ffffff", "line-width": 7.5, "line-opacity": 0.94, "line-blur": 0.28 },
-      });
-      map.addLayer({
-        id: "selected-traffic",
-        type: "line",
-        source: "selected-traffic-line",
-        paint: { "line-color": "#111827", "line-width": 3.9, "line-opacity": 1 },
-      });
-      map.on("click", "traffic-flow-live", (event) => {
-        const raw = event.features?.[0];
-        if (!raw) return;
-        const feature = JSON.parse(JSON.stringify(raw));
-        setSelectedTraffic(feature);
-        map.getSource("selected-traffic-line")?.setData({ type: "FeatureCollection", features: [feature] });
-      });
-      map.on("mouseenter", "traffic-flow-live", () => { map.getCanvas().style.cursor = "pointer"; });
-      map.on("mouseleave", "traffic-flow-live", () => { map.getCanvas().style.cursor = ""; });
-    });
-    return () => { map.remove(); mapInstance.current = null; mapLoaded.current = false; setMapReady(false); };
+    }
+    initialiseTrafficMap().catch(() => setMapReady(false));
+    return () => {
+      cancelled = true;
+      map?.remove();
+      mapInstance.current = null;
+      mapLoaded.current = false;
+      setMapReady(false);
+    };
   }, []);
 
   useEffect(() => {
@@ -1620,21 +1741,7 @@ function TrafficAnalyticsPanel() {
     if (!selectedTraffic) {
       map.getSource("selected-traffic-line").setData({ type: "FeatureCollection", features: [] });
     }
-    const bounds = new maplibregl.LngLatBounds();
-    let hasBounds = false;
-    const includeCoords = (coords) => {
-      if (!coords) return;
-      if (typeof coords[0] === "number" && typeof coords[1] === "number") {
-        bounds.extend(coords);
-        hasBounds = true;
-        return;
-      }
-      coords.forEach(includeCoords);
-    };
-    filteredFlows.slice(0, 900).forEach((feature) => includeCoords(feature.geometry?.coordinates));
-    if (hasBounds) {
-      map.fitBounds(bounds, { padding: 72, duration: 650, maxZoom: 10 });
-    }
+    fitMapToFeatures(map, filteredFlows.slice(0, 900), { padding: 72, duration: 650, maxZoom: 10 });
   }, [filteredRoads, filteredFlows, mapReady, selectedRegion]);
 
   function clearSelectedTraffic() {
@@ -2481,6 +2588,7 @@ function MapScene3D({ programme }) {
   const [nodes, setNodes] = useState(null);
   const [routeMatrix, setRouteMatrix] = useState(null);
   const [showFlows, setShowFlows] = useState(true);
+  const [showHybridLabels, setShowHybridLabels] = useState(true);
   const [selectedRoad, setSelectedRoad] = useState(null);
   const [mapLoadState, setMapLoadState] = useState({ stage: "loading", message: "Preparing Uganda imagery map" });
 
@@ -2537,22 +2645,38 @@ function MapScene3D({ programme }) {
   }, [selectedRoad]);
 
   useEffect(() => {
-    if (mapInstance.current) return;
-    const map = new maplibregl.Map({
-      container: mapRef.current,
-      center: [32.5, 1.3],
-      zoom: 6.9,
-      pitch: 0,
-      bearing: 0,
-      antialias: true,
-      style: imageryWithLabelsStyle(),
-    });
-    map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), "top-right");
-    mapInstance.current = map;
+    if (mapInstance.current || !mapRef.current) return;
     let cancelled = false;
+    let map = null;
     let roadLayersStarted = false;
+    let styleReadyTimer = null;
+    let startRoadLayers = null;
+
+    async function initialiseMap() {
+      const maplibregl = await loadMapLibre();
+      if (cancelled || !mapRef.current) return;
+      map = new maplibregl.Map({
+        container: mapRef.current,
+        center: UGANDA_MAP_VIEW.center,
+        zoom: UGANDA_MAP_VIEW.zoom,
+        pitch: UGANDA_MAP_VIEW.pitch,
+        bearing: UGANDA_MAP_VIEW.bearing,
+        antialias: true,
+        attributionControl: false,
+        style: imageryWithLabelsStyle(),
+      });
+      addOperationalMapControls(maplibregl, map);
+      mapInstance.current = map;
+      startRoadLayers = () => {
+        if (!roadLayersStarted && map?.isStyleLoaded()) initialiseRoadLayers();
+      };
+      map.on("load", startRoadLayers);
+      map.on("styledata", startRoadLayers);
+      styleReadyTimer = window.setTimeout(startRoadLayers, 1200);
+    }
+
     async function initialiseRoadLayers() {
-      if (cancelled || roadLayersStarted || !map.isStyleLoaded()) return;
+      if (cancelled || roadLayersStarted || !map?.isStyleLoaded()) return;
       roadLayersStarted = true;
       try {
         setMapLoadState({ stage: "loading", message: "Reading road layer manifest" });
@@ -2578,16 +2702,40 @@ function MapScene3D({ programme }) {
         map.addSource("roads", { type: "geojson", data: roadData });
         map.addSource("traffic-flows", { type: "geojson", data: flowData });
         map.addSource("network-nodes", { type: "geojson", data: nodeData });
+        map.addSource("programme-assets", { type: "geojson", data: programmeGeoJson });
+        map.addLayer({
+          id: "roads-glow",
+          type: "line",
+          source: "roads",
+          paint: {
+            "line-color": ROAD_CATEGORY_COLORS,
+            "line-width": ["+", ROAD_CATEGORY_WIDTHS, 9],
+            "line-opacity": ["case", ["==", ["get", "network_category"], "National Roads"], 0.34, 0.42],
+            "line-blur": 4.2,
+          },
+        });
+        map.addLayer({
+          id: "roads-overview-ribbons",
+          type: "line",
+          source: "roads",
+          maxzoom: 8.5,
+          paint: {
+            "line-color": ROAD_CATEGORY_COLORS,
+            "line-width": ["interpolate", ["linear"], ["zoom"], 5, 6.2, 7, 4.5, 8.5, 2.8],
+            "line-opacity": 0.62,
+            "line-blur": 0.45,
+          },
+        });
         map.addLayer({
           id: "roads-all-halo",
           type: "line",
           source: "roads",
           filter: ["!=", ["get", "road_system"], "National"],
           paint: {
-            "line-color": "#ffffff",
-            "line-width": ["+", ROAD_CATEGORY_WIDTHS, 1.2],
-            "line-opacity": ["case", ["==", ["get", "network_category"], "National Roads"], 0.72, 0.42],
-            "line-blur": 0.3,
+            "line-color": "#020617",
+            "line-width": ["+", ROAD_CATEGORY_WIDTHS, 2.8],
+            "line-opacity": 0.38,
+            "line-blur": 0.55,
           },
         });
         map.addLayer({
@@ -2597,7 +2745,18 @@ function MapScene3D({ programme }) {
           paint: {
             "line-color": ROAD_CATEGORY_COLORS,
             "line-width": ROAD_CATEGORY_WIDTHS,
-            "line-opacity": ["case", ["==", ["get", "network_category"], "National Roads"], 0.95, 0.72],
+            "line-opacity": ["case", ["==", ["get", "network_category"], "National Roads"], 0.9, 0.88],
+          },
+        });
+        map.addLayer({
+          id: "traffic-flow-glow",
+          type: "line",
+          source: "traffic-flows",
+          paint: {
+            "line-color": TRAFFIC_FLOW_COLOR,
+            "line-width": ["interpolate", ["linear"], ["coalesce", ["get", "traffic_flow_index"], 45], 30, 3, 60, 7.5, 100, 13],
+            "line-opacity": 0.28,
+            "line-blur": 4.2,
           },
         });
         map.addLayer({
@@ -2605,10 +2764,10 @@ function MapScene3D({ programme }) {
           type: "line",
           source: "traffic-flows",
           paint: {
-            "line-color": "#ffffff",
-            "line-width": ["interpolate", ["linear"], ["get", "traffic_flow_index"], 30, 1.2, 60, 2.6, 100, 5.2],
-            "line-opacity": 0.38,
-            "line-blur": 0.24,
+            "line-color": "#020617",
+            "line-width": ["interpolate", ["linear"], ["coalesce", ["get", "traffic_flow_index"], 45], 30, 1.8, 60, 3.7, 100, 6.4],
+            "line-opacity": 0.44,
+            "line-blur": 0.34,
           },
         });
         map.addLayer({
@@ -2616,9 +2775,10 @@ function MapScene3D({ programme }) {
           type: "line",
           source: "traffic-flows",
           paint: {
-            "line-color": ["interpolate", ["linear"], ["get", "traffic_flow_index"], 30, "#22c55e", 55, "#06b6d4", 75, "#f59e0b", 100, "#ef4444"],
-            "line-width": ["interpolate", ["linear"], ["get", "traffic_flow_index"], 30, 0.7, 60, 1.7, 100, 3.3],
-            "line-opacity": 0.74,
+            "line-color": TRAFFIC_FLOW_COLOR,
+            "line-width": ["interpolate", ["linear"], ["coalesce", ["get", "traffic_flow_index"], 45], 30, 1, 60, 2.5, 100, 4.7],
+            "line-opacity": 0.92,
+            "line-dasharray": [1.7, 0.9],
           },
         });
         map.addLayer({
@@ -2626,20 +2786,85 @@ function MapScene3D({ programme }) {
           type: "line",
           source: "roads",
           filter: ["==", ["get", "road_system"], "National"],
-          paint: { "line-color": "#fbbf24", "line-width": 1.5, "line-opacity": 0.92, "line-dasharray": [1.4, 0.9] },
+          paint: { "line-color": "#fef3c7", "line-width": 2.1, "line-opacity": 0.96, "line-dasharray": [1.4, 0.9] },
+        });
+        map.addLayer({
+          id: "network-node-halo",
+          type: "circle",
+          source: "network-nodes",
+          paint: {
+            "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 4, 9, 9],
+            "circle-color": "#06b6d4",
+            "circle-opacity": 0.22,
+            "circle-blur": 0.65,
+          },
+        });
+        map.addLayer({
+          id: "network-nodes",
+          type: "circle",
+          source: "network-nodes",
+          paint: {
+            "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 2.3, 9, 4.8],
+            "circle-color": "#f8fafc",
+            "circle-opacity": 0.92,
+            "circle-stroke-color": "#06b6d4",
+            "circle-stroke-width": 1.8,
+          },
+        });
+        map.addLayer({
+          id: "programme-assets-halo",
+          type: "circle",
+          source: "programme-assets",
+          paint: {
+            "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 8, 10, 16],
+            "circle-color": ["match", ["get", "status"], "Selected", "#22c55e", "Deferred", "#f59e0b", "Referred", "#ef4444", "#38bdf8"],
+            "circle-opacity": 0.2,
+            "circle-blur": 0.55,
+          },
+        });
+        map.addLayer({
+          id: "programme-assets",
+          type: "circle",
+          source: "programme-assets",
+          paint: {
+            "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 4.8, 10, 8.5],
+            "circle-color": ["match", ["get", "status"], "Selected", "#22c55e", "Deferred", "#f59e0b", "Referred", "#ef4444", "#38bdf8"],
+            "circle-opacity": 0.96,
+            "circle-stroke-color": "#ffffff",
+            "circle-stroke-width": 2.2,
+          },
+        });
+        map.addLayer({
+          id: "programme-asset-labels",
+          type: "symbol",
+          source: "programme-assets",
+          minzoom: 7.4,
+          layout: {
+            "text-field": ["get", "label"],
+            "text-size": 11,
+            "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+            "text-offset": [0, 1.35],
+            "text-anchor": "top",
+            "text-allow-overlap": false,
+          },
+          paint: {
+            "text-color": "#f8fafc",
+            "text-halo-color": "#020617",
+            "text-halo-width": 1.5,
+          },
         });
         map.addSource("selected-road", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
         map.addLayer({
           id: "selected-road-halo",
           type: "line",
           source: "selected-road",
-          paint: { "line-color": "#ffffff", "line-width": 8, "line-opacity": 0.96, "line-blur": 0.3 },
+          paint: { "line-color": "#ffffff", "line-width": 11, "line-opacity": 0.96, "line-blur": 0.45 },
         });
         map.addLayer({
           id: "selected-road-line",
           type: "line",
           source: "selected-road",
-          paint: { "line-color": "#0f172a", "line-width": 4.2, "line-opacity": 1 },
+          paint: { "line-color": "#111827", "line-width": 5.2, "line-opacity": 1 },
         });
 
         for (const layerId of ["roads-all", "traffic-flow"]) {
@@ -2647,24 +2872,24 @@ function MapScene3D({ programme }) {
           map.on("mouseenter", layerId, () => { map.getCanvas().style.cursor = "pointer"; });
           map.on("mouseleave", layerId, () => { map.getCanvas().style.cursor = ""; });
         }
+        fitMapToFeatures(map, roadData.features?.slice(0, 1400), { padding: 84, duration: 900, maxZoom: 8.4 });
         setMapLoadState({ stage: "ready", message: `${formatCount(roadData.features?.length)} visual routes ready` });
       } catch (error) {
         if (cancelled) return;
         setMapLoadState({ stage: "error", message: error.message || "Unable to load road layers" });
       }
     }
-    const startRoadLayers = () => {
-      if (!roadLayersStarted && map.isStyleLoaded()) initialiseRoadLayers();
-    };
-    map.on("load", startRoadLayers);
-    map.on("styledata", startRoadLayers);
-    const styleReadyTimer = window.setTimeout(startRoadLayers, 1200);
+    initialiseMap().catch((error) => {
+      if (!cancelled) setMapLoadState({ stage: "error", message: error.message || "Unable to initialise map controls" });
+    });
     return () => {
       cancelled = true;
-      window.clearTimeout(styleReadyTimer);
-      map.off("load", startRoadLayers);
-      map.off("styledata", startRoadLayers);
-      map.remove();
+      if (styleReadyTimer) window.clearTimeout(styleReadyTimer);
+      if (map && startRoadLayers) {
+        map.off("load", startRoadLayers);
+        map.off("styledata", startRoadLayers);
+      }
+      map?.remove();
       mapInstance.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -2692,10 +2917,35 @@ function MapScene3D({ programme }) {
 
   useEffect(() => {
     const map = mapInstance.current;
+    if (!map?.isStyleLoaded() || !map.getSource("programme-assets")) return;
+    map.getSource("programme-assets").setData(programmeGeoJson);
+  }, [programmeGeoJson]);
+
+  useEffect(() => {
+    const map = mapInstance.current;
     if (!map?.isStyleLoaded()) return;
-    if (map.getLayer("traffic-flow")) map.setLayoutProperty("traffic-flow", "visibility", showFlows ? "visible" : "none");
-    if (map.getLayer("traffic-flow-casing")) map.setLayoutProperty("traffic-flow-casing", "visibility", showFlows ? "visible" : "none");
+    for (const layerId of ["traffic-flow-glow", "traffic-flow-casing", "traffic-flow"]) {
+      if (map.getLayer(layerId)) map.setLayoutProperty(layerId, "visibility", showFlows ? "visible" : "none");
+    }
   }, [showFlows]);
+
+  useEffect(() => {
+    const map = mapInstance.current;
+    if (!map?.isStyleLoaded()) return;
+    for (const layerId of ["esri-transportation-labels", "esri-labels", "programme-asset-labels"]) {
+      if (map.getLayer(layerId)) map.setLayoutProperty(layerId, "visibility", showHybridLabels ? "visible" : "none");
+    }
+  }, [showHybridLabels]);
+
+  function fitVisibleRoads() {
+    const map = mapInstance.current;
+    fitMapToFeatures(map, filteredRoads.length ? filteredRoads : roads?.features, { padding: 86, duration: 720, maxZoom: 10.8 });
+  }
+
+  function resetMapView() {
+    mapInstance.current?.easeTo({ ...UGANDA_MAP_VIEW, duration: 700 });
+    clearSelectedRoad();
+  }
 
   const matrixRoutes = useMemo(() => {
     const routes = routeMatrix?.routes || [];
@@ -2742,11 +2992,28 @@ function MapScene3D({ programme }) {
       <div className="map-header">
         <div className="panel-title" style={{ borderBottom: "none", marginBottom: 0, paddingBottom: 0 }}>
           <Layers size={18} />
-          <h2>2D Uganda Road Intelligence Map</h2>
+          <h2>Uganda Hybrid Road Intelligence Map</h2>
         </div>
-        <div className="layer-toggles">
-          <button className="layer-btn active unified">Fast Route Network</button>
-          <button className={`layer-btn ${showFlows ? "active" : ""}`} onClick={() => setShowFlows((value) => !value)}>Traffic Flow</button>
+        <div className="map-toolbar">
+          <div className="layer-toggles">
+            <button className="layer-btn active unified" title="Imagery hybrid basemap with road network overlay">
+              <Layers size={14} /> Hybrid Basemap
+            </button>
+            <button className={`layer-btn ${showFlows ? "active flow" : ""}`} onClick={() => setShowFlows((value) => !value)} aria-pressed={showFlows} title="Toggle traffic flow symbology">
+              {showFlows ? <Eye size={14} /> : <EyeOff size={14} />} Traffic Flow
+            </button>
+            <button className={`layer-btn ${showHybridLabels ? "active labels" : ""}`} onClick={() => setShowHybridLabels((value) => !value)} aria-pressed={showHybridLabels} title="Toggle hybrid reference labels">
+              {showHybridLabels ? <Eye size={14} /> : <EyeOff size={14} />} Labels
+            </button>
+          </div>
+          <div className="map-action-controls">
+            <button onClick={fitVisibleRoads} disabled={!displayedRoadCount} title="Fit visible road layers">
+              <Target size={15} /> Fit
+            </button>
+            <button onClick={resetMapView} title="Reset Uganda map view">
+              <RefreshCcw size={15} /> Reset
+            </button>
+          </div>
         </div>
       </div>
       <div className="road-filter-bar">
@@ -2783,7 +3050,7 @@ function MapScene3D({ programme }) {
           <span>{hudNodeText}</span>
           <span>{hudRouteText}</span>
           <span>{mapStatusText}</span>
-          <span>ESRI World Imagery with labels. Flat 2D view.</span>
+          <span>Imagery hybrid basemap with boundary, place and transportation labels.</span>
         </div>
         {selectedRoad && (
           <aside className="road-info-pane open" aria-live="polite">
@@ -4847,6 +5114,7 @@ function NetworkView({ insights, programme }) {
       <section className="product-stat-grid network-kpis">
         {(insights.ugandaNetwork?.kpis || []).map((item) => <ProductStat key={item.label} {...item} />)}
       </section>
+      <MapScene3D programme={programme} />
       <div className="product-grid two">
         <ProductBarChart title="Uganda Road Network" subtitle="ITIS/URF FY 2022/23 length by category" rows={insights.charts.networkCategory} formatValue={(value) => formatKm(value)} />
         <ConditionStackChart rows={insights.ugandaNetwork?.conditionRows || []} />
@@ -4859,7 +5127,6 @@ function NetworkView({ insights, programme }) {
         <ProductBarChart title="Largest GIS Layers" subtitle="Feature count by materialized spatial layer" rows={insights.charts.spatial} />
         <ProductBarChart title="Geometry Mix" subtitle="Feature types found in local spatial evidence" rows={insights.charts.geometry} />
       </div>
-      <ModernGeoMap features={insights.spatialEvidence?.mapFeatures || []} programme={programme} />
       <div className="product-grid two">
         <ProductBarChart title="Evidence Source Areas" subtitle="Readable local evidence grouped by source area" rows={insights.charts.sourceCoverage} />
         <ProductTable table={insights.rawTables?.manifest} />
