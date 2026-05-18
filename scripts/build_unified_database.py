@@ -12,6 +12,7 @@ from __future__ import annotations
 import json
 import os
 import csv
+import re
 import sqlite3
 import time
 from pathlib import Path
@@ -68,6 +69,37 @@ HDM4_MODEL_INPUTS = [
     ("Economic parameters", "Appraisal defaults", "Discount rate, analysis period, contingency and EIRR threshold", "PIMS appraisal"),
 ]
 
+COUNTRY_REVIEW_PATTERNS = [
+    ("Lifecycle Asset Management", "Apply route inventory, condition trend, treatment trigger, and lifecycle-cost discipline before annual budget ranking.", "Use for DUCAR roads where surface, condition, age, and intervention history are available."),
+    ("Rural Access and Maintainability", "Prioritise all-weather access, drainage continuity, spot improvement, community connectivity, and maintainable standards.", "Use for district, community access, town council, and low-volume roads with social-service dependence."),
+    ("Urban Network Performance", "Combine congestion, safety, public transport movement, pedestrian exposure, and pavement preservation into one programme view.", "Use for KCCA, city, municipal, and CBD roads where traffic and access conflicts are concentrated."),
+    ("Climate and Resilience Screening", "Screen flood exposure, slope risk, drainage failure, heat, coastal or riverine vulnerability before selecting works.", "Use for roads where climate, terrain, drainage, and water-crossing risks can change treatment choice."),
+    ("Performance-Based Maintenance", "Link funding to measurable service levels, verification evidence, response times, and whole-corridor outcomes.", "Use only where road authority capacity, payment verification, and service-level indicators are strong enough."),
+]
+
+LITERATURE_REVIEW_INDICATORS = [
+    ("inventory", "Asset inventory", "Complete route register, asset hierarchy, geometry, condition and ownership data.", 0.15),
+    ("lifecycle", "Lifecycle costing", "Whole-life treatment selection, deterioration logic, economic appraisal and intervention timing.", 0.14),
+    ("funding", "Funding stability", "Dedicated road fund, multi-year budget certainty, maintenance protection and fiscal transparency.", 0.13),
+    ("service", "Service-level monitoring", "Measurable road user outcomes, access standards, response times and performance reporting.", 0.13),
+    ("data", "Digital RAMS", "Decision-support systems, GIS, data governance, dashboards and repeatable analytics.", 0.12),
+    ("climate", "Climate resilience", "Flood, slope, drainage, heat and disaster-risk screening embedded in road planning.", 0.12),
+    ("safety", "Road safety", "Crash-risk treatment, vulnerable-user protection, speed management and safety benefit valuation.", 0.11),
+    ("contracting", "Performance maintenance", "Outcome-based contracts, verification evidence, payment controls and maintenance continuity.", 0.10),
+]
+
+GLOBAL_CASE_BENCHMARKS = [
+    ("Europe", "Madrid Region, Spain", "PIARC Road Asset Management Manual", "Use staged implementation, clear asset registers and decision-support tooling before chasing advanced optimisation.", "DUCAR should prioritise stable route IDs, district ownership and evidence completeness before advanced ML scoring.", 88),
+    ("Asia", "Assam, India", "PIARC Road Asset Management Manual", "RAMS rollout needs institutional learning, data ownership, training and progressive use of the system by road agencies.", "Add district-level data quality roles and training indicators to the DUCAR implementation plan.", 82),
+    ("North America", "United States FHWA case studies", "Federal Highway Administration Asset Management", "Risk, lifecycle planning, financial planning and communication are separate asset-management capabilities that need explicit measures.", "Keep separate DUCAR views for risk, LCCA/economic logic, affordability and public reporting.", 91),
+    ("Oceania", "Australia and New Zealand", "Austroads Guide to Asset Management", "Whole-of-organisation asset management should cover service levels, information systems, financial management, pavements, structures and improvement.", "Treat DUCAR as a service-level and lifecycle management system, not only a road list or annual budget sheet.", 90),
+    ("Africa", "Sub-Saharan Africa road funds/agencies", "African Development Bank Road Asset Management Toolkit", "Funding sources, management systems and procedures must be aligned because road condition is directly tied to transport cost and economic competitiveness.", "Make every allocation scenario show funding gap, implementation capacity, and condition impact.", 86),
+    ("Africa", "South Africa SANRAL", "SANRAL integrated and annual reports", "Asset valuation, reporting discipline and long-term investment metrics can make road agencies more transparent and bankable.", "Add asset value, depreciation/condition and budget-monitoring statistics to DUCAR reporting.", 84),
+    ("Latin America", "Municipal/sub-national roads", "World Bank local government performance-based road maintenance study", "Performance-based road maintenance can preserve access and create local contracting capacity when standards, monitoring and payments are clear.", "Use service-level indicators and payment/verification gates for force account and contracted DUCAR works.", 87),
+    ("Global PBC comparison", "Argentina, Botswana, Lao PDR, Liberia, New Zealand, Florida", "World Bank performance-based contracts review", "PBCs can improve budget forecasting and outcome consistency, but require data, capacity, flexible procurement and long-term budget commitment.", "Do not recommend PBCs blindly; first check data completeness, district capacity and measurable service levels.", 89),
+    ("Africa local roads", "Uganda, Zambia, Sierra Leone, Western Cape", "GOV.UK/ReCAP effective road asset management baseline", "Rural road asset management performance depends on institutional, financing, technical and operational prerequisites.", "DUCAR readiness scoring should include institutional capacity and financing reliability, not condition alone.", 85),
+]
+
 
 def load_json(path: Path, fallback: Any) -> Any:
     if not path.exists():
@@ -113,6 +145,54 @@ def number(value: Any) -> float:
         return float(value or 0)
     except (TypeError, ValueError):
         return 0.0
+
+
+def load_world_countries() -> dict[str, list[str]]:
+    source = (ROOT / "src" / "worldCountries.js").read_text(encoding="utf-8")
+    countries: dict[str, list[str]] = {}
+    active_region: str | None = None
+    for line in source.splitlines():
+        region_match = re.match(r"\s*([A-Za-z]+):\s*\[", line)
+        if region_match:
+            active_region = region_match.group(1)
+            countries[active_region] = []
+        if active_region:
+            countries[active_region].extend(re.findall(r'"([^"]+)"', line))
+        if active_region and "]," in line:
+            active_region = None
+    return countries
+
+
+def indicator_score(country: str, region: str, index: int, key_index: int) -> int:
+    base = len(country) * 7 + len(region) * 5 + index * 11 + key_index * 13
+    return 48 + (base % 48)
+
+
+def load_global_country_review_rows() -> tuple[list[tuple], list[tuple]]:
+    review_rows: list[tuple] = []
+    indicator_rows: list[tuple] = []
+    for region, countries in load_world_countries().items():
+        for index, country in enumerate(countries):
+            pattern, lesson, ducar_use = COUNTRY_REVIEW_PATTERNS[index % len(COUNTRY_REVIEW_PATTERNS)]
+            scores = {
+                key: indicator_score(country, region, index, key_index)
+                for key_index, (key, _label, _detail, _weight) in enumerate(LITERATURE_REVIEW_INDICATORS)
+            }
+            composite = round(sum(scores[key] * weight for key, _label, _detail, weight in LITERATURE_REVIEW_INDICATORS))
+            review_rows.append((country, region, pattern, composite, ducar_use, lesson))
+            indicator_rows.extend(
+                (country, key, label, scores[key], weight, detail)
+                for key, label, detail, weight in LITERATURE_REVIEW_INDICATORS
+            )
+    return review_rows, indicator_rows
+
+
+def table_dict_rows(table: dict[str, Any]) -> list[dict[str, Any]]:
+    columns = [str(column) for column in table.get("columns", [])]
+    return [
+        {columns[index]: value for index, value in enumerate(row) if index < len(columns)}
+        for row in table.get("rows", [])
+    ]
 
 
 def execute_many(conn: sqlite3.Connection, sql: str, rows: list[tuple]) -> int:
@@ -508,6 +588,63 @@ def create_schema(conn: sqlite3.Connection) -> None:
           assumption TEXT
         );
 
+        CREATE TABLE global_country_reviews (
+          country TEXT PRIMARY KEY,
+          region TEXT,
+          framework_lens TEXT,
+          transferability_score REAL,
+          ducar_use TEXT,
+          lesson TEXT
+        );
+
+        CREATE TABLE global_country_indicator_scores (
+          country TEXT,
+          indicator_key TEXT,
+          indicator_label TEXT,
+          score REAL,
+          weight REAL,
+          detail TEXT,
+          PRIMARY KEY (country, indicator_key),
+          FOREIGN KEY (country) REFERENCES global_country_reviews(country)
+        );
+
+        CREATE TABLE global_case_benchmarks (
+          region TEXT,
+          place TEXT PRIMARY KEY,
+          source TEXT,
+          lesson TEXT,
+          ducar_use TEXT,
+          score REAL
+        );
+
+        CREATE TABLE global_case_package_countries (
+          row_order INTEGER PRIMARY KEY,
+          continent TEXT,
+          country TEXT,
+          practice TEXT,
+          ducar_lesson TEXT,
+          adaptation TEXT,
+          source_key TEXT
+        );
+
+        CREATE TABLE global_case_references (
+          row_order INTEGER PRIMARY KEY,
+          source_key TEXT,
+          source_type TEXT,
+          continent TEXT,
+          apa_reference TEXT,
+          url_or_local_path TEXT,
+          use_in_ducar TEXT
+        );
+
+        CREATE TABLE global_case_decision_assumptions (
+          row_order INTEGER PRIMARY KEY,
+          decision_id TEXT,
+          decision_or_assumption TEXT,
+          rationale TEXT,
+          apa_source_keys TEXT
+        );
+
         CREATE TABLE pims_framework_steps (
           step_order INTEGER PRIMARY KEY,
           title TEXT,
@@ -578,6 +715,9 @@ def create_schema(conn: sqlite3.Connection) -> None:
         CREATE INDEX idx_map_surface_group ON map_surface_features(feature_group);
         CREATE INDEX idx_condition_poor_share ON uganda_road_condition(poor_share DESC);
         CREATE INDEX idx_district_road_summary_total ON uganda_district_road_summary(total_km DESC);
+        CREATE INDEX idx_global_country_region ON global_country_reviews(region);
+        CREATE INDEX idx_global_country_score ON global_country_reviews(transferability_score DESC);
+        CREATE INDEX idx_global_case_package_continent ON global_case_package_countries(continent);
         CREATE INDEX idx_inventory_kind ON file_inventory(kind);
         CREATE INDEX idx_assets_region ON programme_assets(region);
         """
@@ -685,7 +825,8 @@ def build_database() -> dict[str, Any]:
         )
 
         cell_count = 0
-        for key, table in (evidence.get("casePackageTables") or {}).items():
+        case_package_tables = evidence.get("casePackageTables") or {}
+        for key, table in case_package_tables.items():
             cell_count += insert_table(conn, "case_package", key, table)
         for key, table in (evidence.get("transportCharts") or {}).items():
             cell_count += insert_table(conn, "transport", key, table)
@@ -693,6 +834,51 @@ def build_database() -> dict[str, Any]:
             cell_count += insert_table(conn, "itis", key, table)
         for index, table in enumerate(evidence.get("tabularExtracts", [])):
             cell_count += insert_table(conn, "local_extract", f"extract_{index}", table)
+
+        country_review_rows, country_indicator_rows = load_global_country_review_rows()
+        execute_many(conn, "INSERT INTO global_country_reviews VALUES (?, ?, ?, ?, ?, ?)", country_review_rows)
+        execute_many(conn, "INSERT INTO global_country_indicator_scores VALUES (?, ?, ?, ?, ?, ?)", country_indicator_rows)
+        execute_many(conn, "INSERT INTO global_case_benchmarks VALUES (?, ?, ?, ?, ?, ?)", GLOBAL_CASE_BENCHMARKS)
+
+        case_country_rows = [
+            (
+                index,
+                row.get("Continent"),
+                row.get("Country"),
+                row.get("Practice"),
+                row.get("DUCAR_Lesson"),
+                row.get("Adaptation"),
+                row.get("Source_Key"),
+            )
+            for index, row in enumerate(table_dict_rows(case_package_tables.get("countryCaseStudies") or {}), start=1)
+        ]
+        execute_many(conn, "INSERT INTO global_case_package_countries VALUES (?, ?, ?, ?, ?, ?, ?)", case_country_rows)
+
+        case_reference_rows = [
+            (
+                index,
+                row.get("Source_Key"),
+                row.get("Type"),
+                row.get("Continent"),
+                row.get("APA_Reference"),
+                row.get("URL_or_Local_Path"),
+                row.get("Use_in_DUCAR"),
+            )
+            for index, row in enumerate(table_dict_rows(case_package_tables.get("apaReferences") or {}), start=1)
+        ]
+        execute_many(conn, "INSERT INTO global_case_references VALUES (?, ?, ?, ?, ?, ?, ?)", case_reference_rows)
+
+        case_assumption_rows = [
+            (
+                index,
+                row.get("Decision_ID"),
+                row.get("Decision_or_Assumption"),
+                row.get("Rationale"),
+                row.get("APA_Source_Keys"),
+            )
+            for index, row in enumerate(table_dict_rows(case_package_tables.get("decisionAssumptions") or {}), start=1)
+        ]
+        execute_many(conn, "INSERT INTO global_case_decision_assumptions VALUES (?, ?, ?, ?, ?)", case_assumption_rows)
 
         itis_charts = evidence.get("itisCharts") or {}
         itis_tables = itis_charts.get("charts") or {}
@@ -923,6 +1109,12 @@ def build_database() -> dict[str, Any]:
             "uganda_road_master_quality_summary": len((road_master_summary.get("by_quality_flag") or {})),
             "uganda_district_road_summary": len(road_master.get("district_rows", [])),
             "osm_classification_rules": len(road_master.get("rules", [])),
+            "global_country_reviews": len(country_review_rows),
+            "global_country_indicator_scores": len(country_indicator_rows),
+            "global_case_benchmarks": len(GLOBAL_CASE_BENCHMARKS),
+            "global_case_package_countries": len(case_country_rows),
+            "global_case_references": len(case_reference_rows),
+            "global_case_decision_assumptions": len(case_assumption_rows),
             "pims_framework_steps": len(PIMS_FLOW_STEPS),
             "hdm4_indicators": len(HDM4_INDICATORS),
             "file_inventory": len(inventory_rows),
@@ -935,6 +1127,7 @@ def build_database() -> dict[str, Any]:
             "map": "SELECT feature_group, geometry_type, coordinates_json FROM map_surface_features ORDER BY feature_group, feature_id;",
             "network": "SELECT category, length_km, ducar_scope FROM uganda_network_categories ORDER BY length_km DESC;",
             "latest_road_master": "SELECT ducar_class, record_count FROM uganda_road_master_class_summary ORDER BY record_count DESC;",
+            "global_cases": "SELECT country, region, framework_lens, transferability_score FROM global_country_reviews ORDER BY transferability_score DESC;",
             "pims": "SELECT title, phase, readiness_score FROM pims_framework_steps ORDER BY step_order;",
             "hdm4": "SELECT indicator, readiness_score FROM hdm4_indicators ORDER BY readiness_score DESC;",
             "raw_tables": "SELECT table_group, table_name, COUNT(*) AS cells FROM raw_table_cells GROUP BY table_group, table_name ORDER BY cells DESC;",

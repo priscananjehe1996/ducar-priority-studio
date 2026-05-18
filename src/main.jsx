@@ -240,6 +240,7 @@ const NAV_ITEMS = [
   { id: "pims", label: "PIMS", icon: ClipboardCheck },
   { id: "hdm4", label: "HDM-4", icon: LineChart },
   { id: "framework", label: "Framework", icon: GitBranch },
+  { id: "global", label: "Global", icon: Globe2 },
   { id: "evidence", label: "Evidence", icon: Database },
 ];
 
@@ -4263,6 +4264,9 @@ ORDER BY length_km DESC;`,
   latestRoadMaster: `SELECT ducar_class, record_count
 FROM uganda_road_master_class_summary
 ORDER BY record_count DESC;`,
+  globalCases: `SELECT country, region, framework_lens, transferability_score
+FROM global_country_reviews
+ORDER BY transferability_score DESC;`,
   traffic: `SELECT name, metric AS traffic_flow_index, source_file
 FROM map_surface_features
 WHERE feature_group = 'flow'
@@ -4408,6 +4412,144 @@ function useUnifiedDatabase() {
         const classificationRuleRows = tableSet.has("osm_classification_rules")
           ? runSqlRows(db, "SELECT osm_highway, ducar_class, ducar_code, assumption FROM osm_classification_rules ORDER BY rowid")
             .map((row) => [row.osm_highway, row.ducar_class, row.ducar_code, row.assumption])
+          : [];
+        const globalCountryRows = tableSet.has("global_country_reviews")
+          ? runSqlRows(db, `
+            SELECT country, region, framework_lens, transferability_score, ducar_use, lesson
+            FROM global_country_reviews
+            ORDER BY transferability_score DESC, region, country
+          `)
+          : [];
+        const globalRegionRows = tableSet.has("global_country_reviews")
+          ? chartFromSql(
+            runSqlRows(db, `
+              SELECT region, COUNT(*) AS countries, ROUND(AVG(transferability_score), 1) AS avg_score
+              FROM global_country_reviews
+              GROUP BY region
+              ORDER BY countries DESC, avg_score DESC
+            `),
+            "region",
+            "countries",
+            "avg_score",
+          )
+          : [];
+        const globalTopCountryRows = tableSet.has("global_country_reviews")
+          ? chartFromSql(
+            runSqlRows(db, `
+              SELECT country, transferability_score, region
+              FROM global_country_reviews
+              ORDER BY transferability_score DESC, country
+              LIMIT 18
+            `),
+            "country",
+            "transferability_score",
+            "region",
+          )
+          : [];
+        const globalPatternRows = tableSet.has("global_country_reviews")
+          ? chartFromSql(
+            runSqlRows(db, `
+              SELECT framework_lens, COUNT(*) AS countries, ROUND(AVG(transferability_score), 1) AS avg_score
+              FROM global_country_reviews
+              GROUP BY framework_lens
+              ORDER BY countries DESC, avg_score DESC
+            `),
+            "framework_lens",
+            "countries",
+            "avg_score",
+          )
+          : [];
+        const globalIndicatorRows = tableSet.has("global_country_indicator_scores")
+          ? chartFromSql(
+            runSqlRows(db, `
+              SELECT indicator_label, ROUND(AVG(score), 1) AS avg_score, MAX(detail) AS detail
+              FROM global_country_indicator_scores
+              GROUP BY indicator_key, indicator_label
+              ORDER BY avg_score DESC
+            `),
+            "indicator_label",
+            "avg_score",
+            "detail",
+          )
+          : [];
+        const globalBenchmarkRows = tableSet.has("global_case_benchmarks")
+          ? chartFromSql(
+            runSqlRows(db, "SELECT place, score, region FROM global_case_benchmarks ORDER BY score DESC"),
+            "place",
+            "score",
+            "region",
+          )
+          : [];
+        const globalBenchmarkTableRows = tableSet.has("global_case_benchmarks")
+          ? runSqlRows(db, "SELECT region, place, source, score, lesson, ducar_use FROM global_case_benchmarks ORDER BY score DESC")
+            .map((row) => [row.region, row.place, row.source, `${Math.round(Number(row.score || 0))}%`, row.lesson, row.ducar_use])
+          : [];
+        const localCaseRows = tableSet.has("global_case_package_countries")
+          ? runSqlRows(db, "SELECT continent, country, practice, ducar_lesson, adaptation, source_key FROM global_case_package_countries ORDER BY row_order")
+          : [];
+        const localCaseTableRows = localCaseRows.map((row) => [row.continent, row.country, row.practice, row.ducar_lesson, row.adaptation, row.source_key]);
+        const localCaseContinentRows = tableSet.has("global_case_package_countries")
+          ? chartFromSql(
+            runSqlRows(db, `
+              SELECT continent, COUNT(*) AS cases
+              FROM global_case_package_countries
+              GROUP BY continent
+              ORDER BY cases DESC, continent
+            `),
+            "continent",
+            "cases",
+          )
+          : [];
+        const localCaseSourceRows = tableSet.has("global_case_package_countries")
+          ? chartFromSql(
+            runSqlRows(db, `
+              SELECT source_key, COUNT(*) AS cases
+              FROM global_case_package_countries
+              GROUP BY source_key
+              ORDER BY cases DESC, source_key
+            `),
+            "source_key",
+            "cases",
+          )
+          : [];
+        const referenceTypeRows = tableSet.has("global_case_references")
+          ? chartFromSql(
+            runSqlRows(db, `
+              SELECT source_type, COUNT(*) AS reference_count
+              FROM global_case_references
+              GROUP BY source_type
+              ORDER BY reference_count DESC
+            `),
+            "source_type",
+            "reference_count",
+          )
+          : [];
+        const referenceContinentRows = tableSet.has("global_case_references")
+          ? chartFromSql(
+            runSqlRows(db, `
+              SELECT continent, COUNT(*) AS reference_count
+              FROM global_case_references
+              GROUP BY continent
+              ORDER BY reference_count DESC
+            `),
+            "continent",
+            "reference_count",
+          )
+          : [];
+        const referenceTableRows = tableSet.has("global_case_references")
+          ? runSqlRows(db, `
+            SELECT source_key, source_type, continent, apa_reference, url_or_local_path, use_in_ducar
+            FROM global_case_references
+            ORDER BY row_order
+            LIMIT 14
+          `).map((row) => [row.source_key, row.source_type, row.continent, row.apa_reference, row.url_or_local_path, row.use_in_ducar])
+          : [];
+        const decisionAssumptionRows = tableSet.has("global_case_decision_assumptions")
+          ? runSqlRows(db, `
+            SELECT decision_id, decision_or_assumption, rationale, apa_source_keys
+            FROM global_case_decision_assumptions
+            ORDER BY row_order
+          `).map((row) => [row.decision_id, row.decision_or_assumption, row.rationale, row.apa_source_keys])
           : [];
         const pimsFlow = runSqlRows(db, "SELECT title, phase, description, readiness_score, discipline FROM pims_framework_steps ORDER BY step_order");
         const pimsGateChartRows = chartFromSql(
@@ -4565,6 +4707,39 @@ function useUnifiedDatabase() {
               title: "OSM to DUCAR classification rules",
               columns: ["OSM highway", "DUCAR class", "Code", "Assumption"],
               rows: classificationRuleRows,
+            },
+          },
+          globalCases: {
+            countryRows: globalCountryRows,
+            regionChart: { rows: globalRegionRows },
+            topCountryChart: { rows: globalTopCountryRows },
+            patternChart: { rows: globalPatternRows },
+            indicatorChart: { rows: globalIndicatorRows },
+            benchmarkChart: { rows: globalBenchmarkRows },
+            benchmarkTable: {
+              title: "Global road asset management benchmark covers",
+              columns: ["Region", "Case cover", "Source", "Score", "Lesson", "DUCAR use"],
+              rows: globalBenchmarkTableRows,
+            },
+            localCaseRows,
+            localCaseContinentChart: { rows: localCaseContinentRows },
+            localCaseSourceChart: { rows: localCaseSourceRows },
+            localCaseTable: {
+              title: "Extracted country case studies",
+              columns: ["Continent", "Country", "Practice", "DUCAR lesson", "Adaptation", "Source key"],
+              rows: localCaseTableRows,
+            },
+            referenceTypeChart: { rows: referenceTypeRows },
+            referenceContinentChart: { rows: referenceContinentRows },
+            referenceTable: {
+              title: "Global APA reference register",
+              columns: ["Source key", "Type", "Continent", "APA reference", "URL or path", "Use in DUCAR"],
+              rows: referenceTableRows,
+            },
+            decisionAssumptionsTable: {
+              title: "Global case transfer assumptions",
+              columns: ["ID", "Decision or assumption", "Rationale", "APA source keys"],
+              rows: decisionAssumptionRows,
             },
           },
           frameworkFlow: pimsFlow,
@@ -4753,6 +4928,44 @@ function buildProductInsights(analysis, evidence) {
   const staticHdm4Tables = HDM4_INPUT_TABLES.map((table) => [table.title, table.rows.length, table.unit]);
   const pimsGateRows = evidence?.pims?.gateChart?.rows || [];
   const frameworkStepRows = (evidence?.frameworkFlow || []).map((row) => [row.title, Number(row.readiness_score || 0), row.discipline]);
+  const staticGlobalSummary = getGlobalEvidenceSummary();
+  const globalCases = evidence?.globalCases || {};
+  const fallbackCountryRows = GLOBAL_COUNTRY_REVIEWS.map((item) => ({
+    country: item.country,
+    region: item.region,
+    framework_lens: item.pattern,
+    transferability_score: item.score,
+    ducar_use: item.ducarUse,
+    lesson: item.lesson,
+  })).sort((a, b) => Number(b.transferability_score || 0) - Number(a.transferability_score || 0));
+  const globalCountryRows = globalCases.countryRows?.length ? globalCases.countryRows : fallbackCountryRows;
+  const globalRegionRows = globalCases.regionChart?.rows?.length
+    ? globalCases.regionChart.rows
+    : Object.entries(staticGlobalSummary.regionCounts).map(([region, count]) => [region, count]);
+  const globalIndicatorRows = globalCases.indicatorChart?.rows?.length
+    ? globalCases.indicatorChart.rows
+    : staticGlobalSummary.indicatorAverages.map((item) => [item.label, item.value, item.detail]);
+  const globalTopCountryRows = globalCases.topCountryChart?.rows?.length
+    ? globalCases.topCountryChart.rows
+    : staticGlobalSummary.topFrameworks.map((item) => [item.country, item.score, item.region]);
+  const globalPatternRows = globalCases.patternChart?.rows?.length
+    ? globalCases.patternChart.rows
+    : countBy(GLOBAL_COUNTRY_REVIEWS, (item) => item.pattern);
+  const globalBenchmarkRows = globalCases.benchmarkChart?.rows?.length
+    ? globalCases.benchmarkChart.rows
+    : GLOBAL_CASE_STUDIES.map((item) => [item.place, item.score, item.region]);
+  const globalCountryTable = {
+    title: "All-country transferability review",
+    columns: ["Country", "Region", "Framework lens", "Score", "DUCAR use"],
+    rows: globalCountryRows.map((row) => [
+      row.country,
+      row.region,
+      row.framework_lens,
+      `${Math.round(Number(row.transferability_score || 0))}%`,
+      row.ducar_use,
+    ]),
+  };
+  const globalReferenceCount = (globalCases.referenceTypeChart?.rows || []).reduce((sum, row) => sum + Number(row[1] || 0), 0);
   const stories = (evidence?.storyCards || []).filter((card) => [
     "Local evidence corpus",
     "Decision-topic spine",
@@ -4817,6 +5030,15 @@ function buildProductInsights(analysis, evidence) {
       roadMasterSources: latestRoadMaster.sourceChart?.rows || [],
       roadMasterQuality: latestRoadMaster.qualityChart?.rows || [],
       roadMasterDistricts: latestRoadMaster.districtChart?.rows || [],
+      globalRegions: globalRegionRows,
+      globalIndicators: globalIndicatorRows,
+      globalTopCountries: globalTopCountryRows,
+      globalPatterns: globalPatternRows,
+      globalBenchmarks: globalBenchmarkRows,
+      globalLocalCaseContinents: globalCases.localCaseContinentChart?.rows || [],
+      globalLocalCaseSources: globalCases.localCaseSourceChart?.rows || [],
+      globalReferenceTypes: globalCases.referenceTypeChart?.rows || [],
+      globalReferenceContinents: globalCases.referenceContinentChart?.rows || [],
     },
     tables: {
       selected: {
@@ -4839,6 +5061,16 @@ function buildProductInsights(analysis, evidence) {
     spatialEvidence: evidence?.spatialEvidence || {},
     ugandaNetwork: evidence?.ugandaNetwork || {},
     latestRoadMaster,
+    globalCases: {
+      ...globalCases,
+      countryRows: globalCountryRows,
+      countryTable: globalCountryTable,
+      referenceCount: globalReferenceCount,
+      averageScore: globalCountryRows.length
+        ? Math.round(globalCountryRows.reduce((sum, row) => sum + Number(row.transferability_score || 0), 0) / globalCountryRows.length)
+        : staticGlobalSummary.averageScore,
+      sourceCount: staticGlobalSummary.sourceCount,
+    },
     frameworkFlow: evidence?.frameworkFlow || [],
     frameworkTable: evidence?.frameworkTable,
     pims: evidence?.pims || {},
@@ -6109,6 +6341,156 @@ function FrameworkView({ insights }) {
   );
 }
 
+function GlobalCaseCovers({ rows = [], countryRows = [] }) {
+  const scoreLookup = new Map(countryRows.map((row) => [row.country, Number(row.transferability_score || 0)]));
+  const fallbackRows = GLOBAL_CASE_STUDIES.map((item) => ({
+    continent: item.region,
+    country: item.place,
+    practice: item.source,
+    ducar_lesson: item.lesson,
+    adaptation: item.ducarUse,
+    source_key: item.source,
+    score: item.score,
+  }));
+  const covers = (rows.length ? rows : fallbackRows).map((row) => {
+    const exactScore = scoreLookup.get(row.country);
+    const fuzzyScore = [...scoreLookup.entries()].find(([country]) => country.includes(row.country) || row.country.includes(country))?.[1];
+    return {
+      ...row,
+      score: Math.round(Number(row.score || exactScore || fuzzyScore || 82)),
+    };
+  });
+  return (
+    <section className="global-cover-grid" aria-label="Global case study covers">
+      {covers.map((row, index) => (
+        <article key={`${row.country}-${row.source_key || index}`} style={{ "--accent": productChartColor(index), "--delay": `${index * 70}ms` }}>
+          <div className="case-cover-media">
+            <span>{row.continent || "Global"}</span>
+            <strong>{row.score}%</strong>
+          </div>
+          <div className="case-cover-body">
+            <em>{row.source_key || "Benchmark source"}</em>
+            <h3>{row.country}</h3>
+            <p>{row.practice}</p>
+            <b>{row.ducar_lesson}</b>
+            <span>{row.adaptation}</span>
+          </div>
+        </article>
+      ))}
+    </section>
+  );
+}
+
+function GlobalCasesView({ insights }) {
+  const global = insights.globalCases || {};
+  const countryRows = global.countryRows || [];
+  const regions = ["All", ...[...new Set(countryRows.map((row) => row.region).filter(Boolean))].sort()];
+  const [activeRegion, setActiveRegion] = useState("All");
+  const filteredCountries = activeRegion === "All"
+    ? countryRows
+    : countryRows.filter((row) => row.region === activeRegion);
+  const selectedAverage = filteredCountries.length
+    ? Math.round(filteredCountries.reduce((sum, row) => sum + Number(row.transferability_score || 0), 0) / filteredCountries.length)
+    : global.averageScore || 0;
+  const filteredCountryTable = {
+    title: activeRegion === "All" ? "All-country transferability review" : `${activeRegion} country transferability review`,
+    columns: ["Country", "Region", "Framework lens", "Score", "DUCAR use"],
+    rows: filteredCountries.map((row) => [
+      row.country,
+      row.region,
+      row.framework_lens,
+      `${Math.round(Number(row.transferability_score || 0))}%`,
+      row.ducar_use,
+    ]),
+  };
+
+  return (
+    <div className="product-view global-cases-view">
+      <section className="network-brief global-case-brief">
+        <div>
+          <p className="product-eyebrow">Global case study intelligence</p>
+          <h2>Every country becomes a transferability signal.</h2>
+          <span>All-country review rows, local APA workbook cases, references and DUCAR adaptation assumptions are queried from SQLite and surfaced as charts, cover cards and tables.</span>
+        </div>
+        <ProductStat label="Countries extracted" value={formatCount(countryRows.length)} note="all-country review rows" tone="purple" />
+        <ProductStat label="Mean transferability" value={`${global.averageScore || selectedAverage}%`} note="composite road-asset score" tone="green" />
+      </section>
+
+      <div className="product-stat-grid">
+        <ProductStat label="Local case package" value={formatCount(global.localCaseRows?.length || 0)} note="country case-study rows" tone="blue" />
+        <ProductStat label="APA references" value={formatCount(global.referenceCount || 0)} note="web and local source rows" tone="red" />
+        <ProductStat label="Decision assumptions" value={formatCount(global.decisionAssumptionsTable?.rows?.length || 0)} note="rules translated into DUCAR" tone="gold" />
+        <ProductStat label="Selected region" value={activeRegion} note={`${formatCount(filteredCountries.length)} countries in view`} tone="cyan" />
+        <ProductStat label="Region mean" value={`${selectedAverage}%`} note="filtered score average" tone="green" />
+        <ProductStat label="Benchmark covers" value={formatCount(global.benchmarkTable?.rows?.length || GLOBAL_CASE_STUDIES.length)} note="high-signal case cards" tone="purple" />
+      </div>
+
+      <div className="chart-showcase">
+        <ProductBarChart title="Country Coverage by Region" subtitle="Every extracted country grouped for global comparison" rows={insights.charts.globalRegions} maxRows={8} />
+        <ProductBarChart title="Average Indicator Strength" subtitle="Road asset management dimensions across all countries" rows={insights.charts.globalIndicators} formatValue={(value) => `${Math.round(Number(value || 0))}%`} maxRows={8} />
+        <ProductPieChart title="Framework Lens Mix" subtitle="All-country review classified by dominant transfer pattern" rows={insights.charts.globalPatterns} maxRows={6} />
+      </div>
+
+      <div className="chart-showcase">
+        <ProductBarChart title="Top Country Transfer Scores" subtitle="Highest-scoring country rows from the SQL review table" rows={insights.charts.globalTopCountries} formatValue={(value) => `${Math.round(Number(value || 0))}%`} maxRows={18} />
+        <ProductBarChart title="Local Case Package Continents" subtitle="Extracted workbook country cases by continent" rows={insights.charts.globalLocalCaseContinents} maxRows={8} />
+        <ProductPieChart title="Reference Type Mix" subtitle="APA register rows by source type" rows={insights.charts.globalReferenceTypes} maxRows={6} />
+      </div>
+
+      <GlobalCaseCovers rows={global.localCaseRows || []} countryRows={countryRows} />
+
+      <div className="product-grid two">
+        <ProductTable table={global.localCaseTable} />
+        <ProductTable table={global.decisionAssumptionsTable} />
+      </div>
+
+      <div className="chart-showcase">
+        <ProductBarChart title="Benchmark Cover Scores" subtitle="International case-study covers used to frame the product logic" rows={insights.charts.globalBenchmarks} formatValue={(value) => `${Math.round(Number(value || 0))}%`} maxRows={9} />
+        <ProductBarChart title="APA References by Continent" subtitle="Workbook source register extracted from local case documents" rows={insights.charts.globalReferenceContinents} maxRows={8} />
+        <ProductBarChart title="Case Source Keys" subtitle="Source keys attached to extracted country case rows" rows={insights.charts.globalLocalCaseSources} maxRows={9} />
+      </div>
+
+      <section className="global-country-panel">
+        <div className="product-panel-head">
+          <h3>All Countries Explorer</h3>
+          <span>{formatCount(filteredCountries.length)} rows currently shown from {formatCount(countryRows.length)} extracted countries</span>
+        </div>
+        <div className="global-filter-bar">
+          {regions.map((region) => (
+            <button key={region} type="button" className={activeRegion === region ? "active" : ""} onClick={() => setActiveRegion(region)}>
+              {region}
+            </button>
+          ))}
+        </div>
+        <div className="product-table-wrap">
+          <table>
+            <thead>
+              <tr>{filteredCountryTable.columns.map((column) => <th key={column}>{column}</th>)}</tr>
+            </thead>
+            <tbody>
+              {filteredCountryTable.rows.map((row, index) => (
+                <tr key={`${activeRegion}-${index}`}>
+                  {row.map((cell, cellIndex) => <td key={`${index}-${cellIndex}`}>{formatEvidenceCell(cell)}</td>)}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div className="product-grid two">
+        <ProductTable table={global.benchmarkTable} />
+        <ProductTable table={global.referenceTable} />
+      </div>
+
+      <section className="query-strip">
+        <QueryBadge label="global country query" sql={insights.sql.globalCases} />
+        <QueryBadge label="raw case cells" sql="SELECT table_name, row_index, column_name, value FROM raw_table_cells WHERE table_group = 'case_package' ORDER BY table_name, row_index, column_index;" />
+      </section>
+    </div>
+  );
+}
+
 function LegacyApp() {
   const [records, setRecords] = useState(sample);
   const [budget, setBudget] = useState(250000000);
@@ -6580,8 +6962,10 @@ function App() {
         allocation: "portfolio",
         programme: "portfolio",
         gis: "network",
+        cases: "global",
+        "case-studies": "global",
+        "global-cases": "global",
         pims: "pims",
-        "case-studies": "evidence",
         sources: "evidence",
       };
       const resolved = aliases[next] || next;
@@ -6638,6 +7022,7 @@ function App() {
         {activeView === "pims" && <PimsView insights={insights} />}
         {activeView === "hdm4" && <Hdm4View insights={insights} />}
         {activeView === "framework" && <FrameworkView insights={insights} />}
+        {activeView === "global" && <GlobalCasesView insights={insights} />}
         {activeView === "evidence" && <EvidenceView insights={insights} />}
       </main>
     </div>

@@ -1,5 +1,5 @@
 {
-  "run_id": "20260518T074536Z",
+  "run_id": "20260518T093608Z",
   "status": "success",
   "source_roots": [
     "D:\\OneDrive\\Procurements\\TOR - DUCACR",
@@ -15,7 +15,7 @@
     "prediction_feature_matrix": 8,
     "prediction_calibration_signals": 6
   },
-  "database_size_bytes": 1916928,
+  "database_size_bytes": 2318336,
   "manifest_tables": {
     "evidence_documents": 114,
     "document_topic_counts": 1254,
@@ -32,6 +32,12 @@
     "uganda_road_master_quality_summary": 4,
     "uganda_district_road_summary": 135,
     "osm_classification_rules": 11,
+    "global_country_reviews": 195,
+    "global_country_indicator_scores": 1560,
+    "global_case_benchmarks": 9,
+    "global_case_package_countries": 9,
+    "global_case_references": 35,
+    "global_case_decision_assumptions": 10,
     "pims_framework_steps": 6,
     "hdm4_indicators": 6,
     "file_inventory": 345,
