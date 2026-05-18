@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import os
+import csv
 import sqlite3
 import time
 from pathlib import Path
@@ -27,6 +28,7 @@ OUT_DATA = DATA / "ducar_unified.sqlite"
 OUT_PUBLIC = PUBLIC_DATA / "ducar_unified.sqlite"
 MANIFEST_PUBLIC = PUBLIC_DATA / "ducar_unified_manifest.json"
 MANIFEST_DATA = DATA / "ducar_unified_manifest.json"
+LAYERS_MANIFEST = PUBLIC_DATA / "uganda_layers_manifest.json"
 
 PIMS_FLOW_STEPS = [
     (1, "Concept profile", "Admission", "Project profile, logical framework and options are checked before budget competition.", 78, "PIMS"),
@@ -71,6 +73,31 @@ def load_json(path: Path, fallback: Any) -> Any:
     if not path.exists():
         return fallback
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def load_layers_manifest() -> dict[str, Any]:
+    return load_json(LAYERS_MANIFEST, {})
+
+
+def manifest_path(manifest: dict[str, Any], key: str, fallback: str | None = None) -> Path | None:
+    raw = manifest.get(key) or fallback
+    if not raw:
+        return None
+    value = str(raw).replace("\\", "/").strip()
+    if value.startswith("data/"):
+        return PUBLIC_DATA / value.split("/", 1)[1]
+    if value.startswith("local-data/"):
+        return DATA / value.split("/", 1)[1]
+    if value.startswith("local-artifact/"):
+        return DATA / value.split("/", 1)[1]
+    if "/" in value:
+        return Path(value)
+    return PUBLIC_DATA / value
+
+
+def latest_file(folder: Path, pattern: str) -> Path | None:
+    matches = sorted(folder.glob(pattern))
+    return matches[-1] if matches else None
 
 
 def text(value: Any) -> str | None:
@@ -188,6 +215,40 @@ def feature_name(properties: dict[str, Any]) -> str | None:
         if value:
             return str(value)
     return None
+
+
+def load_latest_road_master_tables() -> dict[str, Any]:
+    manifest = load_layers_manifest()
+    summary_path = manifest_path(manifest, "roads_master_summary") or latest_file(DATA, "uganda_roads_master_summary_*.json")
+    district_path = manifest_path(manifest, "roads_district_summary_geojson", "uganda_roads_district_summary.geojson")
+    osm_path = manifest_path(manifest, "osm_major_roads_geojson", "uganda_osm_major_roads_web.geojson")
+    rules_path = latest_file(DATA, "DUCAR_OSM_Road_Classification_Rules_*.csv")
+
+    summary = load_json(summary_path, {}) if summary_path else {}
+    district_payload = load_json(district_path, {}) if district_path else {}
+    osm_payload = load_json(osm_path, {}) if osm_path else {}
+
+    rules = []
+    if rules_path and rules_path.exists():
+        with rules_path.open("r", encoding="utf-8-sig", newline="") as handle:
+            rules = list(csv.DictReader(handle))
+
+    district_rows = []
+    for feature in district_payload.get("features", []) if isinstance(district_payload, dict) else []:
+        props = feature.get("properties") or {}
+        district_rows.append(props)
+
+    return {
+        "manifest": manifest,
+        "summary": summary,
+        "summary_path": summary_path,
+        "district_rows": district_rows,
+        "district_path": district_path,
+        "osm_feature_count": len(osm_payload.get("features", [])) if isinstance(osm_payload, dict) else 0,
+        "osm_path": osm_path,
+        "rules": rules,
+        "rules_path": rules_path,
+    }
 
 
 def load_map_surface_features() -> list[tuple]:
@@ -396,6 +457,57 @@ def create_schema(conn: sqlite3.Connection) -> None:
           percent_paved REAL
         );
 
+        CREATE TABLE uganda_road_master_runs (
+          generated_at_utc TEXT PRIMARY KEY,
+          manifest_updated_at_utc TEXT,
+          source_summary_file TEXT,
+          osm_geojson_file TEXT,
+          district_summary_file TEXT,
+          classification_rules_file TEXT,
+          record_count INTEGER,
+          total_length_km REAL,
+          osm_major_feature_count INTEGER,
+          district_summary_count INTEGER,
+          important_assumption TEXT
+        );
+
+        CREATE TABLE uganda_road_master_class_summary (
+          ducar_class TEXT PRIMARY KEY,
+          record_count INTEGER
+        );
+
+        CREATE TABLE uganda_road_master_source_summary (
+          source_name TEXT PRIMARY KEY,
+          record_count INTEGER
+        );
+
+        CREATE TABLE uganda_road_master_quality_summary (
+          quality_flag TEXT PRIMARY KEY,
+          record_count INTEGER
+        );
+
+        CREATE TABLE uganda_district_road_summary (
+          district TEXT PRIMARY KEY,
+          region TEXT,
+          road_records INTEGER,
+          total_km REAL,
+          osm_km REAL,
+          ducar_km REAL,
+          national_count INTEGER,
+          district_count INTEGER,
+          urban_count INTEGER,
+          car_count INTEGER,
+          verify_count INTEGER,
+          missing_name_count INTEGER
+        );
+
+        CREATE TABLE osm_classification_rules (
+          osm_highway TEXT PRIMARY KEY,
+          ducar_class TEXT,
+          ducar_code TEXT,
+          assumption TEXT
+        );
+
         CREATE TABLE pims_framework_steps (
           step_order INTEGER PRIMARY KEY,
           title TEXT,
@@ -465,6 +577,7 @@ def create_schema(conn: sqlite3.Connection) -> None:
         CREATE INDEX idx_spatial_feature_count ON spatial_layers(feature_count DESC);
         CREATE INDEX idx_map_surface_group ON map_surface_features(feature_group);
         CREATE INDEX idx_condition_poor_share ON uganda_road_condition(poor_share DESC);
+        CREATE INDEX idx_district_road_summary_total ON uganda_district_road_summary(total_km DESC);
         CREATE INDEX idx_inventory_kind ON file_inventory(kind);
         CREATE INDEX idx_assets_region ON programme_assets(region);
         """
@@ -623,6 +736,73 @@ def build_database() -> dict[str, Any]:
                 for row in (itis_tables.get("pavedTrend") or {}).get("rows", [])
             ],
         )
+
+        road_master = load_latest_road_master_tables()
+        road_master_summary = road_master["summary"]
+        road_master_manifest = road_master["manifest"]
+        road_master_run_rows = []
+        if road_master_summary:
+            road_master_run_rows.append((
+                road_master_summary.get("generated_at_utc") or road_master_manifest.get("updated_at_utc") or "latest",
+                road_master_manifest.get("updated_at_utc"),
+                str(road_master.get("summary_path") or ""),
+                str(road_master.get("osm_path") or ""),
+                str(road_master.get("district_path") or ""),
+                str(road_master.get("rules_path") or ""),
+                int(road_master_summary.get("record_count", 0) or 0),
+                number(road_master_summary.get("total_length_km")),
+                int(road_master.get("osm_feature_count", 0) or 0),
+                len(road_master.get("district_rows", [])),
+                road_master_summary.get("important_assumption"),
+            ))
+        execute_many(conn, "INSERT INTO uganda_road_master_runs VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", road_master_run_rows)
+        execute_many(
+            conn,
+            "INSERT INTO uganda_road_master_class_summary VALUES (?, ?)",
+            [(key, int(value or 0)) for key, value in (road_master_summary.get("by_ducar_class") or {}).items()],
+        )
+        execute_many(
+            conn,
+            "INSERT INTO uganda_road_master_source_summary VALUES (?, ?)",
+            [(key, int(value or 0)) for key, value in (road_master_summary.get("by_source") or {}).items()],
+        )
+        execute_many(
+            conn,
+            "INSERT INTO uganda_road_master_quality_summary VALUES (?, ?)",
+            [(key, int(value or 0)) for key, value in (road_master_summary.get("by_quality_flag") or {}).items()],
+        )
+        execute_many(
+            conn,
+            "INSERT INTO uganda_district_road_summary VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            [
+                (
+                    item.get("district"),
+                    item.get("region"),
+                    int(item.get("road_records", 0) or 0),
+                    number(item.get("total_km")),
+                    number(item.get("osm_km")),
+                    number(item.get("ducar_km")),
+                    int(item.get("national_count", 0) or 0),
+                    int(item.get("district_count", 0) or 0),
+                    int(item.get("urban_count", 0) or 0),
+                    int(item.get("car_count", 0) or 0),
+                    int(item.get("verify_count", 0) or 0),
+                    int(item.get("missing_name_count", 0) or 0),
+                )
+                for item in road_master.get("district_rows", [])
+                if item.get("district")
+            ],
+        )
+        execute_many(
+            conn,
+            "INSERT INTO osm_classification_rules VALUES (?, ?, ?, ?)",
+            [
+                (item.get("osm_highway"), item.get("ducar_class"), item.get("ducar_code"), item.get("assumption"))
+                for item in road_master.get("rules", [])
+                if item.get("osm_highway")
+            ],
+        )
+
         execute_many(conn, "INSERT INTO pims_framework_steps VALUES (?, ?, ?, ?, ?, ?)", PIMS_FLOW_STEPS)
         execute_many(conn, "INSERT INTO pims_gate_controls VALUES (?, ?, ?, ?)", PIMS_GATE_CONTROLS)
         execute_many(conn, "INSERT INTO hdm4_indicators VALUES (?, ?, ?)", HDM4_INDICATORS)
@@ -737,6 +917,12 @@ def build_database() -> dict[str, Any]:
             "uganda_network_kpis": len((evidence.get("itisCharts") or {}).get("kpis", [])),
             "uganda_network_categories": len(((evidence.get("itisCharts") or {}).get("charts") or {}).get("network", {}).get("rows", [])),
             "uganda_road_condition": len(((evidence.get("itisCharts") or {}).get("charts") or {}).get("condition", {}).get("rows", [])),
+            "uganda_road_master_runs": len(road_master_run_rows),
+            "uganda_road_master_class_summary": len((road_master_summary.get("by_ducar_class") or {})),
+            "uganda_road_master_source_summary": len((road_master_summary.get("by_source") or {})),
+            "uganda_road_master_quality_summary": len((road_master_summary.get("by_quality_flag") or {})),
+            "uganda_district_road_summary": len(road_master.get("district_rows", [])),
+            "osm_classification_rules": len(road_master.get("rules", [])),
             "pims_framework_steps": len(PIMS_FLOW_STEPS),
             "hdm4_indicators": len(HDM4_INDICATORS),
             "file_inventory": len(inventory_rows),
@@ -748,6 +934,7 @@ def build_database() -> dict[str, Any]:
             "spatial": "SELECT layer_name, feature_count, line_length_km FROM spatial_layers WHERE status = 'read' ORDER BY feature_count DESC LIMIT 8;",
             "map": "SELECT feature_group, geometry_type, coordinates_json FROM map_surface_features ORDER BY feature_group, feature_id;",
             "network": "SELECT category, length_km, ducar_scope FROM uganda_network_categories ORDER BY length_km DESC;",
+            "latest_road_master": "SELECT ducar_class, record_count FROM uganda_road_master_class_summary ORDER BY record_count DESC;",
             "pims": "SELECT title, phase, readiness_score FROM pims_framework_steps ORDER BY step_order;",
             "hdm4": "SELECT indicator, readiness_score FROM hdm4_indicators ORDER BY readiness_score DESC;",
             "raw_tables": "SELECT table_group, table_name, COUNT(*) AS cells FROM raw_table_cells GROUP BY table_group, table_name ORDER BY cells DESC;",

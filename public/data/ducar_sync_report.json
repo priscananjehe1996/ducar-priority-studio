@@ -1,20 +1,21 @@
 {
-  "run_id": "20260518T063411Z",
+  "run_id": "20260518T074536Z",
   "status": "success",
   "source_roots": [
-    "/home/runner/work/ducar-priority-studio/ducar-priority-studio/data",
-    "/home/runner/work/ducar-priority-studio/ducar-priority-studio/public/data",
-    "/home/runner/work/ducar-priority-studio/ducar-priority-studio/public/docs"
+    "D:\\OneDrive\\Procurements\\TOR - DUCACR",
+    "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\data",
+    "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\data",
+    "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\docs"
   ],
-  "source_snapshot_mode": "cached",
-  "source_files_indexed": 813,
+  "source_snapshot_mode": "live",
+  "source_files_indexed": 825,
   "changed_source_files": 0,
   "materialized_queries": {
     "network_prediction_context": 7,
     "prediction_feature_matrix": 8,
     "prediction_calibration_signals": 6
   },
-  "database_size_bytes": 1859584,
+  "database_size_bytes": 1916928,
   "manifest_tables": {
     "evidence_documents": 114,
     "document_topic_counts": 1254,
@@ -25,6 +26,12 @@
     "uganda_network_kpis": 5,
     "uganda_network_categories": 7,
     "uganda_road_condition": 7,
+    "uganda_road_master_runs": 1,
+    "uganda_road_master_class_summary": 9,
+    "uganda_road_master_source_summary": 2,
+    "uganda_road_master_quality_summary": 4,
+    "uganda_district_road_summary": 135,
+    "osm_classification_rules": 11,
     "pims_framework_steps": 6,
     "hdm4_indicators": 6,
     "file_inventory": 345,
@@ -40,7 +47,7 @@
     "prediction_feature_matrix": 8,
     "raw_json_payloads": 2,
     "source_coverage": 29,
-    "source_sync_state": 813,
+    "source_sync_state": 825,
     "spatial_geometry_counts": 65,
     "sql_population_log": 3,
     "story_cards": 6,

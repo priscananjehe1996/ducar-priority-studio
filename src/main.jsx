@@ -4259,6 +4259,9 @@ LIMIT 815;`,
   network: `SELECT category, length_km, ducar_scope
 FROM uganda_network_categories
 ORDER BY length_km DESC;`,
+  latestRoadMaster: `SELECT ducar_class, record_count
+FROM uganda_road_master_class_summary
+ORDER BY record_count DESC;`,
   traffic: `SELECT name, metric AS traffic_flow_index, source_file
 FROM map_surface_features
 WHERE feature_group = 'flow'
@@ -4354,6 +4357,57 @@ function useUnifiedDatabase() {
         const roadConditionRows = runSqlRows(db, "SELECT category, good_km, fair_km, poor_km, total_km, poor_share FROM uganda_road_condition ORDER BY total_km DESC");
         const crashTrendRows = runSqlRows(db, "SELECT year, fatal, serious, minor, total FROM uganda_crash_trend ORDER BY year");
         const pavedTrendRows = runSqlRows(db, "SELECT fy, annual_increase_km, paved_stock_km, percent_paved FROM uganda_paved_trend ORDER BY fy");
+        const latestRoadMasterRun = tableSet.has("uganda_road_master_runs")
+          ? runSqlRows(db, `
+            SELECT generated_at_utc, manifest_updated_at_utc, record_count, total_length_km,
+                   osm_major_feature_count, district_summary_count, important_assumption
+            FROM uganda_road_master_runs
+            ORDER BY generated_at_utc DESC
+            LIMIT 1
+          `)[0]
+          : null;
+        const latestClassRows = tableSet.has("uganda_road_master_class_summary")
+          ? chartFromSql(
+            runSqlRows(db, "SELECT ducar_class, record_count FROM uganda_road_master_class_summary ORDER BY record_count DESC"),
+            "ducar_class",
+            "record_count",
+          )
+          : [];
+        const latestSourceRows = tableSet.has("uganda_road_master_source_summary")
+          ? chartFromSql(
+            runSqlRows(db, "SELECT source_name, record_count FROM uganda_road_master_source_summary ORDER BY record_count DESC"),
+            "source_name",
+            "record_count",
+          )
+          : [];
+        const latestQualityRows = tableSet.has("uganda_road_master_quality_summary")
+          ? chartFromSql(
+            runSqlRows(db, "SELECT quality_flag, record_count FROM uganda_road_master_quality_summary ORDER BY record_count DESC"),
+            "quality_flag",
+            "record_count",
+          )
+          : [];
+        const latestDistrictRows = tableSet.has("uganda_district_road_summary")
+          ? chartFromSql(
+            runSqlRows(db, "SELECT district, total_km, region FROM uganda_district_road_summary ORDER BY total_km DESC LIMIT 10"),
+            "district",
+            "total_km",
+            "region",
+          )
+          : [];
+        const latestDistrictTableRows = tableSet.has("uganda_district_road_summary")
+          ? runSqlRows(db, `
+            SELECT district, region, road_records, ROUND(total_km, 1) AS total_km,
+                   district_count, urban_count, car_count, verify_count, missing_name_count
+            FROM uganda_district_road_summary
+            ORDER BY total_km DESC
+            LIMIT 12
+          `).map((row) => [row.district, row.region, row.road_records, row.total_km, row.district_count, row.urban_count, row.car_count, row.verify_count, row.missing_name_count])
+          : [];
+        const classificationRuleRows = tableSet.has("osm_classification_rules")
+          ? runSqlRows(db, "SELECT osm_highway, ducar_class, ducar_code, assumption FROM osm_classification_rules ORDER BY rowid")
+            .map((row) => [row.osm_highway, row.ducar_class, row.ducar_code, row.assumption])
+          : [];
         const pimsFlow = runSqlRows(db, "SELECT title, phase, description, readiness_score, discipline FROM pims_framework_steps ORDER BY step_order");
         const pimsGateChartRows = chartFromSql(
           runSqlRows(db, "SELECT gate, readiness_score, decision_use FROM pims_gate_controls ORDER BY readiness_score DESC"),
@@ -4493,6 +4547,23 @@ function useUnifiedDatabase() {
               title: "Road condition by network category",
               columns: ["Category", "Good km", "Fair km", "Poor km", "Poor share"],
               rows: roadConditionRows.map((row) => [row.category, row.good_km, row.fair_km, row.poor_km, `${Math.round(Number(row.poor_share || 0) * 100)}%`]),
+            },
+          },
+          latestRoadMaster: {
+            run: latestRoadMasterRun,
+            classChart: { rows: latestClassRows },
+            sourceChart: { rows: latestSourceRows },
+            qualityChart: { rows: latestQualityRows },
+            districtChart: { rows: latestDistrictRows },
+            districtTable: {
+              title: "Latest district road summary",
+              columns: ["District", "Region", "Records", "Total km", "District", "Urban", "CAR", "Verify", "Missing names"],
+              rows: latestDistrictTableRows,
+            },
+            rulesTable: {
+              title: "OSM to DUCAR classification rules",
+              columns: ["OSM highway", "DUCAR class", "Code", "Assumption"],
+              rows: classificationRuleRows,
             },
           },
           frameworkFlow: pimsFlow,
@@ -4650,6 +4721,7 @@ function buildProductInsights(analysis, evidence) {
     .sort((a, b) => b[1] - a[1]);
   const trafficStats = evidence?.traffic?.stats || {};
   const trafficFlowRows = evidence?.traffic?.flowChart?.rows || [];
+  const latestRoadMaster = evidence?.latestRoadMaster || {};
   const latestCrashTotal = Number((evidence?.ugandaNetwork?.crashTrend || []).at?.(-1)?.total || 0);
   const poorKm = networkPoorRows.reduce((sum, row) => sum + Number(row[1] || 0), 0);
   const programmeFunnel = [
@@ -4740,6 +4812,10 @@ function buildProductInsights(analysis, evidence) {
       staticHdm4Tables,
       pimsGates: pimsGateRows,
       frameworkSteps: frameworkStepRows,
+      roadMasterClasses: latestRoadMaster.classChart?.rows || [],
+      roadMasterSources: latestRoadMaster.sourceChart?.rows || [],
+      roadMasterQuality: latestRoadMaster.qualityChart?.rows || [],
+      roadMasterDistricts: latestRoadMaster.districtChart?.rows || [],
     },
     tables: {
       selected: {
@@ -4761,6 +4837,7 @@ function buildProductInsights(analysis, evidence) {
     rawTables: evidence?.rawTables || {},
     spatialEvidence: evidence?.spatialEvidence || {},
     ugandaNetwork: evidence?.ugandaNetwork || {},
+    latestRoadMaster,
     frameworkFlow: evidence?.frameworkFlow || [],
     frameworkTable: evidence?.frameworkTable,
     pims: evidence?.pims || {},
@@ -5446,6 +5523,7 @@ function PortfolioView({ insights, budget, reservePercent, onBudgetChange, onRes
 }
 
 function NetworkView({ insights, programme }) {
+  const latestMaster = insights.latestRoadMaster?.run || {};
   return (
     <div className="product-view">
       <section className="network-brief">
@@ -5456,11 +5534,18 @@ function NetworkView({ insights, programme }) {
         </div>
         <ProductStat label="Features read" value={formatCount(insights.spatialSummary.feature_count)} note={`${formatCount(insights.spatialSummary.layers_read)} layers queried`} tone="cyan" />
         <ProductStat label="Line evidence" value={formatKm(insights.spatialSummary.line_length_km)} note="includes retained dated layer copies" tone="green" />
+        <ProductStat label="Latest road master" value={formatCount(latestMaster.record_count)} note={formatCompactDate(latestMaster.generated_at_utc)} tone="purple" />
+        <ProductStat label="Master length" value={formatKm(latestMaster.total_length_km)} note={`${formatCount(latestMaster.district_summary_count)} district summaries`} tone="gold" />
       </section>
       <section className="product-stat-grid network-kpis">
         {(insights.ugandaNetwork?.kpis || []).map((item) => <ProductStat key={item.label} {...item} />)}
       </section>
       <MapScene3D programme={programme} />
+      <div className="chart-showcase">
+        <ProductPieChart title="Latest DUCAR Class Mix" subtitle="May 2026 road master records by planning class" rows={insights.charts.roadMasterClasses} />
+        <ProductFunnelChart title="Largest District Road Inventories" subtitle="Top district summaries from the latest road master" rows={insights.charts.roadMasterDistricts} formatValue={(value) => formatKm(value)} maxRows={8} />
+        <ProductPieChart title="Road Quality Flags" subtitle="Validation flags retained with the latest OSM and DUCAR merge" rows={insights.charts.roadMasterQuality} />
+      </div>
       <div className="chart-showcase">
         <ProductPieChart title="Road Network Share" subtitle="ITIS/URF FY 2022/23 length by category" rows={insights.charts.networkCategory} formatValue={(value) => formatKm(value)} />
         <ProductFunnelChart title="Poor Condition Pressure" subtitle="Poor kilometres by network category" rows={insights.charts.networkPoor} formatValue={(value) => formatKm(value)} />
@@ -5490,9 +5575,14 @@ function NetworkView({ insights, programme }) {
         <ProductTable table={insights.spatialEvidence?.layerTable || insights.rawTables?.catalog} />
         <ProductTable table={insights.ugandaNetwork?.conditionTable} />
       </div>
+      <div className="product-grid two">
+        <ProductTable table={insights.latestRoadMaster?.districtTable} />
+        <ProductTable table={insights.latestRoadMaster?.rulesTable} />
+      </div>
       <section className="query-strip">
         <QueryBadge label="spatial query" sql={insights.sql.spatial} />
         <QueryBadge label="network query" sql={insights.sql.network} />
+        <QueryBadge label="latest road master query" sql={insights.sql.latestRoadMaster} />
       </section>
     </div>
   );
@@ -6512,8 +6602,8 @@ function App() {
             <strong>{activeMeta.label}</strong>
           </div>
           <div className="product-topbar-actions">
-            <span><Database size={15} /> {insights.databaseLoaded ? "SQLite live" : "Loading database"}</span>
-            <span><ShieldAlert size={15} /> source data hidden</span>
+            <span><Database size={15} /> {insights.databaseLoaded ? `SQLite live / ${formatCount(insights.botSync?.source_file_count)} files` : "Loading database"}</span>
+            <span><ShieldAlert size={15} /> {insights.botSync?.changed_file_count ? `${formatCount(insights.botSync.changed_file_count)} source changes synced` : "source data hidden"}</span>
             <button className="icon-action" onClick={() => runAnalysis()} aria-label="Refresh"><RefreshCcw size={16} /></button>
           </div>
         </header>

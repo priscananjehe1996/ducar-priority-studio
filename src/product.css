@@ -595,15 +595,15 @@ button {
 
 .pie-chart-layout {
   display: grid;
-  grid-template-columns: minmax(168px, 0.86fr) minmax(0, 1.14fr);
-  gap: 18px;
-  align-items: center;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-items: start;
 }
 
 .pie-disc {
   position: relative;
   display: grid;
-  width: min(220px, 100%);
+  width: min(214px, 100%);
   aspect-ratio: 1;
   place-items: center;
   justify-self: center;
@@ -660,8 +660,8 @@ button {
 .funnel-list button {
   width: 100%;
   min-width: 0;
-  border: 1px solid color-mix(in srgb, var(--accent, var(--blue)) 18%, rgba(15, 23, 42, 0.08));
-  background: linear-gradient(90deg, color-mix(in srgb, var(--accent, var(--blue)) 12%, #ffffff), #ffffff);
+  border: 1px solid color-mix(in srgb, var(--accent, var(--blue)) 28%, rgba(15, 23, 42, 0.08));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent, var(--blue)) 18%, #ffffff), #ffffff);
   color: var(--ink);
   cursor: pointer;
   font-family: inherit;
@@ -672,11 +672,11 @@ button {
 
 .pie-legend button {
   display: grid;
-  grid-template-columns: 12px minmax(0, 1fr) 42px minmax(58px, auto);
-  gap: 8px;
+  grid-template-columns: 12px minmax(0, 1fr) minmax(42px, auto);
+  gap: 8px 10px;
   align-items: center;
-  min-height: 38px;
-  padding: 8px 9px;
+  min-height: 48px;
+  padding: 9px 10px;
   border-radius: 12px;
   text-align: left;
 }
@@ -706,11 +706,11 @@ button {
 .pie-legend strong,
 .pie-legend em {
   min-width: 0;
-  color: #1f2937;
+  color: #07111f;
   font-size: 11px;
-  line-height: 1.15;
+  line-height: 1.18;
   font-style: normal;
-  font-weight: 900;
+  font-weight: 950;
   overflow-wrap: anywhere;
 }
 
@@ -735,12 +735,14 @@ button {
 }
 
 .pie-legend em {
-  color: var(--muted);
+  grid-column: 2 / -1;
+  color: #334155;
+  text-align: left;
 }
 
 .funnel-list button {
   display: grid;
-  grid-template-columns: minmax(128px, 0.9fr) minmax(120px, 1fr) minmax(64px, auto);
+  grid-template-columns: minmax(150px, 1fr) minmax(110px, 0.9fr) minmax(64px, auto);
   gap: 11px;
   align-items: center;
   min-height: 48px;
@@ -754,7 +756,7 @@ button {
   align-items: center;
   gap: 8px;
   min-width: 0;
-  color: var(--ink);
+  color: #07111f;
   font-size: 12px;
   font-weight: 920;
   line-height: 1.15;
