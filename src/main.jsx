@@ -5,6 +5,7 @@ import sqlWasmUrl from "sql.js/dist/sql-wasm.wasm?url";
 import {
   Activity,
   ArrowLeft,
+  ArrowUpLeft,
   BookOpen,
   Bot,
   Brain,
@@ -4873,6 +4874,19 @@ function ProductNav({ activeView, onNavigate }) {
   );
 }
 
+function ProductJumpBack() {
+  const jumpToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  return (
+    <button className="product-jump-back" type="button" onClick={jumpToTop} aria-label="Jump back to the top" title="Jump back to the top">
+      <ArrowUpLeft size={20} />
+      <span>Top</span>
+    </button>
+  );
+}
+
 function ProductStat({ label, value, note, tone = "blue" }) {
   return (
     <article className={`product-stat ${tone}`}>
@@ -6594,6 +6608,7 @@ function App() {
 
   return (
     <div className="product-shell">
+      <ProductJumpBack />
       <ProductNav activeView={activeView} onNavigate={navigateTo} />
       <main className="product-main">
         <header className="product-topbar">
