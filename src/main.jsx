@@ -2715,9 +2715,9 @@ function MapScene3D({ programme }) {
           source: "roads",
           paint: {
             "line-color": ROAD_CATEGORY_COLORS,
-            "line-width": ["+", ROAD_CATEGORY_WIDTHS, 2.2],
-            "line-opacity": ["case", ["==", ["get", "network_category"], "National Roads"], 0.18, 0.24],
-            "line-blur": 2.1,
+            "line-width": ["+", ROAD_CATEGORY_WIDTHS, 1.1],
+            "line-opacity": ["case", ["==", ["get", "network_category"], "National Roads"], 0.14, 0.18],
+            "line-blur": 1.45,
           },
         });
         map.addLayer({
@@ -2739,8 +2739,8 @@ function MapScene3D({ programme }) {
           filter: ["!=", ["get", "road_system"], "National"],
           paint: {
             "line-color": "#020617",
-            "line-width": ["+", ROAD_CATEGORY_WIDTHS, 0.9],
-            "line-opacity": 0.3,
+            "line-width": ["+", ROAD_CATEGORY_WIDTHS, 0.45],
+            "line-opacity": 0.24,
             "line-blur": 0.18,
           },
         });
@@ -2760,9 +2760,9 @@ function MapScene3D({ programme }) {
           source: "traffic-flows",
           paint: {
             "line-color": TRAFFIC_FLOW_COLOR,
-            "line-width": ["interpolate", ["linear"], ["coalesce", ["get", "traffic_flow_index"], 45], 30, 1.6, 60, 3.2, 100, 5.6],
-            "line-opacity": 0.34,
-            "line-blur": 2.5,
+            "line-width": ["interpolate", ["linear"], ["coalesce", ["get", "traffic_flow_index"], 45], 30, 0.9, 60, 1.9, 100, 3.4],
+            "line-opacity": 0.26,
+            "line-blur": 1.8,
           },
         });
         map.addLayer({
@@ -2771,8 +2771,8 @@ function MapScene3D({ programme }) {
           source: "traffic-flows",
           paint: {
             "line-color": "#020617",
-            "line-width": ["interpolate", ["linear"], ["coalesce", ["get", "traffic_flow_index"], 45], 30, 1.2, 60, 2.4, 100, 3.9],
-            "line-opacity": 0.38,
+            "line-width": ["interpolate", ["linear"], ["coalesce", ["get", "traffic_flow_index"], 45], 30, 0.85, 60, 1.7, 100, 2.8],
+            "line-opacity": 0.3,
             "line-blur": 0.2,
           },
         });
@@ -2793,48 +2793,6 @@ function MapScene3D({ programme }) {
           source: "roads",
           filter: ["==", ["get", "road_system"], "National"],
           paint: { "line-color": "#fef3c7", "line-width": 1.15, "line-opacity": 0.96, "line-dasharray": [1.4, 0.9] },
-        });
-        map.addLayer({
-          id: "programme-assets-halo",
-          type: "circle",
-          source: "programme-assets",
-          paint: {
-            "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 8, 10, 16],
-            "circle-color": ["match", ["get", "status"], "Selected", "#22c55e", "Deferred", "#f59e0b", "Referred", "#ef4444", "#38bdf8"],
-            "circle-opacity": 0.2,
-            "circle-blur": 0.55,
-          },
-        });
-        map.addLayer({
-          id: "programme-assets",
-          type: "circle",
-          source: "programme-assets",
-          paint: {
-            "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 4.8, 10, 8.5],
-            "circle-color": ["match", ["get", "status"], "Selected", "#22c55e", "Deferred", "#f59e0b", "Referred", "#ef4444", "#38bdf8"],
-            "circle-opacity": 0.96,
-            "circle-stroke-color": "#ffffff",
-            "circle-stroke-width": 2.2,
-          },
-        });
-        map.addLayer({
-          id: "programme-asset-labels",
-          type: "symbol",
-          source: "programme-assets",
-          minzoom: 7.4,
-          layout: {
-            "text-field": ["get", "label"],
-            "text-size": 11,
-            "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
-            "text-offset": [0, 1.35],
-            "text-anchor": "top",
-            "text-allow-overlap": false,
-          },
-          paint: {
-            "text-color": "#f8fafc",
-            "text-halo-color": "#020617",
-            "text-halo-width": 1.5,
-          },
         });
         map.addSource("selected-road", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
         map.addLayer({
@@ -2915,7 +2873,7 @@ function MapScene3D({ programme }) {
   useEffect(() => {
     const map = mapInstance.current;
     if (!map?.isStyleLoaded()) return;
-    for (const layerId of ["esri-transportation-labels", "esri-labels", "programme-asset-labels"]) {
+    for (const layerId of ["esri-transportation-labels", "esri-labels"]) {
       if (map.getLayer(layerId)) map.setLayoutProperty(layerId, "visibility", showHybridLabels ? "visible" : "none");
     }
   }, [showHybridLabels]);
@@ -2966,7 +2924,7 @@ function MapScene3D({ programme }) {
   const hudRoadText = roadsReady
     ? `${formatCount(filteredRoads.length)} visible road routes`
     : `${formatCount(displayedRoadCount)} road routes queued`;
-  const hudNodeText = nodes?.features?.length ? `${formatCount(nodes.features.length)} backend-only nodes` : "Node graph loading backend-only";
+  const hudNodeText = nodes?.features?.length ? `${formatCount(nodes.features.length)} network junctions indexed` : "Network junction index loading";
   const hudRouteText = routeMatrix?.routes?.length ? `${formatCount(routeMatrix.routes.length)} OD route pairs` : "OD route matrix loading";
   const mapStatusText = mapLoadState.stage === "ready" ? "Road layer ready" : mapLoadState.message;
 
@@ -3243,6 +3201,199 @@ function formatEvidenceCell(value) {
   if (value === null || value === undefined || value === "") return "No data";
   if (typeof value === "number") return Number.isInteger(value) ? value.toLocaleString() : value.toLocaleString(undefined, { maximumFractionDigits: 2 });
   return String(value);
+}
+
+const SITE_DOWNLOAD_FILES = [
+  "data/district_roads_dissolved.geojson",
+  "data/districts.geojson",
+  "data/DUCAR_OSM_Road_Classification_Rules_2026-05-18.csv",
+  "data/DUCAR_source_digest.json",
+  "data/ducar_sync_report.json",
+  "data/ducar_unified.sqlite",
+  "data/ducar_unified_manifest.json",
+  "data/evidence_synthesis.json",
+  "data/kcca_roads.geojson",
+  "data/manuals_catalog.json",
+  "data/mowt_manuals_catalog.json",
+  "data/product_insights.json",
+  "data/selected_cbd_roads.geojson",
+  "data/uganda_clean_road_routes_web.geojson",
+  "data/uganda_layers_manifest.json",
+  "data/uganda_layers_status.json",
+  "data/uganda_national_roads_fy25_26.geojson",
+  "data/uganda_national_roads_fy25_26_2026-05-05.geojson",
+  "data/uganda_national_roads_fy25_26_2026-05-06.geojson",
+  "data/uganda_national_roads_fy25_26_2026-05-13.geojson",
+  "data/uganda_network_analysis_summary.json",
+  "data/uganda_network_edges_web.geojson",
+  "data/uganda_network_nodes_web.geojson",
+  "data/uganda_osm_major_roads_web.geojson",
+  "data/uganda_osm_major_roads_web_2026-05-05.geojson",
+  "data/uganda_osm_major_roads_web_2026-05-06.geojson",
+  "data/uganda_osm_major_roads_web_2026-05-13.geojson",
+  "data/uganda_osm_major_roads_web_2026-05-14.geojson",
+  "data/uganda_osm_major_roads_web_2026-05-16.geojson",
+  "data/uganda_osm_major_roads_web_2026-05-17.geojson",
+  "data/uganda_osm_major_roads_web_2026-05-18.geojson",
+  "data/uganda_roads_master_summary_2026-05-18.json",
+  "data/uganda_roads_district_summary.geojson",
+  "data/uganda_roads_district_summary_2026-05-05.geojson",
+  "data/uganda_roads_district_summary_2026-05-06.geojson",
+  "data/uganda_roads_district_summary_2026-05-13.geojson",
+  "data/uganda_roads_district_summary_2026-05-14.geojson",
+  "data/uganda_roads_district_summary_2026-05-16.geojson",
+  "data/uganda_roads_district_summary_2026-05-17.geojson",
+  "data/uganda_roads_district_summary_2026-05-18.geojson",
+  "data/uganda_route_matrix.json",
+  "data/uganda_traffic_flows_web.geojson",
+  "data/uganda_unified_roads_web.geojson",
+  "data/uganda_unified_roads_web_2026-05-05.geojson",
+  "data/uganda_unified_roads_web_2026-05-06.geojson",
+  "data/uganda_unified_roads_web_2026-05-13.geojson",
+  "docs/CONSTRUCTION-MANUAL-.pdf",
+  "docs/Integrated Transport Infrastructure Services Annual Budget Monitoring report FY 2023-24.pdf",
+  "docs/mowt/Final-General-Specifications-for-Roads-and-Bridges_March-2026.pdf",
+  "docs/mowt/NMT-Design-and-Operational-Manual-web-2.pdf",
+  "docs/mowt/URDM-Manual-Part-1-July-2023.pdf",
+  "docs/mowt/URDM-Standard-Drawings-July2023.pdf",
+  "docs/Public-Investment-Manual-for-Project-Preparation-and-Appraisal.pdf",
+  "docs/TOR__for_Consultancy_Services_for_Guidelines for Monitoring Road Performance Indicators_DUCAR.docx",
+  "docs/TOR__for_Consultancy_Services_for_RAM_DUCAR part 1_framework.docx",
+  "docs/TOR__for_Consultancy_Services_for_RAM_DUCAR.docx",
+  "docs/TOR__for_Consultancy_Services_for_Road_Condition_Monitoring_Guidelines_DUCAR.docx",
+];
+
+function resolveEvidenceHref(href) {
+  if (!href) return "";
+  const value = String(href).replaceAll("\\", "/").trim();
+  if (/^https?:\/\//i.test(value) || value.startsWith(BASE)) return value;
+  if (value.startsWith("public/")) return `${BASE}${value.replace(/^public\//, "")}`;
+  if (value.startsWith("data/") || value.startsWith("docs/")) return `${BASE}${value}`;
+  return value.startsWith("#") ? `${BASE}data/DUCAR_source_digest.json` : value;
+}
+
+function evidenceFileFormat(href, fallback = "Web") {
+  const clean = String(href || "").split(/[?#]/)[0].toLowerCase();
+  const ext = clean.includes(".") ? clean.split(".").pop() : "";
+  const labels = {
+    doc: "DOC",
+    docx: "DOCX",
+    geojson: "GeoJSON / GIS",
+    json: "JSON",
+    kml: "KML",
+    kmz: "KMZ",
+    pdf: "PDF",
+    png: "PNG",
+    shp: "SHP",
+    sqlite: "DB",
+    csv: "CSV",
+    xls: "XLS",
+    xlsx: "XLSX",
+  };
+  return labels[ext] || fallback;
+}
+
+function evidenceTitleFromPath(path) {
+  const filename = String(path).split("/").pop() || path;
+  return filename
+    .replace(/\.[^.]+$/, "")
+    .replaceAll("_", " ")
+    .replaceAll("-", " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function normalizeEvidenceSource(row, index) {
+  const href = resolveEvidenceHref(row.href || row.url);
+  return {
+    id: `${row.title || row.path || index}-${href}`,
+    title: row.title || evidenceTitleFromPath(row.path || href),
+    owner: row.owner || row.agency || "DUCAR road intelligence",
+    theme: row.theme || row.type || "Road infrastructure",
+    format: row.format || evidenceFileFormat(href, row.type || "Web"),
+    detail: row.detail || row.use || row.logic || row.apa || "Road network, investment or operating-model reference",
+    href,
+    downloadable: Boolean(href && !href.startsWith("#")),
+  };
+}
+
+function buildEvidenceSourceMatrix(insights) {
+  const siteAssets = SITE_DOWNLOAD_FILES.map((path) => ({
+    title: evidenceTitleFromPath(path),
+    owner: path.startsWith("docs/") ? "Road manual/document asset" : "Road data asset",
+    type: path.startsWith("docs/") ? "Document" : "Downloadable data",
+    format: evidenceFileFormat(path),
+    detail: path.includes("geojson") ? "GIS-ready road layer" : "Readable or downloadable product asset",
+    href: path,
+  }));
+  const manualSources = MANUAL_SOURCES.map((item) => ({
+    title: item.title,
+    owner: item.agency,
+    type: `Manual / ${item.year}`,
+    href: item.href,
+    detail: item.controls.join(", "),
+  }));
+  const mowtSources = MOWT_CATALOGUE_MANUALS.map(([title, year, href, detail]) => ({
+    title,
+    owner: "Ministry of Works and Transport",
+    type: `Road manual / ${year}`,
+    href,
+    detail,
+  }));
+  const ugandaSources = UGANDA_EVIDENCE_STREAMS.map((item) => ({
+    title: item.title,
+    owner: item.agency,
+    type: item.type,
+    href: item.url,
+    detail: item.logic,
+  }));
+  const trafficSources = TRAFFIC_EVIDENCE_SOURCES.map((item) => ({
+    title: item.title,
+    owner: item.agency,
+    type: item.type,
+    href: item.url,
+    detail: item.use,
+  }));
+  const globalSources = GLOBAL_SOURCE_DOCUMENTS.map((item) => ({
+    title: item.title,
+    owner: item.agency,
+    type: item.type,
+    href: item.url,
+    detail: "Global road asset-management comparison",
+  }));
+  const globalReferenceRows = (insights.globalCases?.referenceTable?.rows || []).map((row) => ({
+    title: String(row[3] || row[0] || "Global case reference").split(".").slice(0, 2).join("."),
+    owner: row[2] || "Global case register",
+    type: row[1] || "Reference",
+    href: /^https?:\/\//i.test(String(row[4] || "")) ? row[4] : "data/DUCAR_source_digest.json",
+    detail: row[5] || "Global case transfer reference",
+  }));
+  const assumptionRows = sourceReferences.map((detail, index) => ({
+    title: `DUCAR decision assumption ${String(index + 1).padStart(2, "0")}`,
+    owner: "DUCAR prioritisation model",
+    type: "Decision assumption",
+    href: "data/DUCAR_source_digest.json",
+    detail,
+  }));
+  const rows = [
+    { ...ITIS_ABSTRACT_SOURCE, href: "data/DUCAR_source_digest.json" },
+    ...siteAssets,
+    ...manualSources,
+    ...mowtSources,
+    ...ugandaSources,
+    ...trafficSources,
+    ...globalSources,
+    ...globalReferenceRows,
+    ...assumptionRows,
+  ].map(normalizeEvidenceSource);
+  const seen = new Set();
+  return rows.filter((row) => {
+    const key = `${row.title}-${row.href}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function EvidenceMiniTable({ table, maxRows = 8 }) {
@@ -4654,8 +4805,8 @@ function useUnifiedDatabase() {
             featureChart: { rows: spatialRows },
             geometryChart: { rows: geometryRows },
             layerTable: {
-              title: "Spatial layers from unified SQLite database",
-              columns: ["Layer", "Source area", "Type", "Features", "Line km", "Decision use"],
+              title: "Road infrastructure GIS layers",
+              columns: ["Layer", "Network area", "Type", "Features", "Line km", "Decision use"],
               rows: spatialLayerTableRows,
             },
             mapFeatures,
@@ -4665,12 +4816,12 @@ function useUnifiedDatabase() {
           rawTables: {
             cellChart: { rows: rawTableRows },
             catalog: {
-              title: "Raw database table catalog",
-              columns: ["Group", "Table", "Rows", "Columns", "Source"],
+              title: "Road intelligence table catalogue",
+              columns: ["Group", "Table", "Rows", "Columns", "Lineage"],
               rows: rawTableCatalogRows,
             },
             manifest: {
-              title: "SQLite table row counts",
+              title: "Road intelligence register",
               columns: ["Table", "Rows"],
               rows: manifestRows,
             },
@@ -4704,8 +4855,8 @@ function useUnifiedDatabase() {
               rows: latestDistrictTableRows,
             },
             rulesTable: {
-              title: "OSM to DUCAR classification rules",
-              columns: ["OSM highway", "DUCAR class", "Code", "Assumption"],
+              title: "Road classification rules",
+              columns: ["Road class input", "DUCAR class", "Code", "Planning assumption"],
               rows: classificationRuleRows,
             },
           },
@@ -4769,7 +4920,7 @@ function useUnifiedDatabase() {
             flowChart: { rows: trafficFlowRows },
             flowTable: {
               title: "Top traffic flow links",
-              columns: ["Link", "Source", "Geometry", "Flow index"],
+              columns: ["Link", "Road layer", "Geometry", "Flow index"],
               rows: trafficFlowTableRows,
             },
           },
@@ -4907,11 +5058,11 @@ function buildProductInsights(analysis, evidence) {
     ["Prediction referrals", programme.filter((item) => (item.predictionStatus || item.status) === "Referred").length, "Model-recommended follow-up"],
   ];
   const evidenceFunnel = [
-    ["Files indexed", evidence?.fileInventory?.summary?.files_indexed || evidenceSummary.local_inventory_files || 0, "Local source files fingerprinted"],
-    ["Documents queried", evidenceSummary.core_documents_read || 0, "Core TOR and evidence documents"],
-    ["Raw table cells", evidenceSummary.raw_table_cells || 0, "Workbook, DOCX and case table cells"],
-    ["Spatial features", spatialSummary.feature_count || 0, "GIS features retained in SQLite"],
-    ["Online sources", evidenceSummary.online_sources_read || 0, "Live source checks"],
+    ["Road records", latestRoadMaster.run?.record_count || spatialSummary.feature_count || 0, "Road links available for prioritisation"],
+    ["District summaries", latestRoadMaster.run?.district_summary_count || 0, "District-level road inventory summaries"],
+    ["Condition categories", networkPoorRows.length, "Network classes with condition pressure"],
+    ["Traffic links", Number(trafficStats.flow_links || trafficFlowRows.length || 0), "Flow-sensitive road links"],
+    ["Priority assets", programme.length, "Candidate road investments in the decision model"],
   ];
   const modelFunnel = [
     ["PIMS features", programme.filter((item) => Number(item.pimsGateScore || 0) > 0).length, "Assets with PIMS gate score"],
@@ -4979,9 +5130,9 @@ function buildProductInsights(analysis, evidence) {
       { label: "Selected programme", value: formatMoneyCompact(selectedCost), note: `${selected.length} assets inside the fiscal gate`, tone: "green" },
       { label: "Demand pressure", value: formatMoneyCompact(reserveGap), note: "unfunded demand after reserve", tone: "gold" },
       { label: "High-risk watchlist", value: highRisk.length.toLocaleString(), note: "assets needing design or scope checks", tone: "red" },
-      { label: "Evidence depth", value: formatCount(evidenceSummary.core_words_read), note: `${formatCount(evidenceSummary.core_documents_read)} local documents queried`, tone: "blue" },
-      { label: "Spatial evidence", value: formatCount(spatialSummary.feature_count), note: `${formatCount(spatialSummary.layers_read)} readable GIS layers`, tone: "cyan" },
-      { label: "Global transfer rules", value: formatCount(evidenceSummary.global_case_records), note: "case-study rows mapped into assumptions", tone: "purple" },
+      { label: "Road master", value: formatCount(latestRoadMaster.run?.record_count || spatialSummary.feature_count), note: formatKm(latestRoadMaster.run?.total_length_km || spatialSummary.line_length_km), tone: "blue" },
+      { label: "Mapped network", value: formatCount(spatialSummary.feature_count), note: `${formatKm(spatialSummary.line_length_km)} represented`, tone: "cyan" },
+      { label: "Global road lessons", value: formatCount(globalCountryRows.length || evidenceSummary.global_case_records), note: "transferability signals for DUCAR", tone: "purple" },
     ],
     decisionCards: [
       {
@@ -4997,7 +5148,7 @@ function buildProductInsights(analysis, evidence) {
       {
         title: "Use spatial coverage as the proof layer",
         signal: `${formatCount(spatialSummary.layers_read)} GIS layers`,
-        body: "Network and district traceability stays available without flooding the interface with raw source tables.",
+        body: "Network and district traceability stays available without flooding the interface with technical registers.",
       },
     ],
     charts: {
@@ -5314,7 +5465,7 @@ function ProductFunnelChart({ title, subtitle, rows, formatValue = (value) => fo
       </div>
       <div className="funnel-focus">
         <strong>{selected.label}</strong>
-        <span>{selected.detail || `${formatValue(selected.value)} records from the unified database`}</span>
+        <span>{selected.detail || `${formatValue(selected.value)} road records in this view`}</span>
       </div>
     </section>
   );
@@ -5326,7 +5477,7 @@ function ProductTable({ table }) {
     <section className="query-panel product-table-panel">
       <div className="product-panel-head">
         <h3>{table.title}</h3>
-        <span>{table.rows.length} materialized rows</span>
+        <span>{table.rows.length} rows</span>
       </div>
       <div className="product-table-wrap">
         <table>
@@ -5346,13 +5497,8 @@ function ProductTable({ table }) {
   );
 }
 
-function QueryBadge({ label, sql }) {
-  return (
-    <details className="query-badge">
-      <summary>{label}</summary>
-      <pre>{sql}</pre>
-    </details>
-  );
+function QueryBadge() {
+  return null;
 }
 
 function FrameworkFlow({ steps = [] }) {
@@ -5580,16 +5726,13 @@ function ModernGeoMap({ features = [], programme = [] }) {
     ? grouped.route
     : FALLBACK_GEO_LINES.map((coordinates, index) => ({ name: `route-${index}`, coordinates }));
   const frame = useMemo(() => mapFeatureFrame(features.length ? features : routeFeatures, programme), [features, routeFeatures, programme]);
-  const assetPoints = programme
-    .map((item) => ({ ...item, point: projectGeo([item.lon, item.lat], frame) }))
-    .filter((item) => item.point);
-  const featureCount = features.length || routeFeatures.length + assetPoints.length;
+  const featureCount = features.length || routeFeatures.length;
 
   return (
     <section className="geo-command-map">
       <div className="product-panel-head">
         <h3>Modern Geospatial Surface</h3>
-        <span>SQL-drawn roads, national reference and programme assets; nodes stay backend-only</span>
+        <span>Road links, national reference routes and traffic overlays shown as clean map layers</span>
       </div>
       <div className="geo-map-canvas">
         <svg className="geo-surface-svg" viewBox={`0 0 ${GEO_FRAME.width} ${GEO_FRAME.height}`} role="img" aria-label="DUCAR geospatial evidence surface">
@@ -5634,23 +5777,14 @@ function ModernGeoMap({ features = [], programme = [] }) {
               return d ? <path key={`${item.source}-national-${index}`} className="geo-line national" d={d}><title>{item.name || "National road reference"}</title></path> : null;
             })}
           </g>
-          <g>
-            {assetPoints.map((item) => (
-              <circle key={item.assetId} className={`geo-asset ${item.status === "Selected" ? "selected" : item.status === "Referred" ? "referred" : "candidate"}`} cx={item.point[0]} cy={item.point[1]} r={item.status === "Selected" ? 9 : 7}>
-                <title>{`${item.assetId} - ${item.admin} - ${item.status}`}</title>
-              </circle>
-            ))}
-          </g>
         </svg>
         <div className="geo-map-metrics">
-          <span>{formatCount(featureCount)} SQL map features</span>
-          <span>{formatCount(assetPoints.length)} programme assets</span>
+          <span>{formatCount(featureCount)} mapped road features</span>
         </div>
       </div>
       <div className="geo-layer-strip">
         <span><i className="route" /> DUCAR / unified routes</span>
         <span><i className="national" /> National reference</span>
-        <span><i className="asset" /> Programme assets</span>
       </div>
     </section>
   );
@@ -5661,9 +5795,9 @@ function CommandView({ insights }) {
     <div className="product-view">
       <section className="command-hero">
         <div>
-          <p className="product-eyebrow">SQL-backed priority intelligence</p>
+          <p className="product-eyebrow">Priority intelligence</p>
           <h1>Fund the clearest road investments first.</h1>
-          <span>Evidence, GIS, global cases and programme economics are compressed into a few decision signals instead of exposed as a wall of source data.</span>
+          <span>Road condition, traffic pressure, investment readiness and affordability are compressed into a few decisive signals.</span>
         </div>
         <div className="hero-score">
           <strong>{insights.executive[0]?.value}</strong>
@@ -5684,13 +5818,13 @@ function CommandView({ insights }) {
       </section>
       <FrameworkFlow steps={insights.frameworkFlow} />
       <div className="chart-showcase">
-        <ProductPieChart title="Decision Share" subtitle="Programme status split from the SQL-backed priority run" rows={insights.charts.statusSplit} />
+        <ProductPieChart title="Decision Share" subtitle="Programme status split from the priority run" rows={insights.charts.statusSplit} />
         <ProductFunnelChart title="Priority Funnel" subtitle="Candidate assets through selection, risk and referral gates" rows={insights.charts.programmeFunnel} />
-        <ProductPieChart title="Evidence Mix" subtitle="Source areas retained behind the interface" rows={insights.charts.sourceCoverage} />
+        <ProductPieChart title="Road Network Share" subtitle="National, district, urban and community road length context" rows={insights.charts.networkCategory} formatValue={(value) => formatKm(value)} />
       </div>
       <div className="product-grid two">
         <ProductBarChart title="Budget by Region" subtitle="Selected assets only" rows={insights.charts.regionAllocation} formatValue={(value) => `UGX ${currency.format(value)}`} />
-        <ProductBarChart title="Decision Topics" subtitle="Materialized from extracted evidence text" rows={insights.charts.topics} />
+        <ProductBarChart title="Highest Flow Links" subtitle="Traffic pressure by named road link" rows={insights.charts.trafficFlow} formatValue={(value) => `${Math.round(Number(value || 0))}%`} maxRows={8} />
       </div>
       <PriorityDecisionBars links={insights.priorityLinks} />
       <div className="product-grid two">
@@ -5736,7 +5870,7 @@ function PortfolioView({ insights, budget, reservePercent, onBudgetChange, onRes
       </section>
       <div className="product-grid two">
         <ReadinessBars title="PIMS Gate Readiness" subtitle="Project admission to final investment decision" items={insights.frameworkFlow} />
-        <ReadinessBars title="HDM-4 Model Readiness" subtitle="Economic and pavement model inputs retained from the evidence store" items={insights.hdm4?.indicators || []} />
+        <ReadinessBars title="HDM-4 Model Readiness" subtitle="Economic and pavement model inputs retained for investment appraisal" items={insights.hdm4?.indicators || []} />
       </div>
       <div className="chart-showcase">
         <ProductPieChart title="Risk Band Mix" subtitle="Machine-learning risk bands across the candidate programme" rows={insights.charts.riskSplit} />
@@ -5770,121 +5904,102 @@ function PortfolioView({ insights, budget, reservePercent, onBudgetChange, onRes
 
 function NetworkView({ insights, programme }) {
   const latestMaster = insights.latestRoadMaster?.run || {};
+  const classificationTable = insights.latestRoadMaster?.rulesTable
+    ? {
+      ...insights.latestRoadMaster.rulesTable,
+      title: "Road classification rules",
+      columns: ["Road class input", "DUCAR class", "Code", "Planning assumption"],
+    }
+    : null;
   return (
-    <div className="product-view">
-      <section className="network-brief">
-        <div>
-          <p className="product-eyebrow">Network intelligence</p>
-          <h2>Road network proof, lightly.</h2>
-          <span>Coverage, condition, traffic and GIS signals are queried from SQLite; raw source tables stay behind the interface.</span>
+    <div className="product-view map-workspace-view">
+      <section className="map-workspace-shell network-workspace">
+        <div className="map-workspace-map">
+          <MapScene3D programme={programme} />
         </div>
-        <ProductStat label="Features read" value={formatCount(insights.spatialSummary.feature_count)} note={`${formatCount(insights.spatialSummary.layers_read)} layers queried`} tone="cyan" />
-        <ProductStat label="Line evidence" value={formatKm(insights.spatialSummary.line_length_km)} note="includes retained dated layer copies" tone="green" />
-        <ProductStat label="Latest road master" value={formatCount(latestMaster.record_count)} note={formatCompactDate(latestMaster.generated_at_utc)} tone="purple" />
-        <ProductStat label="Master length" value={formatKm(latestMaster.total_length_km)} note={`${formatCount(latestMaster.district_summary_count)} district summaries`} tone="gold" />
-      </section>
-      <section className="product-stat-grid network-kpis">
-        {(insights.ugandaNetwork?.kpis || []).map((item) => <ProductStat key={item.label} {...item} />)}
-      </section>
-      <MapScene3D programme={programme} />
-      <div className="chart-showcase">
-        <ProductPieChart title="Latest DUCAR Class Mix" subtitle="May 2026 road master records by planning class" rows={insights.charts.roadMasterClasses} />
-        <ProductFunnelChart title="Largest District Road Inventories" subtitle="Top district summaries from the latest road master" rows={insights.charts.roadMasterDistricts} formatValue={(value) => formatKm(value)} maxRows={8} />
-        <ProductPieChart title="Road Quality Flags" subtitle="Validation flags retained with the latest OSM and DUCAR merge" rows={insights.charts.roadMasterQuality} />
-      </div>
-      <div className="chart-showcase">
-        <ProductPieChart title="Road Network Share" subtitle="ITIS/URF FY 2022/23 length by category" rows={insights.charts.networkCategory} formatValue={(value) => formatKm(value)} />
-        <ProductFunnelChart title="Poor Condition Pressure" subtitle="Poor kilometres by network category" rows={insights.charts.networkPoor} formatValue={(value) => formatKm(value)} />
-        <ProductPieChart title="GIS Geometry Mix" subtitle="Feature geometry types extracted from local spatial evidence" rows={insights.charts.geometry} />
-      </div>
-      <div className="product-grid two">
-        <ProductBarChart title="Uganda Road Network" subtitle="ITIS/URF FY 2022/23 length by category" rows={insights.charts.networkCategory} formatValue={(value) => formatKm(value)} />
-        <ConditionStackChart rows={insights.ugandaNetwork?.conditionRows || []} />
-      </div>
-      <div className="product-grid two">
-        <ProductPieChart title="Spatial Evidence Share" subtitle="Readable local GIS feature coverage by layer" rows={insights.charts.spatial} />
-        <ProductFunnelChart title="Network Data Pipeline" subtitle="Files, tables, features and online checks retained by the sync store" rows={insights.charts.evidenceFunnel} />
-      </div>
-      <div className="product-grid two">
-        <TrendLinePanel title="Crash Trend" subtitle="Road traffic crashes by nature, CY 2019-2023" rows={insights.ugandaNetwork?.crashTrend || []} labelKey="year" valueKey="total" />
-        <TrendLinePanel title="Paved National Stock" subtitle="Paved national road network trend" rows={insights.ugandaNetwork?.pavedTrend || []} labelKey="fy" valueKey="paved_stock_km" formatValue={(value) => formatKm(value)} tone="green" />
-      </div>
-      <div className="product-grid two">
-        <ProductBarChart title="Largest GIS Layers" subtitle="Feature count by materialized spatial layer" rows={insights.charts.spatial} />
-        <ProductBarChart title="Geometry Mix" subtitle="Feature types found in local spatial evidence" rows={insights.charts.geometry} />
-      </div>
-      <div className="product-grid two">
-        <ProductBarChart title="Evidence Source Areas" subtitle="Readable local evidence grouped by source area" rows={insights.charts.sourceCoverage} />
-        <ProductTable table={insights.rawTables?.manifest} />
-      </div>
-      <div className="product-grid two">
-        <ProductTable table={insights.spatialEvidence?.layerTable || insights.rawTables?.catalog} />
-        <ProductTable table={insights.ugandaNetwork?.conditionTable} />
-      </div>
-      <div className="product-grid two">
-        <ProductTable table={insights.latestRoadMaster?.districtTable} />
-        <ProductTable table={insights.latestRoadMaster?.rulesTable} />
-      </div>
-      <section className="query-strip">
-        <QueryBadge label="spatial query" sql={insights.sql.spatial} />
-        <QueryBadge label="network query" sql={insights.sql.network} />
-        <QueryBadge label="latest road master query" sql={insights.sql.latestRoadMaster} />
+        <aside className="map-workspace-pane" aria-label="Network road intelligence">
+          <section className="network-brief compact-map-brief">
+            <div>
+              <p className="product-eyebrow">Network intelligence</p>
+              <h2>Uganda road network, decision-ready.</h2>
+              <span>Coverage, condition, traffic and district summaries sit beside the map without covering the roads.</span>
+            </div>
+            <ProductStat label="Mapped road links" value={formatCount(latestMaster.record_count || insights.spatialSummary.feature_count)} note={formatCompactDate(latestMaster.generated_at_utc)} tone="cyan" />
+            <ProductStat label="Mapped length" value={formatKm(latestMaster.total_length_km || insights.spatialSummary.line_length_km)} note={`${formatCount(latestMaster.district_summary_count)} district summaries`} tone="gold" />
+          </section>
+          <section className="product-stat-grid network-kpis">
+            {(insights.ugandaNetwork?.kpis || []).map((item) => <ProductStat key={item.label} {...item} />)}
+          </section>
+          <div className="chart-showcase">
+            <ProductPieChart title="Latest DUCAR Class Mix" subtitle="Road master records by planning class" rows={insights.charts.roadMasterClasses} />
+            <ProductFunnelChart title="Largest District Inventories" subtitle="Top district road-length summaries" rows={insights.charts.roadMasterDistricts} formatValue={(value) => formatKm(value)} maxRows={8} />
+            <ProductPieChart title="Road Quality Flags" subtitle="Naming, geometry and classification checks" rows={insights.charts.roadMasterQuality} />
+          </div>
+          <div className="chart-showcase">
+            <ProductPieChart title="Road Network Share" subtitle="FY 2022/23 length by category" rows={insights.charts.networkCategory} formatValue={(value) => formatKm(value)} />
+            <ProductFunnelChart title="Poor Condition Pressure" subtitle="Poor kilometres by network category" rows={insights.charts.networkPoor} formatValue={(value) => formatKm(value)} />
+            <ProductBarChart title="Uganda Road Network" subtitle="Length by network category" rows={insights.charts.networkCategory} formatValue={(value) => formatKm(value)} />
+          </div>
+          <div className="product-grid two">
+            <ConditionStackChart rows={insights.ugandaNetwork?.conditionRows || []} />
+            <ProductBarChart title="Priority Road-Link Scores" subtitle="Score, traffic, condition and readiness signals" rows={insights.priorityLinks.map((row) => [row.assetId, row.score, `${row.district} / ${row.treatment}`])} maxRows={10} />
+          </div>
+          <PriorityDecisionBars links={insights.priorityLinks} />
+          <div className="product-grid two">
+            <TrendLinePanel title="Crash Trend" subtitle="Road traffic crashes by nature, CY 2019-2023" rows={insights.ugandaNetwork?.crashTrend || []} labelKey="year" valueKey="total" />
+            <TrendLinePanel title="Paved National Stock" subtitle="Paved national road network trend" rows={insights.ugandaNetwork?.pavedTrend || []} labelKey="fy" valueKey="paved_stock_km" formatValue={(value) => formatKm(value)} tone="green" />
+          </div>
+          <div className="product-grid two">
+            <ProductTable table={insights.ugandaNetwork?.conditionTable} />
+            <ProductTable table={insights.latestRoadMaster?.districtTable} />
+          </div>
+          <ProductTable table={classificationTable} />
+        </aside>
       </section>
     </div>
   );
 }
 
 function EvidenceView({ insights }) {
+  const rows = buildEvidenceSourceMatrix(insights);
   return (
-    <div className="product-view">
-      <section className="evidence-backend">
-        <div>
-          <p className="product-eyebrow">Back-end evidence store</p>
-          <h2>Most source data is intentionally hidden.</h2>
-          <span>The interface reads materialized query outputs and only reveals source depth, freshness and decision use.</span>
+    <div className="product-view evidence-matrix-view">
+      <section className="source-matrix-panel">
+        <div className="source-matrix-head">
+          <div>
+            <p className="product-eyebrow">Evidence matrix</p>
+            <h2>All road documents and data downloads.</h2>
+          </div>
+          <span>{formatCount(rows.length)} linked entries</span>
         </div>
-        <div className="backend-meter">
-          <strong>{formatCount(insights.inventorySummary.files_indexed)}</strong>
-          <span>data-bearing files indexed behind the interface</span>
+        <div className="source-matrix-wrap">
+          <table className="source-matrix-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Owner</th>
+                <th>Theme</th>
+                <th>Format</th>
+                <th>Use</th>
+                <th>Read</th>
+                <th>Download</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row, index) => (
+                <tr key={`${row.id}-${index}`}>
+                  <td><strong>{row.title}</strong></td>
+                  <td>{row.owner}</td>
+                  <td>{row.theme}</td>
+                  <td><span className="format-pill">{row.format}</span></td>
+                  <td>{row.detail}</td>
+                  <td><a href={row.href} target="_blank" rel="noreferrer">Read</a></td>
+                  <td><a href={row.href} download target="_blank" rel="noreferrer"><Download size={14} /> Download</a></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </section>
-      <section className="product-stat-grid">
-        <ProductStat label="Documents queried" value={formatCount(insights.evidenceSummary.core_documents_read)} note={`${formatCount(insights.evidenceSummary.core_words_read)} words`} />
-        <ProductStat label="Tables read" value={formatCount(insights.evidenceSummary.local_tables_read)} note="local workbook and DOCX tables" tone="gold" />
-        <ProductStat label="Slides read" value={formatCount(insights.evidenceSummary.presentation_slides_read)} note={`${formatCount(insights.evidenceSummary.presentation_decks_read)} decks`} tone="purple" />
-        <ProductStat label="Online sources" value={formatCount(insights.evidenceSummary.online_sources_read)} note="live read checks" tone="green" />
-        <ProductStat label="Sync bot" value={insights.botSync?.status || "ready"} note={`${formatCount(insights.botSync?.source_file_count)} source files fingerprinted`} tone="cyan" />
-      </section>
-      <section className="story-row">
-        {insights.stories.map((card) => (
-          <article key={card.title}>
-            <span>{card.label}</span>
-            <strong>{formatStoryMetric(card.metric)}</strong>
-            <h3>{card.title}</h3>
-            <p>{card.story}</p>
-          </article>
-        ))}
-      </section>
-      <div className="chart-showcase">
-        <ProductFunnelChart title="Evidence Pipeline" subtitle="Indexed files, documents, raw cells, spatial features and online checks" rows={insights.charts.evidenceFunnel} />
-        <ProductPieChart title="Raw Table Families" subtitle="Extracted table groups summarized from the SQLite catalog" rows={insights.charts.tableGroups} />
-        <ProductPieChart title="Decision Topics" subtitle="Top text-derived evidence topics by mentions" rows={insights.charts.topics} />
-      </div>
-      <div className="product-grid two">
-        <ProductBarChart title="Evidence Coverage" subtitle="Source areas visible as query results" rows={insights.charts.sourceCoverage} />
-        <ProductBarChart title="Decision Topics" subtitle="Top text-derived decision signals" rows={insights.charts.topics} />
-      </div>
-      <div className="product-grid two">
-        <ProductPieChart title="Source Coverage Share" subtitle="Local, global, spatial and online evidence footprint" rows={insights.charts.sourceCoverage} />
-        <ProductFunnelChart title="Prediction Calibration" subtitle="Calibration signals available to the scoring model" rows={insights.charts.calibration} formatValue={(value) => Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} />
-      </div>
-      <div className="product-grid two">
-        <ProductBarChart title="Raw Table Cells" subtitle="All extracted workbook, case, ITIS and local table cells in SQLite" rows={insights.rawTables?.cellChart?.rows || []} />
-        <ProductTable table={insights.rawTables?.catalog} />
-      </div>
-      <ProductTable table={insights.rawTables?.manifest} />
-      <section className="query-library">
-        {Object.entries(insights.sql).map(([name, sql]) => <QueryBadge key={name} label={`${name} SQL`} sql={sql} />)}
       </section>
     </div>
   );
@@ -5983,8 +6098,8 @@ function TrafficGeoMap() {
           source: "traffic-base-roads",
           paint: {
             "line-color": "#020617",
-            "line-width": ["+", ROAD_CATEGORY_WIDTHS, 0.55],
-            "line-opacity": 0.28,
+            "line-width": ["+", ROAD_CATEGORY_WIDTHS, 0.32],
+            "line-opacity": 0.22,
             "line-blur": 0.15,
           },
         });
@@ -6004,8 +6119,8 @@ function TrafficGeoMap() {
           source: "traffic-flow-lines",
           paint: {
             "line-color": "#020617",
-            "line-width": ["interpolate", ["linear"], ["coalesce", ["get", "traffic_flow_index"], 45], 30, 1.05, 60, 2.2, 100, 3.6],
-            "line-opacity": 0.38,
+            "line-width": ["interpolate", ["linear"], ["coalesce", ["get", "traffic_flow_index"], 45], 30, 0.8, 60, 1.6, 100, 2.8],
+            "line-opacity": 0.3,
             "line-blur": 0.18,
           },
         });
@@ -6167,34 +6282,38 @@ function TrafficView({ insights }) {
   const avgFlow = Math.round(Number(trafficStats.avg_flow_index || 0));
   const maxFlow = Math.round(Number(trafficStats.max_flow_index || 0));
   return (
-    <div className="product-view">
-      <section className="network-brief">
-        <div>
-          <p className="product-eyebrow">Traffic analytics</p>
-          <h2>Traffic pressure without map clutter.</h2>
-          <span>Flow links, crash trend, OD pressure and condition stress are kept in the backend and surfaced as compact decision charts.</span>
+    <div className="product-view map-workspace-view">
+      <section className="map-workspace-shell traffic-workspace">
+        <div className="map-workspace-map">
+          <TrafficGeoMap />
         </div>
-        <ProductStat label="Flow links" value={formatCount(trafficStats.flow_links)} note="traffic-flow geometries queried" tone="cyan" />
-        <ProductStat label="Mean flow index" value={avgFlow ? `${avgFlow}%` : "Loading"} note={`max ${maxFlow || 0}%`} tone="green" />
-      </section>
-      <TrafficGeoMap />
-      <div className="chart-showcase">
-        <ProductFunnelChart title="Traffic Pressure Funnel" subtitle="Flow coverage, high-pressure links, crash trend and poor-condition load" rows={insights.charts.trafficFunnel} />
-        <ProductBarChart title="Highest Flow Links" subtitle="Average traffic-flow index by extracted link name" rows={insights.charts.trafficFlow} formatValue={(value) => `${Math.round(Number(value || 0))}%`} maxRows={8} />
-        <ProductPieChart title="Network Length Share" subtitle="Road length context used to interpret traffic pressure" rows={insights.charts.networkCategory} formatValue={(value) => formatKm(value)} />
-      </div>
-      <PriorityDecisionBars links={insights.priorityLinks} />
-      <div className="product-grid two">
-        <TrendLinePanel title="Crash Trend" subtitle="Road traffic crashes by nature, CY 2019-2023" rows={insights.ugandaNetwork?.crashTrend || []} labelKey="year" valueKey="total" />
-        <TrendLinePanel title="Paved National Stock" subtitle="Paved national road network trend used as traffic context" rows={insights.ugandaNetwork?.pavedTrend || []} labelKey="fy" valueKey="paved_stock_km" formatValue={(value) => formatKm(value)} tone="green" />
-      </div>
-      <div className="product-grid two">
-        <ConditionStackChart rows={insights.ugandaNetwork?.conditionRows || []} />
-        <ProductTable table={insights.traffic?.flowTable} />
-      </div>
-      <section className="query-strip">
-        <QueryBadge label="traffic query" sql={insights.sql.traffic} />
-        <QueryBadge label="network query" sql={insights.sql.network} />
+        <aside className="map-workspace-pane" aria-label="Traffic road intelligence">
+          <section className="network-brief compact-map-brief traffic-brief">
+            <div>
+              <p className="product-eyebrow">Traffic analytics</p>
+              <h2>Traffic pressure mapped by road link.</h2>
+              <span>Flow, safety, paved-stock and condition pressure stay visible in a tight side pane while the map fills the workspace.</span>
+            </div>
+            <ProductStat label="Flow links" value={formatCount(trafficStats.flow_links)} note="traffic-sensitive road links" tone="cyan" />
+            <ProductStat label="Mean flow index" value={avgFlow ? `${avgFlow}%` : "Loading"} note={`max ${maxFlow || 0}%`} tone="green" />
+          </section>
+          <div className="chart-showcase">
+            <ProductFunnelChart title="Traffic Pressure Funnel" subtitle="Flow links, high pressure, safety trend and poor-condition load" rows={insights.charts.trafficFunnel} />
+            <ProductBarChart title="Highest Flow Links" subtitle="Average traffic-flow index by road link" rows={insights.charts.trafficFlow} formatValue={(value) => `${Math.round(Number(value || 0))}%`} maxRows={8} />
+            <ProductPieChart title="Network Length Share" subtitle="Road length context for traffic pressure" rows={insights.charts.networkCategory} formatValue={(value) => formatKm(value)} />
+          </div>
+          <PriorityDecisionBars links={insights.priorityLinks} />
+          <div className="product-grid two">
+            <TrendLinePanel title="Crash Trend" subtitle="Road traffic crashes by nature, CY 2019-2023" rows={insights.ugandaNetwork?.crashTrend || []} labelKey="year" valueKey="total" />
+            <TrendLinePanel title="Paved National Stock" subtitle="Paved national road network trend used as traffic context" rows={insights.ugandaNetwork?.pavedTrend || []} labelKey="fy" valueKey="paved_stock_km" formatValue={(value) => formatKm(value)} tone="green" />
+          </div>
+          <div className="chart-showcase">
+            <ConditionStackChart rows={insights.ugandaNetwork?.conditionRows || []} />
+            <ProductPieChart title="Prediction Status" subtitle="Recommended model action by traffic-sensitive asset" rows={insights.charts.predictionStatusSplit} />
+            <ProductFunnelChart title="Model Feature Coverage" subtitle="PIMS, HDM-4, network pressure and monitoring signal completeness" rows={insights.charts.modelFunnel} />
+          </div>
+          <ProductTable table={insights.traffic?.flowTable} />
+        </aside>
       </section>
     </div>
   );
@@ -6212,7 +6331,7 @@ function PimsView({ insights }) {
         <div>
           <p className="product-eyebrow">Public investment management</p>
           <h2>PIMS gates as a clear investment filter.</h2>
-          <span>Project admission, evidence checks and approval logic are exposed as readiness signals, with the gate controls still available underneath.</span>
+          <span>Project admission, readiness checks and approval logic are exposed as investment signals.</span>
         </div>
         <ProductStat label="Framework steps" value={formatCount(insights.frameworkFlow.length)} note="ordered PIMS decision chain" tone="blue" />
         <ProductStat label="Avg readiness" value={`${averageReadiness}%`} note={`${formatCount(gateRows.length)} gate controls`} tone="green" />
@@ -6317,7 +6436,7 @@ function FrameworkView({ insights }) {
         <div>
           <p className="product-eyebrow">Framework flow</p>
           <h2>The decision framework as an animated operating model.</h2>
-          <span>PIMS, HDM-4, road asset management, budget control and monitoring are shown as a linked flow with the supporting data kept queryable.</span>
+          <span>PIMS, HDM-4, road asset management, budget control and monitoring are shown as a linked, animated decision cycle.</span>
         </div>
         <ProductStat label="Framework steps" value={formatCount(frameworkRows.length)} note="ordered decision chain" tone="blue" />
         <ProductStat label="Flow readiness" value={`${averageReadiness}%`} note="average step readiness" tone="green" />
@@ -6325,8 +6444,8 @@ function FrameworkView({ insights }) {
       <FrameworkFlow steps={insights.frameworkFlow} />
       <div className="chart-showcase">
         <ProductFunnelChart title="Framework Readiness" subtitle="Readiness by step in the operating model" rows={insights.charts.frameworkSteps} formatValue={(value) => `${Math.round(Number(value || 0))}%`} />
-        <ProductFunnelChart title="Evidence Pipeline" subtitle="Files, documents, raw cells, spatial features and online checks" rows={insights.charts.evidenceFunnel} />
-        <ProductPieChart title="Decision Topics" subtitle="Evidence topics that support the framework" rows={insights.charts.topics} />
+        <ProductFunnelChart title="Road Intelligence Coverage" subtitle="Road records, districts, condition pressure, traffic links and priority assets" rows={insights.charts.evidenceFunnel} />
+        <ProductPieChart title="Prediction Status" subtitle="Recommended model action by asset" rows={insights.charts.predictionStatusSplit} />
       </div>
       <div className="product-grid two">
         <ReadinessBars title="PIMS Steps" subtitle="Investment-management stages retained in the flow" items={insights.frameworkFlow} />
@@ -6346,10 +6465,9 @@ function GlobalCaseCovers({ rows = [], countryRows = [] }) {
   const fallbackRows = GLOBAL_CASE_STUDIES.map((item) => ({
     continent: item.region,
     country: item.place,
-    practice: item.source,
+    practice: item.metrics.join(" / "),
     ducar_lesson: item.lesson,
     adaptation: item.ducarUse,
-    source_key: item.source,
     score: item.score,
   }));
   const covers = (rows.length ? rows : fallbackRows).map((row) => {
@@ -6363,13 +6481,13 @@ function GlobalCaseCovers({ rows = [], countryRows = [] }) {
   return (
     <section className="global-cover-grid" aria-label="Global case study covers">
       {covers.map((row, index) => (
-        <article key={`${row.country}-${row.source_key || index}`} style={{ "--accent": productChartColor(index), "--delay": `${index * 70}ms` }}>
+        <article key={`${row.country}-${index}`} style={{ "--accent": productChartColor(index), "--delay": `${index * 70}ms` }}>
           <div className="case-cover-media">
             <span>{row.continent || "Global"}</span>
             <strong>{row.score}%</strong>
           </div>
           <div className="case-cover-body">
-            <em>{row.source_key || "Benchmark source"}</em>
+            <em>{row.continent || row.region || "Global practice"}</em>
             <h3>{row.country}</h3>
             <p>{row.practice}</p>
             <b>{row.ducar_lesson}</b>
@@ -6403,6 +6521,27 @@ function GlobalCasesView({ insights }) {
       row.ducar_use,
     ]),
   };
+  const localCaseTable = global.localCaseTable
+    ? {
+      title: "Country case studies",
+      columns: ["Continent", "Country", "Practice", "DUCAR lesson", "Adaptation"],
+      rows: global.localCaseTable.rows.map((row) => row.slice(0, 5)),
+    }
+    : null;
+  const decisionAssumptionsTable = global.decisionAssumptionsTable
+    ? {
+      title: "Global case transfer assumptions",
+      columns: ["ID", "Decision or assumption", "Rationale"],
+      rows: global.decisionAssumptionsTable.rows.map((row) => row.slice(0, 3)),
+    }
+    : null;
+  const benchmarkTable = global.benchmarkTable
+    ? {
+      title: "Global road asset management benchmark covers",
+      columns: ["Region", "Case cover", "Score", "Lesson", "DUCAR use"],
+      rows: global.benchmarkTable.rows.map((row) => [row[0], row[1], row[3], row[4], row[5]]),
+    }
+    : null;
 
   return (
     <div className="product-view global-cases-view">
@@ -6410,7 +6549,7 @@ function GlobalCasesView({ insights }) {
         <div>
           <p className="product-eyebrow">Global case study intelligence</p>
           <h2>Every country becomes a transferability signal.</h2>
-          <span>All-country review rows, local APA workbook cases, references and DUCAR adaptation assumptions are queried from SQLite and surfaced as charts, cover cards and tables.</span>
+          <span>All-country road asset management patterns are translated into transferability scores, covers, charts and DUCAR adaptation tables.</span>
         </div>
         <ProductStat label="Countries extracted" value={formatCount(countryRows.length)} note="all-country review rows" tone="purple" />
         <ProductStat label="Mean transferability" value={`${global.averageScore || selectedAverage}%`} note="composite road-asset score" tone="green" />
@@ -6418,7 +6557,6 @@ function GlobalCasesView({ insights }) {
 
       <div className="product-stat-grid">
         <ProductStat label="Local case package" value={formatCount(global.localCaseRows?.length || 0)} note="country case-study rows" tone="blue" />
-        <ProductStat label="APA references" value={formatCount(global.referenceCount || 0)} note="web and local source rows" tone="red" />
         <ProductStat label="Decision assumptions" value={formatCount(global.decisionAssumptionsTable?.rows?.length || 0)} note="rules translated into DUCAR" tone="gold" />
         <ProductStat label="Selected region" value={activeRegion} note={`${formatCount(filteredCountries.length)} countries in view`} tone="cyan" />
         <ProductStat label="Region mean" value={`${selectedAverage}%`} note="filtered score average" tone="green" />
@@ -6432,22 +6570,16 @@ function GlobalCasesView({ insights }) {
       </div>
 
       <div className="chart-showcase">
-        <ProductBarChart title="Top Country Transfer Scores" subtitle="Highest-scoring country rows from the SQL review table" rows={insights.charts.globalTopCountries} formatValue={(value) => `${Math.round(Number(value || 0))}%`} maxRows={18} />
+        <ProductBarChart title="Top Country Transfer Scores" subtitle="Highest-scoring country rows in the review" rows={insights.charts.globalTopCountries} formatValue={(value) => `${Math.round(Number(value || 0))}%`} maxRows={18} />
         <ProductBarChart title="Local Case Package Continents" subtitle="Extracted workbook country cases by continent" rows={insights.charts.globalLocalCaseContinents} maxRows={8} />
-        <ProductPieChart title="Reference Type Mix" subtitle="APA register rows by source type" rows={insights.charts.globalReferenceTypes} maxRows={6} />
+        <ProductBarChart title="Benchmark Cover Scores" subtitle="International road asset management case covers" rows={insights.charts.globalBenchmarks} formatValue={(value) => `${Math.round(Number(value || 0))}%`} maxRows={9} />
       </div>
 
       <GlobalCaseCovers rows={global.localCaseRows || []} countryRows={countryRows} />
 
       <div className="product-grid two">
-        <ProductTable table={global.localCaseTable} />
-        <ProductTable table={global.decisionAssumptionsTable} />
-      </div>
-
-      <div className="chart-showcase">
-        <ProductBarChart title="Benchmark Cover Scores" subtitle="International case-study covers used to frame the product logic" rows={insights.charts.globalBenchmarks} formatValue={(value) => `${Math.round(Number(value || 0))}%`} maxRows={9} />
-        <ProductBarChart title="APA References by Continent" subtitle="Workbook source register extracted from local case documents" rows={insights.charts.globalReferenceContinents} maxRows={8} />
-        <ProductBarChart title="Case Source Keys" subtitle="Source keys attached to extracted country case rows" rows={insights.charts.globalLocalCaseSources} maxRows={9} />
+        <ProductTable table={localCaseTable} />
+        <ProductTable table={decisionAssumptionsTable} />
       </div>
 
       <section className="global-country-panel">
@@ -6479,8 +6611,8 @@ function GlobalCasesView({ insights }) {
       </section>
 
       <div className="product-grid two">
-        <ProductTable table={global.benchmarkTable} />
-        <ProductTable table={global.referenceTable} />
+        <ProductTable table={benchmarkTable} />
+        <ProductPieChart title="Framework Lens Mix" subtitle="Dominant transfer patterns across countries" rows={insights.charts.globalPatterns} maxRows={6} />
       </div>
 
       <section className="query-strip">
@@ -7001,8 +7133,8 @@ function App() {
             <strong>{activeMeta.label}</strong>
           </div>
           <div className="product-topbar-actions">
-            <span><Database size={15} /> {insights.databaseLoaded ? `SQLite live / ${formatCount(insights.botSync?.source_file_count)} files` : "Loading database"}</span>
-            <span><ShieldAlert size={15} /> {insights.botSync?.changed_file_count ? `${formatCount(insights.botSync.changed_file_count)} source changes synced` : "source data hidden"}</span>
+            <span><Database size={15} /> {insights.databaseLoaded ? "Road model live" : "Road model loading"}</span>
+            <span><ShieldAlert size={15} /> {insights.latestRoadMaster?.run?.generated_at_utc ? `Road master ${formatCompactDate(insights.latestRoadMaster.run.generated_at_utc)}` : "Infrastructure intelligence ready"}</span>
             <button className="icon-action" onClick={() => runAnalysis()} aria-label="Refresh"><RefreshCcw size={16} /></button>
           </div>
         </header>

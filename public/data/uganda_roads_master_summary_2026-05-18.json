@@ -1,0 +1,46 @@
+{
+  "generated_at_utc": "2026-05-18T23:32:19.920033+00:00",
+  "source_files": {
+    "existing_ducar_shapefile": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\district roads\\dcroads2025.shp",
+    "district_boundaries": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\Districts\\districts.shp",
+    "geofabrik_url": "https://download.geofabrik.de/africa/uganda-latest-free.shp.zip",
+    "geofabrik_local_zip": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\data_sources\\uganda-latest-free.shp.zip"
+  },
+  "outputs": {
+    "master_gpkg": "C:\\Users\\Kas\\.codex\\automations\\refresh-uganda-road-master-mapping\\uganda_roads_master_2026-05-18.gpkg",
+    "master_geojson": "Skipped by default; GeoPackage is the authoritative editable master.",
+    "web_major_roads_geojson": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\data\\uganda_osm_major_roads_web_2026-05-18.geojson",
+    "web_district_summary_geojson": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\data\\uganda_roads_district_summary_2026-05-18.geojson",
+    "classification_rules_csv": "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\data\\DUCAR_OSM_Road_Classification_Rules_2026-05-18.csv"
+  },
+  "record_count": 708651,
+  "total_length_km": 410243.69,
+  "by_source": {
+    "Existing DUCAR district roads shapefile": 31106,
+    "OpenStreetMap via Geofabrik Uganda free shapefile extract": 677545
+  },
+  "by_ducar_class": {
+    "Community Access Road": 240585,
+    "District Road": 8796,
+    "Highway": 819,
+    "Major road": 592,
+    "Motorable track": 5873,
+    "National Road": 1805,
+    "Secondary road": 2147,
+    "Unclassified - Verify": 281929,
+    "Urban Road": 144430
+  },
+  "by_quality_flag": {
+    "District join missing": 6267,
+    "Name missing": 9467,
+    "Name missing in OSM": 663694,
+    "OK": 29223
+  },
+  "references_apa": [
+    "Geofabrik GmbH. (2026). Uganda latest free OpenStreetMap shapefile extract. https://download.geofabrik.de/africa/uganda-latest-free.shp.zip",
+    "OpenStreetMap contributors. (2026). OpenStreetMap highway tagging. https://wiki.openstreetmap.org/wiki/Key:highway",
+    "OpenStreetMap Wiki contributors. (2026). Highways. https://wiki.openstreetmap.org/wiki/Highways",
+    "Uganda road asset management manuals repository. (n.d.). Manuals and road asset management source documents. Local source: D:/OneDrive/Uganda National Road Network Repository/0. Manuals"
+  ],
+  "important_assumption": "OSM classifications are planning-screen assignments only. They must be validated against statutory road ownership, gazetted road lists, field survey, and the Uganda road asset management manuals before final budgeting or legal reporting."
+}

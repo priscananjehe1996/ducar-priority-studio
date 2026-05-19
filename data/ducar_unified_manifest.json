@@ -38,7 +38,7 @@
     "prediction_feature_matrix": 8,
     "raw_json_payloads": 2,
     "source_coverage": 29,
-    "source_sync_state": 825,
+    "source_sync_state": 831,
     "spatial_geometry_counts": 65,
     "sql_population_log": 3,
     "story_cards": 6,
@@ -46,7 +46,7 @@
     "uganda_crash_trend": 5,
     "uganda_paved_trend": 5
   },
-  "size_bytes": 2330624,
+  "size_bytes": 2322432,
   "sql_examples": {
     "executive": "SELECT title, metric, story FROM story_cards ORDER BY title;",
     "spatial": "SELECT layer_name, feature_count, line_length_km FROM spatial_layers WHERE status = 'read' ORDER BY feature_count DESC LIMIT 8;",
@@ -59,17 +59,18 @@
     "raw_tables": "SELECT table_group, table_name, COUNT(*) AS cells FROM raw_table_cells GROUP BY table_group, table_name ORDER BY cells DESC;"
   },
   "bot": {
-    "run_id": "20260519T062047Z",
-    "started_at_utc": "2026-05-19T06:20:47+00:00",
-    "completed_at_utc": "2026-05-19T06:20:48+00:00",
+    "run_id": "20260519T075252Z",
+    "started_at_utc": "2026-05-19T07:52:52+00:00",
+    "completed_at_utc": "2026-05-19T07:53:11+00:00",
     "source_roots": [
-      "/home/runner/work/ducar-priority-studio/ducar-priority-studio/data",
-      "/home/runner/work/ducar-priority-studio/ducar-priority-studio/public/data",
-      "/home/runner/work/ducar-priority-studio/ducar-priority-studio/public/docs"
+      "D:\\OneDrive\\Procurements\\TOR - DUCACR",
+      "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\data",
+      "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\data",
+      "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\docs"
     ],
-    "source_snapshot_mode": "cached",
-    "source_files_indexed": 825,
-    "changed_source_files": 0,
+    "source_snapshot_mode": "live",
+    "source_files_indexed": 831,
+    "changed_source_files": 7,
     "materialized_queries": {
       "network_prediction_context": 7,
       "prediction_feature_matrix": 8,

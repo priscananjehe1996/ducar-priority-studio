@@ -284,6 +284,79 @@ button {
   min-width: 0;
 }
 
+.map-workspace-view {
+  gap: 0;
+}
+
+.map-workspace-shell {
+  min-height: calc(100vh - 122px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(380px, 430px);
+  gap: 14px;
+  align-items: start;
+}
+
+.map-workspace-map {
+  position: sticky;
+  top: 92px;
+  min-width: 0;
+  height: calc(100vh - 122px);
+}
+
+.map-workspace-map .map-panel {
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+}
+
+.traffic-workspace .map-workspace-map .map-panel {
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+}
+
+.map-workspace-map .route-matrix-panel,
+.map-workspace-map .traffic-link-strip {
+  display: none;
+}
+
+.map-workspace-map .scene-shell {
+  min-height: 0;
+  height: 100%;
+}
+
+.map-workspace-map .maplibre-container,
+.map-workspace-map .traffic-maplibre-container {
+  height: 100%;
+  min-height: 420px;
+}
+
+.map-workspace-pane {
+  min-width: 0;
+  max-height: calc(100vh - 122px);
+  display: grid;
+  gap: 14px;
+  overflow: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+}
+
+.map-workspace-pane .network-brief {
+  grid-template-columns: 1fr;
+}
+
+.map-workspace-pane .chart-showcase,
+.map-workspace-pane .product-grid.two,
+.map-workspace-pane .product-stat-grid {
+  grid-template-columns: 1fr;
+}
+
+.compact-map-brief {
+  padding: 18px;
+}
+
+.compact-map-brief h2 {
+  font-size: clamp(25px, 2.2vw, 34px);
+}
+
 .command-hero,
 .network-brief,
 .evidence-backend,
@@ -1219,6 +1292,127 @@ button {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+.query-strip:empty,
+.query-library:empty {
+  display: none;
+}
+
+.evidence-matrix-view {
+  gap: 0;
+}
+
+.source-matrix-panel {
+  min-width: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.source-matrix-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0 14px;
+  border-bottom: 2px solid rgba(15, 23, 42, 0.14);
+}
+
+.source-matrix-head h2 {
+  max-width: 860px;
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(30px, 4vw, 58px);
+  line-height: 0.95;
+  font-weight: 950;
+}
+
+.source-matrix-head > span {
+  flex: 0 0 auto;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 12px;
+  border-radius: 999px;
+  color: #ffffff;
+  background: var(--rainbow);
+  font-size: 12px;
+  font-weight: 950;
+  text-transform: uppercase;
+  box-shadow: 0 16px 34px rgba(124, 58, 237, 0.22);
+}
+
+.source-matrix-wrap {
+  max-height: calc(100vh - 210px);
+  overflow: auto;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+}
+
+.source-matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1120px;
+}
+
+.source-matrix-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 12px 10px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #0f172a, #1d4ed8 38%, #7c3aed 72%, #db2777);
+  font-size: 11px;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.source-matrix-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  color: #334155;
+  font-size: 12px;
+  line-height: 1.42;
+  vertical-align: top;
+}
+
+.source-matrix-table tr:nth-child(even) td {
+  background: rgba(248, 250, 252, 0.82);
+}
+
+.source-matrix-table strong {
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.source-matrix-table a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #1d4ed8;
+  font-weight: 950;
+  text-decoration: none;
+}
+
+.source-matrix-table a:hover {
+  color: #db2777;
+}
+
+.format-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #059669, #0891b2);
+  font-size: 10px;
+  font-weight: 950;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .query-badge {
@@ -2674,6 +2868,19 @@ button {
   .product-grid.two {
     grid-template-columns: 1fr;
   }
+  .map-workspace-shell {
+    grid-template-columns: 1fr;
+  }
+  .map-workspace-map {
+    position: relative;
+    top: auto;
+    height: min(82vh, 780px);
+  }
+  .map-workspace-pane {
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+  }
   .scenario-row,
   .decision-grid,
   .story-row {
@@ -2743,6 +2950,24 @@ button {
     width: min(342px, calc(100vw - 24px));
     max-width: min(342px, calc(100vw - 24px));
     justify-items: stretch;
+  }
+  .map-workspace-view,
+  .map-workspace-shell,
+  .map-workspace-map,
+  .map-workspace-pane,
+  .source-matrix-panel {
+    width: min(342px, calc(100vw - 24px));
+    max-width: min(342px, calc(100vw - 24px));
+  }
+  .source-matrix-head {
+    align-items: start;
+    flex-direction: column;
+  }
+  .source-matrix-head h2 {
+    font-size: 30px;
+  }
+  .source-matrix-wrap {
+    max-height: none;
   }
   .command-hero,
   .network-brief,
@@ -2883,6 +3108,11 @@ button {
   .maplibre-container {
     min-height: 480px;
     height: 66vh;
+  }
+  .map-workspace-map .maplibre-container,
+  .map-workspace-map .traffic-maplibre-container {
+    min-height: 460px;
+    height: 100%;
   }
   .scene-hud {
     top: 10px;

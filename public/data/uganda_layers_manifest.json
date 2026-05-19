@@ -6,13 +6,13 @@
   "network_analysis_summary": "data/uganda_network_analysis_summary.json",
   "network_edges_geojson": "data/uganda_network_edges_web.geojson",
   "network_nodes_geojson": "data/uganda_network_nodes_web.geojson",
-  "osm_major_roads_geojson": "data/uganda_osm_major_roads_web_2026-05-17.geojson",
-  "roads_district_summary_geojson": "data/uganda_roads_district_summary_2026-05-17.geojson",
-  "roads_master_gpkg": "local-artifact/uganda_roads_master_2026-05-17.gpkg",
-  "roads_master_summary": "local-data/uganda_roads_master_summary_2026-05-17.json",
+  "osm_major_roads_geojson": "data/uganda_osm_major_roads_web_2026-05-18.geojson",
+  "roads_district_summary_geojson": "data/uganda_roads_district_summary_2026-05-18.geojson",
+  "roads_master_gpkg": "local-artifact/uganda_roads_master_2026-05-18.gpkg",
+  "roads_master_summary": "data/uganda_roads_master_summary_2026-05-18.json",
   "route_matrix_json": "data/uganda_route_matrix.json",
   "traffic_flows_geojson": "data/uganda_traffic_flows_web.geojson",
   "unified_roads_geojson": "data/uganda_unified_roads_web_2026-05-13.geojson",
   "unified_roads_summary": "local-data/uganda_unified_roads_summary_2026-05-13.json",
-  "updated_at_utc": "2026-05-17T23:32:40.389499+00:00"
+  "updated_at_utc": "2026-05-18T23:32:20.050027+00:00"
 }
