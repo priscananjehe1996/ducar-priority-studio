@@ -5035,6 +5035,12 @@ function buildProductInsights(analysis, evidence) {
   const riskSplit = countBy(programme, (item) => item.riskBand);
   const monitoringSplit = countBy(programme, (item) => item.monitoringTier || "Tier pending");
   const predictionStatusSplit = countBy(programme, (item) => item.predictionStatus || item.status);
+  const surfaceSplit = countBy(programme, (item) => item.surface || "Surface pending");
+  const maintainabilitySplit = countBy(programme, (item) => item.maintainable === "No" ? "Referral / not maintainable" : "Maintainable");
+  const regionAssetCount = countBy(programme, (item) => item.region);
+  const classAssetCount = countBy(programme, (item) => item.functionalClass);
+  const statusCostSplit = sumBy(programme, (item) => item.status, (item) => item.cost);
+  const regionDemand = sumBy(programme, (item) => item.region, (item) => item.cost).slice(0, 8);
   const riskTable = programme
     .toSorted((a, b) => Number(b.mlRisk || 0) - Number(a.mlRisk || 0))
     .slice(0, 7)
@@ -5061,6 +5067,21 @@ function buildProductInsights(analysis, evidence) {
       maintainable: item.maintainable,
       monitoringTier: item.monitoringTier || "Tier pending",
     }));
+  const assetRiskBars = priorityLinks
+    .toSorted((a, b) => Number(b.risk || 0) - Number(a.risk || 0))
+    .map((item) => [item.assetId, Number(item.risk || 0) * 100, `${item.district} / ${item.treatment}`]);
+  const assetCostBars = priorityLinks
+    .toSorted((a, b) => Number(b.cost || 0) - Number(a.cost || 0))
+    .map((item) => [item.assetId, Number(item.cost || 0), `${item.district} / ${item.treatment}`]);
+  const assetTrafficBars = priorityLinks
+    .toSorted((a, b) => Number(b.traffic || 0) - Number(a.traffic || 0))
+    .map((item) => [item.assetId, Number(item.traffic || 0), `${item.district} / ${item.treatment}`]);
+  const assetConditionBars = priorityLinks
+    .toSorted((a, b) => Number(b.condition || 0) - Number(a.condition || 0))
+    .map((item) => [item.assetId, Number(item.condition || 0), `${item.district} / ${item.treatment}`]);
+  const assetEvidenceBars = priorityLinks
+    .toSorted((a, b) => Number(b.evidence || 0) - Number(a.evidence || 0))
+    .map((item) => [item.assetId, Number(item.evidence || 0), `${item.district} / ${item.treatment}`]);
   const selectedTable = selected
     .toSorted((a, b) => a.rank - b.rank)
     .slice(0, 8)
@@ -5199,6 +5220,17 @@ function buildProductInsights(analysis, evidence) {
       riskSplit,
       monitoringSplit,
       predictionStatusSplit,
+      surfaceSplit,
+      maintainabilitySplit,
+      regionAssetCount,
+      classAssetCount,
+      statusCostSplit,
+      regionDemand,
+      assetRiskBars,
+      assetCostBars,
+      assetTrafficBars,
+      assetConditionBars,
+      assetEvidenceBars,
       tableGroups: tableGroupRows,
       pimsReadiness: pimsReadinessRows,
       hdm4Readiness: hdm4ReadinessRows,
@@ -5622,6 +5654,36 @@ function ConditionStackChart({ rows = [] }) {
   );
 }
 
+function SqlChartGallery({ insights }) {
+  return (
+    <section className="sql-chart-gallery">
+      <div className="product-panel-head gallery-head">
+        <h3>SQL Programme Chart Gallery</h3>
+        <span>{formatCount(insights.programmeAssetCount)} assets queried from SQLite</span>
+      </div>
+      <div className="chart-showcase">
+        <ProductPieChart title="Surface Mix" subtitle="Candidate assets by pavement or surface type" rows={insights.charts.surfaceSplit} />
+        <ProductPieChart title="Maintainability" subtitle="Maintenance-eligible assets versus referrals" rows={insights.charts.maintainabilitySplit} />
+        <ProductPieChart title="Asset Regions" subtitle="Programme asset count by region" rows={insights.charts.regionAssetCount} />
+      </div>
+      <div className="chart-showcase">
+        <ProductBarChart title="Regional Demand" subtitle="Total candidate cost by region" rows={insights.charts.regionDemand} formatValue={(value) => `UGX ${currency.format(value)}`} maxRows={8} />
+        <ProductBarChart title="Cost by Status" subtitle="Budget pressure by fiscal-gate result" rows={insights.charts.statusCostSplit} formatValue={(value) => `UGX ${currency.format(value)}`} />
+        <ProductBarChart title="Class Counts" subtitle="Candidate assets by functional class" rows={insights.charts.classAssetCount} maxRows={8} />
+      </div>
+      <div className="chart-showcase">
+        <ProductBarChart title="Asset Risk %" subtitle="Highest ML risk probabilities from SQL programme assets" rows={insights.charts.assetRiskBars} formatValue={(value) => `${Math.round(Number(value || 0))}%`} maxRows={8} />
+        <ProductBarChart title="Asset Cost" subtitle="Largest candidate cost items" rows={insights.charts.assetCostBars} formatValue={(value) => `UGX ${currency.format(value)}`} maxRows={8} />
+        <ProductBarChart title="Evidence Readiness" subtitle="Completeness score by programme asset" rows={insights.charts.assetEvidenceBars} formatValue={(value) => `${Math.round(Number(value || 0))}%`} maxRows={8} />
+      </div>
+      <div className="product-grid two">
+        <ProductBarChart title="Traffic Scores" subtitle="Traffic pressure score by asset" rows={insights.charts.assetTrafficBars} formatValue={(value) => `${Number(value || 0)}/5`} maxRows={8} />
+        <ProductBarChart title="Condition Scores" subtitle="Condition pressure score by asset" rows={insights.charts.assetConditionBars} formatValue={(value) => `${Number(value || 0)}/5`} maxRows={8} />
+      </div>
+    </section>
+  );
+}
+
 function TrendLinePanel({ title, subtitle, rows = [], labelKey, valueKey, formatValue = formatCount, tone = "blue" }) {
   const visible = rows.filter((row) => Number.isFinite(Number(row[valueKey])));
   if (visible.length < 2) return null;
@@ -5858,6 +5920,7 @@ function CommandView({ insights }) {
         <ProductFunnelChart title="Priority Funnel" subtitle="Candidate assets through selection, risk and referral gates" rows={insights.charts.programmeFunnel} />
         <ProductPieChart title="Road Network Share" subtitle="National, district, urban and community road length context" rows={insights.charts.networkCategory} formatValue={(value) => formatKm(value)} />
       </div>
+      <SqlChartGallery insights={insights} />
       <div className="product-grid two">
         <ProductBarChart title="Budget by Region" subtitle="Selected assets only" rows={insights.charts.regionAllocation} formatValue={(value) => `UGX ${currency.format(value)}`} />
         <ProductBarChart title="Highest Flow Links" subtitle="Traffic pressure by named road link" rows={insights.charts.trafficFlow} formatValue={(value) => `${Math.round(Number(value || 0))}%`} maxRows={8} />
@@ -5916,6 +5979,11 @@ function PortfolioView({ insights, budget, reservePercent, onBudgetChange, onRes
       <div className="product-grid two">
         <ProductBarChart title="Allocation by Road Class" subtitle="Selected programme cost" rows={insights.charts.classAllocation} formatValue={(value) => `UGX ${currency.format(value)}`} />
         <ProductBarChart title="Treatment Demand" subtitle="All candidate costs by intervention" rows={insights.charts.interventions} formatValue={(value) => `UGX ${currency.format(value)}`} />
+      </div>
+      <div className="chart-showcase">
+        <ProductPieChart title="Surface Mix" subtitle="Portfolio candidates by surface" rows={insights.charts.surfaceSplit} />
+        <ProductBarChart title="Regional Demand" subtitle="Total cost pressure by region" rows={insights.charts.regionDemand} formatValue={(value) => `UGX ${currency.format(value)}`} maxRows={8} />
+        <ProductBarChart title="Asset Cost Ranking" subtitle="Largest cost items in the SQL programme" rows={insights.charts.assetCostBars} formatValue={(value) => `UGX ${currency.format(value)}`} maxRows={8} />
       </div>
       <div className="product-grid two">
         <ProductFunnelChart title="HDM-4 Readiness Funnel" subtitle="Economic and pavement model indicators by retained readiness score" rows={insights.charts.hdm4Readiness} formatValue={(value) => `${Math.round(Number(value || 0))}%`} />
