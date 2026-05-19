@@ -4448,6 +4448,30 @@ function chartFromSql(rows, labelKey, valueKey, extraKey) {
   return rows.map((row) => extraKey ? [row[labelKey], Number(row[valueKey] || 0), row[extraKey]] : [row[labelKey], Number(row[valueKey] || 0)]);
 }
 
+function normalizeProgrammeAssetRow(row) {
+  return {
+    assetType: row.asset_type || "Road",
+    assetId: row.asset_id,
+    admin: row.district,
+    region: row.region,
+    functionalClass: row.functional_class,
+    intervention: row.intervention,
+    surface: row.surface,
+    condition: Number(row.condition_score || 0),
+    criticality: Number(row.criticality_score || 0),
+    traffic: Number(row.traffic_score || 0),
+    climate: Number(row.climate_score || 0),
+    safety: Number(row.safety_score || 0),
+    equity: Number(row.equity_score || 0),
+    readiness: Number(row.readiness_score || 0),
+    maintainable: row.maintainable || "Yes",
+    quantity: Number(row.quantity || 0),
+    unitRate: Number(row.unit_rate || 0),
+    lat: Number(row.lat || 0),
+    lon: Number(row.lon || 0),
+  };
+}
+
 function useUnifiedDatabase() {
   const [store, setStore] = useState(null);
   useEffect(() => {
@@ -4464,6 +4488,15 @@ function useUnifiedDatabase() {
           return [name, Number(runSqlValue(db, `SELECT COUNT(*) FROM ${name}`) || 0)];
         });
         const tableSet = new Set(tableCounts.map(([name]) => name));
+        const programmeAssetRows = tableSet.has("programme_assets")
+          ? runSqlRows(db, `
+            SELECT asset_id, asset_type, district, region, functional_class, intervention, surface,
+                   condition_score, criticality_score, traffic_score, climate_score, safety_score,
+                   equity_score, readiness_score, maintainable, quantity, unit_rate, lat, lon
+            FROM programme_assets
+            ORDER BY asset_id
+          `).map(normalizeProgrammeAssetRow)
+          : [];
         const summary = runSqlRows(db, `
           SELECT
             (SELECT COUNT(*) FROM evidence_documents) AS core_documents_read,
@@ -4797,6 +4830,8 @@ function useUnifiedDatabase() {
         const manifestRows = tableCounts.map(([name, count]) => [name, count]);
         const payload = {
           loadedFromDatabase: true,
+          databaseBackend: "SQLite over GitHub Pages",
+          programmeAssets: programmeAssetRows,
           summary,
           sourceCoverage: { sourceAreaChart: { rows: sourceCoverage } },
           documentTopicChart: topics,
@@ -5230,12 +5265,13 @@ function buildProductInsights(analysis, evidence) {
     predictions: evidence?.predictions || {},
     botSync: evidence?.botSync || {},
     databaseLoaded: Boolean(evidence?.loadedFromDatabase),
+    dataBackend: evidence?.databaseBackend || "Bundled JSON fallback",
+    programmeAssetCount: evidence?.programmeAssets?.length || 0,
   };
 }
 
-function useProductInsights(analysis) {
-  const store = useUnifiedDatabase();
-  return useMemo(() => buildProductInsights(analysis, store), [analysis, store]);
+function useProductInsights(analysis, evidence) {
+  return useMemo(() => buildProductInsights(analysis, evidence), [analysis, evidence]);
 }
 
 function ProductNav({ activeView, onNavigate }) {
@@ -7068,20 +7104,25 @@ function LegacyApp() {
 function App() {
   const [budget, setBudget] = useState(250000000);
   const [reservePercent, setReservePercent] = useState(5);
-  const [analysis, setAnalysis] = useState(() => localAnalysis(sample, 250000000, 5));
+  const [refreshNonce, setRefreshNonce] = useState(0);
   const [activeView, setActiveView] = useState(() => {
     const hash = window.location.hash.replace("#", "") || "command";
     return NAV_ITEMS.some((item) => item.id === hash) ? hash : "command";
   });
-  const insights = useProductInsights(analysis);
+  const evidenceStore = useUnifiedDatabase();
+  const productRecords = useMemo(
+    () => evidenceStore?.programmeAssets?.length ? evidenceStore.programmeAssets : sample,
+    [evidenceStore],
+  );
+  const analysis = useMemo(
+    () => localAnalysis(productRecords, budget, reservePercent),
+    [productRecords, budget, reservePercent, refreshNonce],
+  );
+  const insights = useProductInsights(analysis, evidenceStore);
 
-  const runAnalysis = useCallback((nextBudget = budget, nextReserve = reservePercent) => {
-    setAnalysis(localAnalysis(sample, nextBudget, nextReserve));
-  }, [budget, reservePercent]);
-
-  useEffect(() => {
-    runAnalysis(budget, reservePercent);
-  }, [budget, reservePercent, runAnalysis]);
+  const runAnalysis = useCallback(() => {
+    setRefreshNonce((value) => value + 1);
+  }, []);
 
   useEffect(() => {
     function syncView() {
@@ -7133,7 +7174,8 @@ function App() {
             <strong>{activeMeta.label}</strong>
           </div>
           <div className="product-topbar-actions">
-            <span><Database size={15} /> {insights.databaseLoaded ? "Road model live" : "Road model loading"}</span>
+            <span><Database size={15} /> {insights.databaseLoaded ? "SQL model live" : "SQL model loading"}</span>
+            <span><GitBranch size={15} /> {insights.programmeAssetCount ? `${formatCount(insights.programmeAssetCount)} SQL assets` : "JSON fallback"}</span>
             <span><ShieldAlert size={15} /> {insights.latestRoadMaster?.run?.generated_at_utc ? `Road master ${formatCompactDate(insights.latestRoadMaster.run.generated_at_utc)}` : "Infrastructure intelligence ready"}</span>
             <button className="icon-action" onClick={() => runAnalysis()} aria-label="Refresh"><RefreshCcw size={16} /></button>
           </div>
