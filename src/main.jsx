@@ -236,6 +236,7 @@ const NAV_ITEMS = [
   { id: "command", label: "Command", icon: LayoutDashboard },
   { id: "portfolio", label: "Portfolio", icon: CircleDollarSign },
   { id: "network", label: "Network", icon: MapIcon },
+  { id: "network-summaries", label: "Summaries", icon: FileSpreadsheet },
   { id: "traffic", label: "Traffic", icon: Truck },
   { id: "pims", label: "PIMS", icon: ClipboardCheck },
   { id: "hdm4", label: "HDM-4", icon: LineChart },
@@ -6192,6 +6193,135 @@ function NetworkView({ insights, programme }) {
   );
 }
 
+function compactSummaryTable(title, columns, rows) {
+  return { title, columns, rows: rows.filter((row) => row.some((cell) => cell !== null && cell !== undefined && cell !== "")) };
+}
+
+function rowsFromChart(rows = [], valueLabel = "Value") {
+  return rows.map((row) => [
+    row[0],
+    typeof row[1] === "number" ? Number(row[1]).toLocaleString(undefined, { maximumFractionDigits: 2 }) : formatEvidenceCell(row[1]),
+    row[2] || "",
+  ]);
+}
+
+function NetworkSummariesView({ insights }) {
+  const latestMaster = insights.latestRoadMaster?.run || {};
+  const networkSummary = compactSummaryTable(
+    "Road network infrastructure summary",
+    ["Measure", "Value", "Notes"],
+    [
+      ["Road master records", formatCount(latestMaster.record_count || insights.spatialSummary.feature_count), formatCompactDate(latestMaster.generated_at_utc)],
+      ["Mapped length", formatKm(latestMaster.total_length_km || insights.spatialSummary.line_length_km), "road-master or spatial-layer length"],
+      ["District summaries", formatCount(latestMaster.district_summary_count), "district inventory rows"],
+      ["OSM major features", formatCount(latestMaster.osm_major_feature_count), "major road reference features"],
+      ["GIS layers read", formatCount(insights.spatialSummary.layers_read), "spatial evidence layers"],
+      ["Mapped features", formatCount(insights.spatialSummary.feature_count), "features represented in the evidence database"],
+      ["Traffic flow links", formatCount(insights.traffic?.stats?.flow_links), `mean flow ${Math.round(Number(insights.traffic?.stats?.avg_flow_index || 0))}%`],
+      ["Programme assets", formatCount(insights.programmeAssetCount), insights.dataBackend],
+    ],
+  );
+  const tableGroupsSummary = compactSummaryTable(
+    "Available summary table groups",
+    ["Table group", "Rows", "Source"],
+    rowsFromChart(insights.charts.tableGroups, "Rows"),
+  );
+  const roadMasterClassTable = compactSummaryTable(
+    "Road master class summary",
+    ["DUCAR class", "Records", "Detail"],
+    rowsFromChart(insights.charts.roadMasterClasses),
+  );
+  const roadMasterSourceTable = compactSummaryTable(
+    "Road master source summary",
+    ["Source", "Records", "Detail"],
+    rowsFromChart(insights.charts.roadMasterSources),
+  );
+  const roadMasterQualityTable = compactSummaryTable(
+    "Road master quality flags",
+    ["Quality flag", "Records", "Detail"],
+    rowsFromChart(insights.charts.roadMasterQuality),
+  );
+  const networkLengthTable = compactSummaryTable(
+    "Network length summary",
+    ["Category", "Length", "DUCAR scope"],
+    (insights.charts.networkCategory || []).map((row) => [row[0], formatKm(row[1]), row[2] || ""]),
+  );
+  const poorConditionTable = compactSummaryTable(
+    "Poor condition pressure summary",
+    ["Category", "Poor km", "Detail"],
+    (insights.charts.networkPoor || []).map((row) => [row[0], formatKm(row[1]), row[2] || ""]),
+  );
+  const districtInventoryTable = insights.latestRoadMaster?.districtTable
+    ? { ...insights.latestRoadMaster.districtTable, title: "District road inventory summaries" }
+    : null;
+  const classificationTable = insights.latestRoadMaster?.rulesTable
+    ? { ...insights.latestRoadMaster.rulesTable, title: "Road classification rules and assumptions" }
+    : null;
+  const spatialLayerTable = insights.spatialEvidence?.layerTable
+    ? { ...insights.spatialEvidence.layerTable, title: "GIS and road infrastructure layer summaries" }
+    : null;
+  const rawCatalogTable = insights.rawTables?.catalog
+    ? { ...insights.rawTables.catalog, title: "Available source table catalogue" }
+    : null;
+  const manifestTable = insights.rawTables?.manifest
+    ? { ...insights.rawTables.manifest, title: "SQLite database table manifest" }
+    : null;
+  const trafficTable = insights.traffic?.flowTable
+    ? { ...insights.traffic.flowTable, title: "Traffic flow road-link summary" }
+    : null;
+
+  return (
+    <div className="product-view network-summary-view">
+      <section className="network-summary-hero">
+        <div>
+          <p className="product-eyebrow">Network summaries</p>
+          <h2>Road infrastructure tables and available summaries.</h2>
+          <span>All road-master, network, condition, traffic, classification, GIS and database summary tables are collected in one scanning view.</span>
+        </div>
+        <ProductStat label="Road records" value={formatCount(latestMaster.record_count || insights.spatialSummary.feature_count)} note={formatKm(latestMaster.total_length_km || insights.spatialSummary.line_length_km)} tone="blue" />
+        <ProductStat label="Summary tables" value="14" note="network and infrastructure tables" tone="green" />
+      </section>
+
+      <section className="network-summary-toc">
+        {[
+          "Infrastructure summary",
+          "District inventories",
+          "Condition pressure",
+          "Classification rules",
+          "GIS layers",
+          "Traffic links",
+          "SQLite manifest",
+        ].map((item) => <span key={item}>{item}</span>)}
+      </section>
+
+      <div className="product-grid two">
+        <ProductTable table={networkSummary} />
+        <ProductTable table={tableGroupsSummary} />
+      </div>
+
+      <div className="product-grid two">
+        <ProductTable table={networkLengthTable} />
+        <ProductTable table={poorConditionTable} />
+      </div>
+
+      <div className="product-grid two">
+        <ProductTable table={roadMasterClassTable} />
+        <ProductTable table={roadMasterSourceTable} />
+      </div>
+
+      <ProductTable table={roadMasterQualityTable} />
+      <ProductTable table={districtInventoryTable} />
+      <ProductTable table={insights.ugandaNetwork?.categoryTable} />
+      <ProductTable table={insights.ugandaNetwork?.conditionTable} />
+      <ProductTable table={classificationTable} />
+      <ProductTable table={spatialLayerTable} />
+      <ProductTable table={trafficTable} />
+      <ProductTable table={rawCatalogTable} />
+      <ProductTable table={manifestTable} />
+    </div>
+  );
+}
+
 function EvidenceView({ insights }) {
   const rows = buildEvidenceSourceMatrix(insights);
   return (
@@ -7332,6 +7462,9 @@ function App() {
         allocation: "portfolio",
         programme: "portfolio",
         gis: "network",
+        summaries: "network-summaries",
+        summary: "network-summaries",
+        "network-summary": "network-summaries",
         cases: "global",
         "case-studies": "global",
         "global-cases": "global",
@@ -7389,6 +7522,7 @@ function App() {
           />
         )}
         {activeView === "network" && <NetworkView insights={insights} programme={analysis.programme || []} />}
+        {activeView === "network-summaries" && <NetworkSummariesView insights={insights} />}
         {activeView === "traffic" && <TrafficView insights={insights} />}
         {activeView === "pims" && <PimsView insights={insights} />}
         {activeView === "hdm4" && <Hdm4View insights={insights} />}
