@@ -5064,6 +5064,12 @@ function buildProductInsights(analysis, evidence) {
       safety: Number(item.safety || 0),
       evidence: Number(item.evidenceScore || 0),
       readiness: Number(item.readiness || 0),
+      equity: Number(item.equity || 0),
+      quantity: Number(item.quantity || 0),
+      unitRate: Number(item.unitRate || 0),
+      pimsGateScore: Number(item.pimsGateScore || 0),
+      hdm4ReadinessScore: Number(item.hdm4ReadinessScore || 0),
+      networkPressureScore: Number(item.networkPressureScore || 0),
       maintainable: item.maintainable,
       monitoringTier: item.monitoringTier || "Tier pending",
     }));
@@ -5395,6 +5401,128 @@ function ProductBarChart({ title, subtitle, rows, formatValue = (value) => forma
             <strong>{formatValue(row.value)}</strong>
           </article>
         ))}
+      </div>
+    </section>
+  );
+}
+
+const NUMERIC_FIELD_LABELS = {
+  score: "Priority Score",
+  cost: "Cost",
+  risk: "ML Risk Probability",
+  traffic: "Traffic Score",
+  condition: "Condition Score",
+  criticality: "Criticality Score",
+  climate: "Climate Score",
+  safety: "Safety Score",
+  evidence: "Evidence Readiness",
+  readiness: "Implementation Readiness",
+  equity: "Equity Score",
+  quantity: "Quantity",
+  unitRate: "Unit Rate",
+  pimsGateScore: "PIMS Gate Score",
+  hdm4ReadinessScore: "HDM-4 Readiness Score",
+  networkPressureScore: "Network Pressure Score",
+};
+
+function titleFromField(field) {
+  return NUMERIC_FIELD_LABELS[field] || field
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function formatNumericFieldValue(field, value) {
+  if (["cost", "unitRate"].includes(field)) return formatMoneyCompact(value);
+  if (field === "risk") return `${Math.round(Number(value || 0) * 100)}%`;
+  if (field === "score") return Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 1 });
+  if (["evidence", "pimsGateScore", "hdm4ReadinessScore", "networkPressureScore"].includes(field)) {
+    return `${Math.round(Number(value || 0))}%`;
+  }
+  if (["traffic", "condition", "criticality", "climate", "safety", "readiness", "equity"].includes(field)) {
+    return `${Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 1 })}/5`;
+  }
+  return Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
+
+function numericFieldScale(field, values) {
+  const maxValue = Math.max(0, ...values.map((value) => Number(value || 0)));
+  if (field === "risk") return 1;
+  if (["traffic", "condition", "criticality", "climate", "safety", "readiness", "equity"].includes(field)) return 5;
+  if (["score", "evidence", "pimsGateScore", "hdm4ReadinessScore", "networkPressureScore"].includes(field)) return 100;
+  if (maxValue <= 0) return 1;
+  const magnitude = 10 ** Math.floor(Math.log10(maxValue));
+  return Math.ceil(maxValue / magnitude) * magnitude;
+}
+
+function numericFieldTicks(scaleMax, segments = 4) {
+  return Array.from({ length: segments + 1 }, (_, index) => (scaleMax / segments) * index);
+}
+
+function ProductScaledBarChart({ field, rows, maxRows = 8 }) {
+  const values = rows
+    .map((item) => ({ ...item, value: Number(item[field]) }))
+    .filter((item) => Number.isFinite(item.value))
+    .toSorted((a, b) => Number(b.value || 0) - Number(a.value || 0))
+    .slice(0, maxRows);
+  if (!values.length) return null;
+  const scaleMax = numericFieldScale(field, values.map((item) => item.value));
+  const ticks = numericFieldTicks(scaleMax);
+  const title = titleFromField(field);
+  return (
+    <section className="query-panel scaled-bar-panel">
+      <div className="product-panel-head">
+        <h3>{title}</h3>
+        <span>Scale 0 to {formatNumericFieldValue(field, scaleMax)}</span>
+      </div>
+      <div className="scaled-bars">
+        <div className="scaled-axis" aria-hidden="true">
+          {ticks.map((tick) => (
+            <span key={`${field}-tick-${tick}`} style={{ left: `${(tick / scaleMax) * 100}%` }}>
+              <i />
+              <em>{formatNumericFieldValue(field, tick)}</em>
+            </span>
+          ))}
+        </div>
+        {values.map((item, index) => {
+          const width = Math.max(3, Math.min(100, (Number(item.value || 0) / scaleMax) * 100));
+          return (
+            <article key={`${field}-${item.assetId}-${index}`} style={{ "--accent": productChartColor(index), "--width": `${width}%`, "--delay": `${index * 55}ms` }}>
+              <div>
+                <strong>{item.assetId}</strong>
+                <span>{item.district} / {item.treatment}</span>
+              </div>
+              <i><b /></i>
+              <em>{formatNumericFieldValue(field, item.value)}</em>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function NumericFieldChartBank({ links = [] }) {
+  const numericFields = useMemo(() => {
+    const fields = new Set();
+    for (const item of links) {
+      for (const [key, value] of Object.entries(item)) {
+        if (["assetId"].includes(key)) continue;
+        const number = Number(value);
+        if (Number.isFinite(number) && value !== "" && value !== null) fields.add(key);
+      }
+    }
+    return [...fields].filter((field) => links.some((item) => Number(item[field] || 0) !== 0));
+  }, [links]);
+  if (!numericFields.length) return null;
+  return (
+    <section className="numeric-field-bank">
+      <div className="product-panel-head numeric-field-head">
+        <h3>All Discovered Numeric Fields</h3>
+        <span>{numericFields.length} scaled bar graphs with ticks</span>
+      </div>
+      <div className="numeric-field-grid">
+        {numericFields.map((field) => <ProductScaledBarChart key={field} field={field} rows={links} />)}
       </div>
     </section>
   );
@@ -6406,6 +6534,7 @@ function TrafficView({ insights }) {
             <ProductBarChart title="Highest Flow Links" subtitle="Average traffic-flow index by road link" rows={insights.charts.trafficFlow} formatValue={(value) => `${Math.round(Number(value || 0))}%`} maxRows={8} />
             <ProductPieChart title="Network Length Share" subtitle="Road length context for traffic pressure" rows={insights.charts.networkCategory} formatValue={(value) => formatKm(value)} />
           </div>
+          <NumericFieldChartBank links={insights.priorityLinks} />
           <PriorityDecisionBars links={insights.priorityLinks} />
           <div className="product-grid two">
             <TrendLinePanel title="Crash Trend" subtitle="Road traffic crashes by nature, CY 2019-2023" rows={insights.ugandaNetwork?.crashTrend || []} labelKey="year" valueKey="total" />
