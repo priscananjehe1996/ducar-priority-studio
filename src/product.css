@@ -378,8 +378,41 @@ button {
 
 .map-workspace-pane .chart-showcase,
 .map-workspace-pane .product-grid.two,
-.map-workspace-pane .product-stat-grid {
+.map-workspace-pane .product-stat-grid,
+.map-workspace-pane .numeric-field-grid {
   grid-template-columns: 1fr;
+}
+
+.map-workspace-pane .query-panel,
+.map-workspace-pane .product-table-panel,
+.map-workspace-pane .numeric-field-bank {
+  width: 100%;
+  max-width: 100%;
+}
+
+.map-workspace-pane .scaled-bar-panel {
+  min-height: auto;
+}
+
+.map-workspace-pane .scaled-bar-panel .product-panel-head h3 {
+  overflow-wrap: anywhere;
+}
+
+.map-workspace-pane .scaled-axis {
+  margin: 0 12px 4px 0;
+}
+
+.map-workspace-pane .scaled-axis em {
+  font-size: 8px;
+}
+
+.map-workspace-pane .scaled-bars article {
+  grid-template-columns: 1fr;
+  gap: 7px;
+}
+
+.map-workspace-pane .scaled-bars article em {
+  text-align: left;
 }
 
 .compact-map-brief {
