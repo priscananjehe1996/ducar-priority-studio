@@ -4445,6 +4445,20 @@ function runSqlValue(db, sql, params = []) {
   return db.exec(sql, params)[0]?.values?.[0]?.[0] ?? 0;
 }
 
+function sqlIdentifier(name) {
+  return `"${String(name).replaceAll('"', '""')}"`;
+}
+
+function runSqlTable(db, name) {
+  const result = db.exec(`SELECT * FROM ${sqlIdentifier(name)}`)[0];
+  if (!result) return { title: `SQLite table: ${name}`, columns: [], rows: [] };
+  return {
+    title: `SQLite table: ${name}`,
+    columns: result.columns,
+    rows: result.values,
+  };
+}
+
 function chartFromSql(rows, labelKey, valueKey, extraKey) {
   return rows.map((row) => extraKey ? [row[labelKey], Number(row[valueKey] || 0), row[extraKey]] : [row[labelKey], Number(row[valueKey] || 0)]);
 }
@@ -4486,8 +4500,9 @@ function useUnifiedDatabase() {
         const tableNames = runSqlRows(db, "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name");
         const tableCounts = tableNames.map((row) => {
           const name = row.name;
-          return [name, Number(runSqlValue(db, `SELECT COUNT(*) FROM ${name}`) || 0)];
+          return [name, Number(runSqlValue(db, `SELECT COUNT(*) FROM ${sqlIdentifier(name)}`) || 0)];
         });
+        const databaseTables = tableNames.map((row) => runSqlTable(db, row.name));
         const tableSet = new Set(tableCounts.map(([name]) => name));
         const programmeAssetRows = tableSet.has("programme_assets")
           ? runSqlRows(db, `
@@ -4588,11 +4603,11 @@ function useUnifiedDatabase() {
         const latestDistrictTableRows = tableSet.has("uganda_district_road_summary")
           ? runSqlRows(db, `
             SELECT district, region, road_records, ROUND(total_km, 1) AS total_km,
-                   district_count, urban_count, car_count, verify_count, missing_name_count
+                   ROUND(osm_km, 1) AS osm_km, ROUND(ducar_km, 1) AS ducar_km,
+                   national_count, district_count, urban_count, car_count, verify_count, missing_name_count
             FROM uganda_district_road_summary
             ORDER BY total_km DESC
-            LIMIT 12
-          `).map((row) => [row.district, row.region, row.road_records, row.total_km, row.district_count, row.urban_count, row.car_count, row.verify_count, row.missing_name_count])
+          `).map((row) => [row.district, row.region, row.road_records, row.total_km, row.osm_km, row.ducar_km, row.national_count, row.district_count, row.urban_count, row.car_count, row.verify_count, row.missing_name_count])
           : [];
         const classificationRuleRows = tableSet.has("osm_classification_rules")
           ? runSqlRows(db, "SELECT osm_highway, ducar_class, ducar_code, assumption FROM osm_classification_rules ORDER BY rowid")
@@ -4726,7 +4741,6 @@ function useUnifiedDatabase() {
             SELECT source_key, source_type, continent, apa_reference, url_or_local_path, use_in_ducar
             FROM global_case_references
             ORDER BY row_order
-            LIMIT 14
           `).map((row) => [row.source_key, row.source_type, row.continent, row.apa_reference, row.url_or_local_path, row.use_in_ducar])
           : [];
         const decisionAssumptionRows = tableSet.has("global_case_decision_assumptions")
@@ -4780,7 +4794,6 @@ function useUnifiedDatabase() {
           FROM map_surface_features
           WHERE feature_group = 'flow'
           ORDER BY metric DESC
-          LIMIT 10
         `).map((row) => [row.name, row.source_file, row.geometry_type, row.traffic_flow_index]);
         const predictionFeatures = tableSet.has("prediction_feature_matrix")
           ? runSqlRows(db, `
@@ -4807,7 +4820,6 @@ function useUnifiedDatabase() {
           FROM spatial_layers
           WHERE status = 'read'
           ORDER BY feature_count DESC
-          LIMIT 8
         `).map((row) => [row.layer_name, row.source_area, row.extension, row.feature_count, row.line_km, row.decision_use]);
         const mapFeatures = runSqlRows(db, `
           SELECT feature_group, source_file, name, geometry_type, coordinates_json, metric
@@ -4826,7 +4838,6 @@ function useUnifiedDatabase() {
           SELECT table_group, table_name, row_count, column_count, source
           FROM table_catalog
           ORDER BY row_count DESC, column_count DESC
-          LIMIT 8
         `).map((row) => [row.table_group, row.table_name, row.row_count, row.column_count, row.source]);
         const manifestRows = tableCounts.map(([name, count]) => [name, count]);
         const payload = {
@@ -4861,6 +4872,7 @@ function useUnifiedDatabase() {
               columns: ["Table", "Rows"],
               rows: manifestRows,
             },
+            databaseTables,
           },
           ugandaNetwork: {
             kpis: networkKpis,
@@ -4887,7 +4899,7 @@ function useUnifiedDatabase() {
             districtChart: { rows: latestDistrictRows },
             districtTable: {
               title: "Latest district road summary",
-              columns: ["District", "Region", "Records", "Total km", "District", "Urban", "CAR", "Verify", "Missing names"],
+              columns: ["District", "Region", "Records", "Total km", "OSM km", "DUCAR km", "National", "District", "Urban", "CAR", "Verify", "Missing names"],
               rows: latestDistrictTableRows,
             },
             rulesTable: {
@@ -6339,22 +6351,22 @@ function NetworkSummariesView({ insights }) {
   const localCaseTable = global.localCaseTable
     ? {
       title: "Country case studies",
-      columns: ["Continent", "Country", "Practice", "DUCAR lesson", "Adaptation"],
-      rows: global.localCaseTable.rows.map((row) => row.slice(0, 5)),
+      columns: global.localCaseTable.columns,
+      rows: global.localCaseTable.rows,
     }
     : null;
   const decisionAssumptionsTable = global.decisionAssumptionsTable
     ? {
       title: "Global case transfer assumptions",
-      columns: ["ID", "Decision or assumption", "Rationale"],
-      rows: global.decisionAssumptionsTable.rows.map((row) => row.slice(0, 3)),
+      columns: global.decisionAssumptionsTable.columns,
+      rows: global.decisionAssumptionsTable.rows,
     }
     : null;
   const benchmarkTable = global.benchmarkTable
     ? {
       title: "Global road asset management benchmark covers",
-      columns: ["Region", "Case cover", "Score", "Lesson", "DUCAR use"],
-      rows: global.benchmarkTable.rows.map((row) => [row[0], row[1], row[3], row[4], row[5]]),
+      columns: global.benchmarkTable.columns,
+      rows: global.benchmarkTable.rows,
     }
     : null;
   const referenceTable = global.referenceTable
@@ -6388,6 +6400,7 @@ function NetworkSummariesView({ insights }) {
     referenceTable,
     rawCatalogTable,
     manifestTable,
+    ...(insights.rawTables?.databaseTables || []),
   ].filter((table) => table?.rows?.length);
 
   return (
