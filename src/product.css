@@ -1352,8 +1352,80 @@ button {
   min-height: 320px;
 }
 
+.summary-table-stack {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+}
+
+.table-tools {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.table-tools label {
+  min-width: 220px;
+  flex: 1;
+  display: grid;
+  gap: 6px;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.table-tools input {
+  width: 100%;
+  min-height: 38px;
+  padding: 9px 11px;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #0f172a;
+  font: inherit;
+  text-transform: none;
+}
+
+.table-tools button,
+.table-pager button {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: #0f172a;
+  color: #ffffff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.table-pager {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 12px;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.table-pager button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
 .product-table-wrap {
+  max-height: min(58vh, 560px);
   overflow: auto;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 8px;
 }
 
 .product-table-wrap table {
@@ -1363,6 +1435,9 @@ button {
 }
 
 .product-table-wrap th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   padding: 10px 8px;
   color: #ffffff;
   background: linear-gradient(135deg, var(--accent, var(--blue)), #111827);
@@ -1381,6 +1456,21 @@ button {
 
 .product-table-wrap tr:hover td {
   background: color-mix(in srgb, var(--accent, var(--blue)) 13%, #ffffff);
+}
+
+.chart-reference-link {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  margin-top: 10px;
+  padding: 6px 9px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent, var(--blue)) 11%, #ffffff);
+  color: color-mix(in srgb, var(--accent, var(--blue)) 76%, #0f172a);
+  font-size: 11px;
+  font-weight: 900;
+  text-decoration: none;
+  text-transform: uppercase;
 }
 
 .global-cover-grid {
@@ -1402,6 +1492,57 @@ button {
   box-shadow: 0 18px 42px color-mix(in srgb, var(--accent) 14%, rgba(15, 23, 42, 0.12));
   animation: productIn 0.44s ease both;
   animation-delay: var(--delay, 0ms);
+}
+
+.global-country-card-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.global-country-card-grid article {
+  --accent: var(--blue);
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, rgba(15, 23, 42, 0.12));
+  background: color-mix(in srgb, var(--accent) 8%, #ffffff);
+}
+
+.global-country-card-grid strong,
+.global-country-card-grid span,
+.global-country-card-grid em {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.global-country-card-grid strong {
+  color: #0f172a;
+  font-size: 13px;
+}
+
+.global-country-card-grid span,
+.global-country-card-grid em {
+  color: #475569;
+  font-size: 11px;
+  font-style: normal;
+}
+
+.global-country-card-grid i {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.08);
+}
+
+.global-country-card-grid i b {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
 }
 
 .case-cover-media {
@@ -3161,6 +3302,9 @@ button {
   .global-cover-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .global-country-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .command-hero,
   .network-brief,
   .evidence-backend,
@@ -3298,6 +3442,7 @@ button {
     flex-direction: column;
   }
   .product-stat-grid,
+  .global-country-card-grid,
   .global-cover-grid,
   .scenario-row,
   .decision-grid,
@@ -3306,6 +3451,14 @@ button {
   }
   .global-cover-grid article {
     grid-template-columns: 1fr;
+  }
+  .table-tools,
+  .table-pager {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .table-tools label {
+    min-width: 0;
   }
   .case-cover-media {
     min-height: 138px;

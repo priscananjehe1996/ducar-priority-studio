@@ -236,12 +236,12 @@ const NAV_ITEMS = [
   { id: "command", label: "Command", icon: LayoutDashboard },
   { id: "portfolio", label: "Portfolio", icon: CircleDollarSign },
   { id: "network", label: "Network", icon: MapIcon },
-  { id: "network-summaries", label: "Summaries", icon: FileSpreadsheet },
   { id: "traffic", label: "Traffic", icon: Truck },
   { id: "pims", label: "PIMS", icon: ClipboardCheck },
   { id: "hdm4", label: "HDM-4", icon: LineChart },
   { id: "framework", label: "Framework", icon: GitBranch },
   { id: "global", label: "Global", icon: Globe2 },
+  { id: "network-summaries", label: "Summaries", icon: FileSpreadsheet },
   { id: "evidence", label: "Evidence", icon: Database },
 ];
 
@@ -5384,6 +5384,10 @@ function normalizeChartRows(rows = [], maxRows = 6) {
     .slice(0, maxRows);
 }
 
+function ChartReferenceLink({ label = "Reference table" }) {
+  return <a className="chart-reference-link" href="#network-summaries">{label}</a>;
+}
+
 function ProductBarChart({ title, subtitle, rows, formatValue = (value) => formatCount(value), maxRows = 6 }) {
   const visible = normalizeChartRows(rows, maxRows);
   const maxValue = Math.max(1, ...visible.map((row) => Number(row.value || 0)));
@@ -5403,6 +5407,7 @@ function ProductBarChart({ title, subtitle, rows, formatValue = (value) => forma
           </article>
         ))}
       </div>
+      <ChartReferenceLink />
     </section>
   );
 }
@@ -5499,6 +5504,7 @@ function ProductScaledBarChart({ field, rows, maxRows = 8 }) {
           );
         })}
       </div>
+      <ChartReferenceLink />
     </section>
   );
 }
@@ -5638,6 +5644,7 @@ function ProductPieChart({ title, subtitle, rows, formatValue = (value) => forma
           })}
         </div>
       </div>
+      <ChartReferenceLink />
     </section>
   );
 }
@@ -5677,17 +5684,50 @@ function ProductFunnelChart({ title, subtitle, rows, formatValue = (value) => fo
         <strong>{selected.label}</strong>
         <span>{selected.detail || `${formatValue(selected.value)} road records in this view`}</span>
       </div>
+      <ChartReferenceLink />
     </section>
   );
 }
 
 function ProductTable({ table }) {
+  const [query, setQuery] = useState("");
+  const [page, setPage] = useState(0);
+  const pageSize = 25;
+  const rows = table?.rows || [];
+  const filteredRows = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    if (!term) return rows;
+    return rows.filter((row) => row.some((cell) => String(cell ?? "").toLowerCase().includes(term)));
+  }, [query, rows]);
   if (!table?.rows?.length) return null;
+  const pageCount = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+  const safePage = Math.min(page, pageCount - 1);
+  const shownRows = filteredRows.slice(safePage * pageSize, safePage * pageSize + pageSize);
+  function downloadCsv() {
+    const csvRows = [table.columns, ...filteredRows].map((row) => row.map((cell) => {
+      const value = String(cell ?? "");
+      return /[",\n]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value;
+    }).join(","));
+    const blob = new Blob([csvRows.join("\n")], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${table.title.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase() || "table"}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
   return (
     <section className="query-panel product-table-panel">
       <div className="product-panel-head">
         <h3>{table.title}</h3>
-        <span>{table.rows.length} rows</span>
+        <span>{formatCount(filteredRows.length)} of {formatCount(rows.length)} rows</span>
+      </div>
+      <div className="table-tools">
+        <label>
+          Search
+          <input value={query} onChange={(event) => { setQuery(event.target.value); setPage(0); }} placeholder="Search any field" />
+        </label>
+        <button type="button" onClick={downloadCsv}><Download size={14} /> CSV</button>
       </div>
       <div className="product-table-wrap">
         <table>
@@ -5695,13 +5735,18 @@ function ProductTable({ table }) {
             <tr>{table.columns.map((column) => <th key={column}>{column}</th>)}</tr>
           </thead>
           <tbody>
-            {table.rows.map((row, index) => (
+            {shownRows.map((row, index) => (
               <tr key={`${table.title}-${index}`}>
                 {row.map((cell, cellIndex) => <td key={`${index}-${cellIndex}`}>{formatEvidenceCell(cell)}</td>)}
               </tr>
             ))}
           </tbody>
         </table>
+      </div>
+      <div className="table-pager">
+        <button type="button" onClick={() => setPage((value) => Math.max(0, value - 1))} disabled={safePage === 0}>Previous</button>
+        <span>Page {safePage + 1} of {pageCount}</span>
+        <button type="button" onClick={() => setPage((value) => Math.min(pageCount - 1, value + 1))} disabled={safePage >= pageCount - 1}>Next</button>
       </div>
     </section>
   );
@@ -6072,10 +6117,6 @@ function CommandView({ insights }) {
         <ProductFunnelChart title="Model Feature Coverage" subtitle="PIMS, HDM-4, network pressure and monitoring signal completeness" rows={insights.charts.modelFunnel} />
         <ProductPieChart title="Prediction Status" subtitle="Recommended model action by asset" rows={insights.charts.predictionStatusSplit} />
       </div>
-      <div className="product-grid two">
-        <ProductTable table={insights.tables.selected} />
-        <ProductTable table={insights.tables.risk} />
-      </div>
       <section className="query-strip">
         <QueryBadge label="executive query" sql={insights.sql.executive} />
         <QueryBadge label="risk query" sql={insights.sql.risk} />
@@ -6132,12 +6173,7 @@ function PortfolioView({ insights, budget, reservePercent, onBudgetChange, onRes
         <ProductPieChart title="Programme Status" subtitle="Selected, deferred and referred assets after the fiscal gate" rows={insights.charts.statusSplit} />
       </div>
       <div className="product-grid two">
-        <ProductTable table={insights.tables.selected} />
         <ProductBarChart title="Programme Split" subtitle="Status counts after fiscal gate" rows={insights.charts.statusSplit} />
-      </div>
-      <div className="product-grid two">
-        <ProductTable table={insights.pims?.gates} />
-        <ProductTable table={insights.hdm4?.inputs} />
       </div>
       <section className="query-strip">
         <QueryBadge label="portfolio query" sql={insights.sql.portfolio} />
@@ -6150,13 +6186,6 @@ function PortfolioView({ insights, budget, reservePercent, onBudgetChange, onRes
 
 function NetworkView({ insights, programme }) {
   const latestMaster = insights.latestRoadMaster?.run || {};
-  const classificationTable = insights.latestRoadMaster?.rulesTable
-    ? {
-      ...insights.latestRoadMaster.rulesTable,
-      title: "Road classification rules",
-      columns: ["Road class input", "DUCAR class", "Code", "Planning assumption"],
-    }
-    : null;
   return (
     <div className="product-view map-workspace-view">
       <section className="map-workspace-shell network-workspace">
@@ -6168,7 +6197,7 @@ function NetworkView({ insights, programme }) {
             <div>
               <p className="product-eyebrow">Network intelligence</p>
               <h2>Uganda road network, decision-ready.</h2>
-              <span>Coverage, condition, traffic and district summaries sit beside the map without covering the roads.</span>
+              <span>Coverage, classification, condition and pavement summaries sit beside the map without covering the roads.</span>
             </div>
             <ProductStat label="Mapped road links" value={formatCount(latestMaster.record_count || insights.spatialSummary.feature_count)} note={formatCompactDate(latestMaster.generated_at_utc)} tone="cyan" />
             <ProductStat label="Mapped length" value={formatKm(latestMaster.total_length_km || insights.spatialSummary.line_length_km)} note={`${formatCount(latestMaster.district_summary_count)} district summaries`} tone="gold" />
@@ -6188,18 +6217,8 @@ function NetworkView({ insights, programme }) {
           </div>
           <div className="product-grid two">
             <ConditionStackChart rows={insights.ugandaNetwork?.conditionRows || []} />
-            <ProductBarChart title="Priority Road-Link Scores" subtitle="Score, traffic, condition and readiness signals" rows={insights.priorityLinks.map((row) => [row.assetId, row.score, `${row.district} / ${row.treatment}`])} maxRows={10} />
-          </div>
-          <PriorityDecisionBars links={insights.priorityLinks} />
-          <div className="product-grid two">
-            <TrendLinePanel title="Crash Trend" subtitle="Road traffic crashes by nature, CY 2019-2023" rows={insights.ugandaNetwork?.crashTrend || []} labelKey="year" valueKey="total" />
             <TrendLinePanel title="Paved National Stock" subtitle="Paved national road network trend" rows={insights.ugandaNetwork?.pavedTrend || []} labelKey="fy" valueKey="paved_stock_km" formatValue={(value) => formatKm(value)} tone="green" />
           </div>
-          <div className="product-grid two">
-            <ProductTable table={insights.ugandaNetwork?.conditionTable} />
-            <ProductTable table={insights.latestRoadMaster?.districtTable} />
-          </div>
-          <ProductTable table={classificationTable} />
         </aside>
       </section>
     </div>
@@ -6220,6 +6239,7 @@ function rowsFromChart(rows = [], valueLabel = "Value") {
 
 function NetworkSummariesView({ insights }) {
   const latestMaster = insights.latestRoadMaster?.run || {};
+  const global = insights.globalCases || {};
   const networkSummary = compactSummaryTable(
     "Road network infrastructure summary",
     ["Measure", "Value", "Notes"],
@@ -6282,55 +6302,124 @@ function NetworkSummariesView({ insights }) {
   const trafficTable = insights.traffic?.flowTable
     ? { ...insights.traffic.flowTable, title: "Traffic flow road-link summary" }
     : null;
+  const programmeSelectedTable = insights.tables?.selected
+    ? { ...insights.tables.selected, title: "Priority programme selected road links" }
+    : null;
+  const programmeRiskTable = insights.tables?.risk
+    ? { ...insights.tables.risk, title: "Priority risk and prediction records" }
+    : null;
+  const pimsGateTable = insights.pims?.gates
+    ? { ...insights.pims.gates, title: "PIMS gate readiness records" }
+    : null;
+  const frameworkTable = insights.frameworkTable
+    ? { ...insights.frameworkTable, title: "Framework operating model records" }
+    : null;
+  const hdm4IndicatorTable = insights.hdm4?.indicatorTable
+    ? { ...insights.hdm4.indicatorTable, title: "HDM-4 readiness indicator records" }
+    : null;
+  const hdm4InputTable = insights.hdm4?.inputs
+    ? { ...insights.hdm4.inputs, title: "HDM-4 programme input records" }
+    : null;
+  const hdm4ReferenceTables = HDM4_INPUT_TABLES.map((table) => ({
+    title: `HDM-4 reference: ${table.title}`,
+    columns: table.columns,
+    rows: table.rows,
+  }));
+  const globalCountryTable = compactSummaryTable(
+    "All-country transferability review",
+    ["Country", "Region", "Framework lens", "Score", "DUCAR use"],
+    (global.countryRows || []).map((row) => [
+      row.country,
+      row.region,
+      row.framework_lens,
+      `${Math.round(Number(row.transferability_score || 0))}%`,
+      row.ducar_use,
+    ]),
+  );
+  const localCaseTable = global.localCaseTable
+    ? {
+      title: "Country case studies",
+      columns: ["Continent", "Country", "Practice", "DUCAR lesson", "Adaptation"],
+      rows: global.localCaseTable.rows.map((row) => row.slice(0, 5)),
+    }
+    : null;
+  const decisionAssumptionsTable = global.decisionAssumptionsTable
+    ? {
+      title: "Global case transfer assumptions",
+      columns: ["ID", "Decision or assumption", "Rationale"],
+      rows: global.decisionAssumptionsTable.rows.map((row) => row.slice(0, 3)),
+    }
+    : null;
+  const benchmarkTable = global.benchmarkTable
+    ? {
+      title: "Global road asset management benchmark covers",
+      columns: ["Region", "Case cover", "Score", "Lesson", "DUCAR use"],
+      rows: global.benchmarkTable.rows.map((row) => [row[0], row[1], row[3], row[4], row[5]]),
+    }
+    : null;
+  const referenceTable = global.referenceTable
+    ? { ...global.referenceTable, title: "Global case source references" }
+    : null;
+  const summaryTables = [
+    networkSummary,
+    tableGroupsSummary,
+    programmeSelectedTable,
+    programmeRiskTable,
+    networkLengthTable,
+    poorConditionTable,
+    roadMasterClassTable,
+    roadMasterSourceTable,
+    roadMasterQualityTable,
+    districtInventoryTable,
+    insights.ugandaNetwork?.categoryTable,
+    insights.ugandaNetwork?.conditionTable,
+    classificationTable,
+    spatialLayerTable,
+    trafficTable,
+    pimsGateTable,
+    frameworkTable,
+    hdm4IndicatorTable,
+    hdm4InputTable,
+    ...hdm4ReferenceTables,
+    globalCountryTable,
+    localCaseTable,
+    decisionAssumptionsTable,
+    benchmarkTable,
+    referenceTable,
+    rawCatalogTable,
+    manifestTable,
+  ].filter((table) => table?.rows?.length);
 
   return (
     <div className="product-view network-summary-view">
       <section className="network-summary-hero">
         <div>
           <p className="product-eyebrow">Network summaries</p>
-          <h2>Road infrastructure tables and available summaries.</h2>
-          <span>All road-master, network, condition, traffic, classification, GIS and database summary tables are collected in one scanning view.</span>
+          <h2>All reference tables and available summaries.</h2>
+          <span>Every product table is collected here as a searchable, paged and CSV-ready reference pane.</span>
         </div>
         <ProductStat label="Road records" value={formatCount(latestMaster.record_count || insights.spatialSummary.feature_count)} note={formatKm(latestMaster.total_length_km || insights.spatialSummary.line_length_km)} tone="blue" />
-        <ProductStat label="Summary tables" value="14" note="network and infrastructure tables" tone="green" />
+        <ProductStat label="Summary tables" value={formatCount(summaryTables.length)} note="searchable CSV-ready panes" tone="green" />
       </section>
 
       <section className="network-summary-toc">
         {[
           "Infrastructure summary",
+          "Priority programme",
           "District inventories",
           "Condition pressure",
           "Classification rules",
           "GIS layers",
           "Traffic links",
+          "PIMS and HDM-4",
+          "Global cases",
           "SQLite manifest",
         ].map((item) => <span key={item}>{item}</span>)}
       </section>
 
-      <div className="product-grid two">
-        <ProductTable table={networkSummary} />
-        <ProductTable table={tableGroupsSummary} />
-      </div>
-
-      <div className="product-grid two">
-        <ProductTable table={networkLengthTable} />
-        <ProductTable table={poorConditionTable} />
-      </div>
-
-      <div className="product-grid two">
-        <ProductTable table={roadMasterClassTable} />
-        <ProductTable table={roadMasterSourceTable} />
-      </div>
-
-      <ProductTable table={roadMasterQualityTable} />
-      <ProductTable table={districtInventoryTable} />
-      <ProductTable table={insights.ugandaNetwork?.categoryTable} />
-      <ProductTable table={insights.ugandaNetwork?.conditionTable} />
-      <ProductTable table={classificationTable} />
-      <ProductTable table={spatialLayerTable} />
-      <ProductTable table={trafficTable} />
-      <ProductTable table={rawCatalogTable} />
-      <ProductTable table={manifestTable} />
+      <section className="summary-table-stack" aria-label="Searchable summary tables">
+        {summaryTables.map((table) => <ProductTable key={table.title} table={table} />)}
+      </section>
     </div>
   );
 }
@@ -6667,7 +6756,7 @@ function TrafficView({ insights }) {
             <div>
               <p className="product-eyebrow">Traffic analytics</p>
               <h2>Traffic pressure mapped by road link.</h2>
-              <span>Flow, safety, paved-stock and condition pressure stay visible in a tight side pane while the map fills the workspace.</span>
+              <span>Flow intensity, high-pressure links and traffic safety trends stay visible while the map fills the workspace.</span>
             </div>
             <ProductStat label="Flow links" value={formatCount(trafficStats.flow_links)} note="traffic-sensitive road links" tone="cyan" />
             <ProductStat label="Mean flow index" value={avgFlow ? `${avgFlow}%` : "Loading"} note={`max ${maxFlow || 0}%`} tone="green" />
@@ -6675,20 +6764,11 @@ function TrafficView({ insights }) {
           <div className="chart-showcase">
             <ProductFunnelChart title="Traffic Pressure Funnel" subtitle="Flow links, high pressure, safety trend and poor-condition load" rows={insights.charts.trafficFunnel} />
             <ProductBarChart title="Highest Flow Links" subtitle="Average traffic-flow index by road link" rows={insights.charts.trafficFlow} formatValue={(value) => `${Math.round(Number(value || 0))}%`} maxRows={8} />
-            <ProductPieChart title="Network Length Share" subtitle="Road length context for traffic pressure" rows={insights.charts.networkCategory} formatValue={(value) => formatKm(value)} />
           </div>
-          <NumericFieldChartBank links={insights.priorityLinks} />
-          <PriorityDecisionBars links={insights.priorityLinks} />
           <div className="product-grid two">
             <TrendLinePanel title="Crash Trend" subtitle="Road traffic crashes by nature, CY 2019-2023" rows={insights.ugandaNetwork?.crashTrend || []} labelKey="year" valueKey="total" />
-            <TrendLinePanel title="Paved National Stock" subtitle="Paved national road network trend used as traffic context" rows={insights.ugandaNetwork?.pavedTrend || []} labelKey="fy" valueKey="paved_stock_km" formatValue={(value) => formatKm(value)} tone="green" />
+            <ProductBarChart title="Traffic Scores" subtitle="Traffic pressure score by active road asset" rows={insights.charts.assetTrafficBars} formatValue={(value) => `${Number(value || 0)}/5`} maxRows={8} />
           </div>
-          <div className="chart-showcase">
-            <ConditionStackChart rows={insights.ugandaNetwork?.conditionRows || []} />
-            <ProductPieChart title="Prediction Status" subtitle="Recommended model action by traffic-sensitive asset" rows={insights.charts.predictionStatusSplit} />
-            <ProductFunnelChart title="Model Feature Coverage" subtitle="PIMS, HDM-4, network pressure and monitoring signal completeness" rows={insights.charts.modelFunnel} />
-          </div>
-          <ProductTable table={insights.traffic?.flowTable} />
         </aside>
       </section>
     </div>
@@ -6719,9 +6799,8 @@ function PimsView({ insights }) {
       </div>
       <div className="product-grid two">
         <ReadinessBars title="PIMS Framework Steps" subtitle="Project admission to final investment decision" items={insights.frameworkFlow} />
-        <ProductTable table={insights.pims?.gates} />
+        <ReadinessBars title="HDM-4 Inputs" subtitle="Economic and pavement model readiness" items={insights.hdm4?.indicators || []} />
       </div>
-      <ProductTable table={insights.frameworkTable} />
       <section className="query-strip">
         <QueryBadge label="pims query" sql={insights.sql.pims} />
         <QueryBadge label="framework query" sql={insights.sql.framework} />
@@ -6788,11 +6867,6 @@ function Hdm4View({ insights }) {
         <ProductPieChart title="Input Coverage" subtitle="Rows available in each HDM-4 reference table" rows={insights.charts.staticHdm4Tables} />
         <ProductFunnelChart title="Prediction Calibration" subtitle="Calibration signals linked to model scoring" rows={insights.charts.calibration} formatValue={(value) => Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} />
       </div>
-      <div className="product-grid two">
-        <ProductTable table={insights.hdm4?.indicatorTable} />
-        <ProductTable table={insights.hdm4?.inputs} />
-      </div>
-      <Hdm4ReferenceLibrary />
       <section className="query-strip">
         <QueryBadge label="hdm4 query" sql={insights.sql.hdm4} />
         <QueryBadge label="traffic query" sql={insights.sql.traffic} />
@@ -6827,7 +6901,6 @@ function FrameworkView({ insights }) {
         <ReadinessBars title="PIMS Steps" subtitle="Investment-management stages retained in the flow" items={insights.frameworkFlow} />
         <ReadinessBars title="HDM-4 Inputs" subtitle="Economic and pavement model readiness" items={insights.hdm4?.indicators || []} />
       </div>
-      <ProductTable table={insights.frameworkTable} />
       <section className="query-strip">
         <QueryBadge label="framework query" sql={insights.sql.framework} />
         <QueryBadge label="evidence query" sql={insights.sql.evidence} />
@@ -6886,39 +6959,6 @@ function GlobalCasesView({ insights }) {
   const selectedAverage = filteredCountries.length
     ? Math.round(filteredCountries.reduce((sum, row) => sum + Number(row.transferability_score || 0), 0) / filteredCountries.length)
     : global.averageScore || 0;
-  const filteredCountryTable = {
-    title: activeRegion === "All" ? "All-country transferability review" : `${activeRegion} country transferability review`,
-    columns: ["Country", "Region", "Framework lens", "Score", "DUCAR use"],
-    rows: filteredCountries.map((row) => [
-      row.country,
-      row.region,
-      row.framework_lens,
-      `${Math.round(Number(row.transferability_score || 0))}%`,
-      row.ducar_use,
-    ]),
-  };
-  const localCaseTable = global.localCaseTable
-    ? {
-      title: "Country case studies",
-      columns: ["Continent", "Country", "Practice", "DUCAR lesson", "Adaptation"],
-      rows: global.localCaseTable.rows.map((row) => row.slice(0, 5)),
-    }
-    : null;
-  const decisionAssumptionsTable = global.decisionAssumptionsTable
-    ? {
-      title: "Global case transfer assumptions",
-      columns: ["ID", "Decision or assumption", "Rationale"],
-      rows: global.decisionAssumptionsTable.rows.map((row) => row.slice(0, 3)),
-    }
-    : null;
-  const benchmarkTable = global.benchmarkTable
-    ? {
-      title: "Global road asset management benchmark covers",
-      columns: ["Region", "Case cover", "Score", "Lesson", "DUCAR use"],
-      rows: global.benchmarkTable.rows.map((row) => [row[0], row[1], row[3], row[4], row[5]]),
-    }
-    : null;
-
   return (
     <div className="product-view global-cases-view">
       <section className="network-brief global-case-brief">
@@ -6953,15 +6993,10 @@ function GlobalCasesView({ insights }) {
 
       <GlobalCaseCovers rows={global.localCaseRows || []} countryRows={countryRows} />
 
-      <div className="product-grid two">
-        <ProductTable table={localCaseTable} />
-        <ProductTable table={decisionAssumptionsTable} />
-      </div>
-
       <section className="global-country-panel">
         <div className="product-panel-head">
-          <h3>All Countries Explorer</h3>
-          <span>{formatCount(filteredCountries.length)} rows currently shown from {formatCount(countryRows.length)} extracted countries</span>
+          <h3>Regional Transferability Explorer</h3>
+          <span>{formatCount(filteredCountries.length)} countries currently represented from {formatCount(countryRows.length)} extracted records</span>
         </div>
         <div className="global-filter-bar">
           {regions.map((region) => (
@@ -6970,24 +7005,19 @@ function GlobalCasesView({ insights }) {
             </button>
           ))}
         </div>
-        <div className="product-table-wrap">
-          <table>
-            <thead>
-              <tr>{filteredCountryTable.columns.map((column) => <th key={column}>{column}</th>)}</tr>
-            </thead>
-            <tbody>
-              {filteredCountryTable.rows.map((row, index) => (
-                <tr key={`${activeRegion}-${index}`}>
-                  {row.map((cell, cellIndex) => <td key={`${index}-${cellIndex}`}>{formatEvidenceCell(cell)}</td>)}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="global-country-card-grid">
+          {filteredCountries.slice(0, 12).map((row, index) => (
+            <article key={`${row.country}-${index}`} style={{ "--accent": productChartColor(index) }}>
+              <strong>{row.country}</strong>
+              <span>{row.region} / {row.framework_lens}</span>
+              <i><b style={{ width: `${Math.max(4, Math.round(Number(row.transferability_score || 0)))}%` }} /></i>
+              <em>{Math.round(Number(row.transferability_score || 0))}% transferability</em>
+            </article>
+          ))}
         </div>
       </section>
 
       <div className="product-grid two">
-        <ProductTable table={benchmarkTable} />
         <ProductPieChart title="Framework Lens Mix" subtitle="Dominant transfer patterns across countries" rows={insights.charts.globalPatterns} maxRows={6} />
       </div>
 
