@@ -5548,7 +5548,7 @@ function PriorityDecisionBars({ links = [] }) {
     <section className="query-panel priority-link-panel">
       <div className="product-panel-head">
         <h3>Priority Decisions by Road Link</h3>
-        <span>Score, risk, traffic, condition, evidence, readiness and cost for every active road link</span>
+        <span>Decision scorecards for every active road link</span>
       </div>
       <div className="priority-link-list">
         {visible.map((item, index) => (
@@ -5560,12 +5560,25 @@ function PriorityDecisionBars({ links = [] }) {
               </div>
               <em>{item.status}</em>
             </div>
-            <div className="priority-metric-grid">
+            <div className="priority-decision-summary">
+              <div>
+                <span>Priority score</span>
+                <strong>{Math.round(Number(item.score || 0))}</strong>
+              </div>
+              <div>
+                <span>ML risk</span>
+                <strong>{Math.round(Number(item.risk || 0) * 100)}%</strong>
+              </div>
+              <div>
+                <span>Cost</span>
+                <strong>{formatMoneyCompact(item.cost)}</strong>
+              </div>
+            </div>
+            <div className="priority-metric-stack">
               {metrics(item).map(([label, ratio, value, color]) => (
                 <div key={`${item.assetId}-${label}`} style={{ "--accent": color }}>
-                  <span>{label}</span>
+                  <span><b>{label}</b><em>{value}</em></span>
                   <i><b style={{ width: `${Math.max(4, Math.min(100, Number(ratio || 0) * 100))}%` }} /></i>
-                  <strong>{value}</strong>
                 </div>
               ))}
             </div>

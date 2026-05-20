@@ -1263,42 +1263,84 @@ button {
   text-transform: uppercase;
 }
 
-.priority-metric-grid {
+.priority-decision-summary {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 
-.priority-metric-grid div {
+.priority-decision-summary div {
   display: grid;
-  grid-template-columns: minmax(58px, 0.8fr) minmax(70px, 1fr) minmax(42px, auto);
+  gap: 4px;
+  min-width: 0;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid color-mix(in srgb, var(--item-accent) 18%, rgba(15, 23, 42, 0.08));
+}
+
+.priority-decision-summary span {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.priority-decision-summary strong {
+  color: var(--item-accent);
+  font-size: clamp(16px, 1.6vw, 22px);
+  line-height: 1;
+  font-weight: 950;
+  overflow-wrap: anywhere;
+}
+
+.priority-metric-stack {
+  display: grid;
   gap: 7px;
-  align-items: center;
+}
+
+.priority-metric-stack div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 5px;
   min-width: 0;
 }
 
-.priority-metric-grid span,
-.priority-metric-grid strong {
+.priority-metric-stack span {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.priority-metric-stack span b,
+.priority-metric-stack span em {
   color: #1f2937;
   font-size: 10px;
+  font-style: normal;
   font-weight: 900;
   line-height: 1.15;
 }
 
-.priority-metric-grid strong {
+.priority-metric-stack span b {
+  overflow-wrap: anywhere;
+}
+
+.priority-metric-stack span em {
   color: var(--accent);
   text-align: right;
   white-space: nowrap;
 }
 
-.priority-metric-grid i {
-  height: 7px;
+.priority-metric-stack i {
+  height: 9px;
   overflow: hidden;
   border-radius: 999px;
   background: color-mix(in srgb, var(--accent) 14%, #e2e8f0);
 }
 
-.priority-metric-grid b {
+.priority-metric-stack i b {
   display: block;
   height: 100%;
   border-radius: inherit;
@@ -3332,7 +3374,7 @@ button {
   .network-kpis,
   .framework-flow-track,
   .framework-cycle-stage,
-  .priority-metric-grid,
+  .priority-decision-summary,
   .condition-stack-list article,
   .readiness-list article,
   .trend-line-grid {
@@ -3340,12 +3382,6 @@ button {
   }
   .priority-link-head {
     flex-direction: column;
-  }
-  .priority-metric-grid div {
-    grid-template-columns: 1fr;
-  }
-  .priority-metric-grid strong {
-    text-align: left;
   }
   .condition-stack-list em,
   .readiness-list em {
