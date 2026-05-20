@@ -1,21 +1,20 @@
 {
-  "run_id": "20260519T075252Z",
+  "run_id": "20260520T062004Z",
   "status": "success",
   "source_roots": [
-    "D:\\OneDrive\\Procurements\\TOR - DUCACR",
-    "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\data",
-    "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\data",
-    "D:\\OneDrive\\Procurements\\TOR - DUCACR\\DUCAR_Framework_Tool\\github_app\\public\\docs"
+    "/home/runner/work/ducar-priority-studio/ducar-priority-studio/data",
+    "/home/runner/work/ducar-priority-studio/ducar-priority-studio/public/data",
+    "/home/runner/work/ducar-priority-studio/ducar-priority-studio/public/docs"
   ],
-  "source_snapshot_mode": "live",
+  "source_snapshot_mode": "cached",
   "source_files_indexed": 831,
-  "changed_source_files": 7,
+  "changed_source_files": 0,
   "materialized_queries": {
     "network_prediction_context": 7,
     "prediction_feature_matrix": 8,
     "prediction_calibration_signals": 6
   },
-  "database_size_bytes": 2322432,
+  "database_size_bytes": 2334720,
   "manifest_tables": {
     "evidence_documents": 114,
     "document_topic_counts": 1254,
