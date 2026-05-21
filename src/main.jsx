@@ -5937,6 +5937,7 @@ function CommandIntakeStudio({
 }) {
   const [draft, setDraft] = useState(() => blankCommandAsset());
   const [pasteText, setPasteText] = useState(QUICK_ASSET_TEMPLATE);
+  const [fileStatus, setFileStatus] = useState("CSV/XLSX file intake ready");
   const draftRows = useMemo(() => {
     try {
       return parseCsv(pasteText).map((row, index) => normalizeImportedAsset(row, index));
@@ -5971,6 +5972,45 @@ function CommandIntakeStudio({
   }
   function stagePaste() {
     onStageRecords(draftRows, "paste");
+  }
+  async function stageFile(file) {
+    if (!file) return;
+    setFileStatus(`Reading ${file.name}`);
+    try {
+      const extension = file.name.split(".").pop()?.toLowerCase();
+      let rows = [];
+      if (extension === "csv") {
+        rows = parseCsv(await file.text());
+      } else if (["xlsx", "xls"].includes(extension)) {
+        const XLSX = await import("xlsx");
+        const workbook = XLSX.read(await file.arrayBuffer(), { type: "array" });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+      } else {
+        throw new Error("Use CSV, XLSX or XLS.");
+      }
+      const normalized = rows.map((row, index) => normalizeImportedAsset(row, index));
+      onStageRecords(normalized, "file");
+      setFileStatus(`${formatCount(normalized.length)} records staged from ${file.name}`);
+    } catch (error) {
+      setFileStatus(error.message || "Unable to read file");
+    }
+  }
+  function downloadSyncPackage() {
+    if (!stagedRecords.length) return;
+    const payload = {
+      package_type: "DUCAR protected backend sync package",
+      generated_at: new Date().toISOString(),
+      scenario: { budget, reserve_percent: reservePercent },
+      records: stagedRecords,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `ducar-backend-sync-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
   }
   return (
     <section className="command-intake-studio">
@@ -6026,6 +6066,11 @@ function CommandIntakeStudio({
             <span>{formatCount(draftRows.length)} parsed rows</span>
           </div>
           <textarea value={pasteText} onChange={(event) => setPasteText(event.target.value)} spellCheck="false" />
+          <label className="file-intake-tile">
+            <input type="file" accept=".csv,.xlsx,.xls" onChange={(event) => stageFile(event.target.files?.[0])} />
+            <strong>Drop or choose CSV/XLSX</strong>
+            <span>{fileStatus}</span>
+          </label>
           <div className="intake-actions">
             <button type="button" className="intake-primary" onClick={stagePaste} disabled={!draftRows.length}>Stage pasted rows</button>
             <button type="button" className="intake-secondary" onClick={() => setPasteText(QUICK_ASSET_TEMPLATE)}>Reset template</button>
@@ -6075,6 +6120,7 @@ function CommandIntakeStudio({
           ))}
         </div>
         <div className="intake-actions">
+          <button type="button" className="intake-primary" onClick={downloadSyncPackage} disabled={!stagedRecords.length}>Export sync package</button>
           <button type="button" className="intake-secondary" onClick={onClearStaged} disabled={!stagedRecords.length}>Clear staged records</button>
           <span>Backend persistence is kept discrete: records are active in this scenario and ready for controlled sync.</span>
         </div>

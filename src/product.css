@@ -2067,6 +2067,37 @@ button {
   line-height: 1.45;
 }
 
+.file-intake-tile {
+  position: relative;
+  display: grid;
+  gap: 5px;
+  min-height: 74px;
+  align-content: center;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px dashed color-mix(in srgb, var(--accent, var(--blue)) 48%, rgba(15, 23, 42, 0.16));
+  background: color-mix(in srgb, var(--accent, var(--blue)) 8%, #ffffff);
+  color: #0f172a;
+  overflow: hidden;
+}
+
+.file-intake-tile input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file-intake-tile strong {
+  font-size: 13px;
+}
+
+.file-intake-tile span {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 850;
+}
+
 .intake-actions {
   display: flex;
   align-items: center;
