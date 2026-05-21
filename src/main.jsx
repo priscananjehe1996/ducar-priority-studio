@@ -225,6 +225,44 @@ function normalizeImportedAsset(row, index) {
   };
 }
 
+const QUICK_ASSET_TEMPLATE = "asset_id,district,region,road_class,intervention,surface,condition,criticality,traffic,climate,safety,equity,readiness,maintainable,length_km,unit_rate,lat,lon\nNEW-001,Koboko,Northern,District Road,Spot improvement,Gravel,4,4,3,3,3,3,4,Yes,2.4,1500000,3.41,30.96";
+
+function blankCommandAsset() {
+  return {
+    assetId: `USER-${Date.now().toString().slice(-6)}`,
+    admin: "",
+    region: "",
+    functionalClass: "District Road",
+    intervention: "Routine maintenance",
+    surface: "Gravel",
+    condition: 3,
+    criticality: 3,
+    traffic: 3,
+    climate: 3,
+    safety: 3,
+    equity: 3,
+    readiness: 3,
+    maintainable: "Yes",
+    quantity: 1,
+    unitRate: 1000000,
+    lat: 0.35,
+    lon: 32.58,
+  };
+}
+
+function readStagedAssets() {
+  try {
+    const rows = JSON.parse(window.localStorage.getItem("ducar-staged-assets") || "[]");
+    return Array.isArray(rows) ? rows : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeStagedAssets(rows) {
+  window.localStorage.setItem("ducar-staged-assets", JSON.stringify(rows));
+}
+
 /* ─── Status colours ─── */
 const STATUS_COLORS = {
   Selected: "#10b981",
@@ -5886,6 +5924,165 @@ function ConditionStackChart({ rows = [] }) {
   );
 }
 
+function CommandIntakeStudio({
+  budget,
+  reservePercent,
+  stagedRecords,
+  intakeStatus,
+  onBudgetChange,
+  onReserveChange,
+  onScenario,
+  onStageRecords,
+  onClearStaged,
+}) {
+  const [draft, setDraft] = useState(() => blankCommandAsset());
+  const [pasteText, setPasteText] = useState(QUICK_ASSET_TEMPLATE);
+  const draftRows = useMemo(() => {
+    try {
+      return parseCsv(pasteText).map((row, index) => normalizeImportedAsset(row, index));
+    } catch {
+      return [];
+    }
+  }, [pasteText]);
+  const previewRecords = useMemo(() => [
+    ...stagedRecords,
+    ...draftRows,
+    normalizeImportedAsset(draft, stagedRecords.length + draftRows.length),
+  ], [draft, draftRows, stagedRecords]);
+  const preview = useMemo(() => localAnalysis(previewRecords, budget, reservePercent), [previewRecords, budget, reservePercent]);
+  const field = (key, label, type = "text", min, max) => (
+    <label>
+      {label}
+      <input
+        type={type}
+        min={min}
+        max={max}
+        value={draft[key]}
+        onChange={(event) => setDraft((current) => ({
+          ...current,
+          [key]: type === "number" ? Number(event.target.value) : event.target.value,
+        }))}
+      />
+    </label>
+  );
+  function stageManual() {
+    onStageRecords([normalizeImportedAsset(draft, stagedRecords.length)], "manual");
+    setDraft(blankCommandAsset());
+  }
+  function stagePaste() {
+    onStageRecords(draftRows, "paste");
+  }
+  return (
+    <section className="command-intake-studio">
+      <div className="intake-orbit-panel">
+        <div>
+          <p className="product-eyebrow">Command intake</p>
+          <h2>Stage new road evidence into the active scenario.</h2>
+          <span>Records are validated, scored and merged into the local decision run, then marked for protected backend synchronization.</span>
+        </div>
+        <div className="intake-radar" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+          <strong>{formatCount(stagedRecords.length)}</strong>
+          <span>staged</span>
+        </div>
+      </div>
+
+      <div className="intake-grid">
+        <section className="query-panel intake-form-panel">
+          <div className="product-panel-head">
+            <h3>Single Road Composer</h3>
+            <span>validated asset input</span>
+          </div>
+          <div className="intake-form-grid">
+            {field("assetId", "Asset ID")}
+            {field("admin", "District")}
+            {field("region", "Region")}
+            {field("functionalClass", "Road class")}
+            {field("intervention", "Treatment")}
+            {field("surface", "Surface")}
+            {field("condition", "Condition", "number", 1, 5)}
+            {field("traffic", "Traffic", "number", 1, 5)}
+            {field("readiness", "Readiness", "number", 1, 5)}
+            {field("quantity", "Length km", "number", 0, 999)}
+            {field("unitRate", "Unit rate", "number", 0, 999999999)}
+            {field("lat", "Latitude", "number", -90, 90)}
+            {field("lon", "Longitude", "number", -180, 180)}
+            <label>
+              Maintainable
+              <select value={draft.maintainable} onChange={(event) => setDraft((current) => ({ ...current, maintainable: event.target.value }))}>
+                <option>Yes</option>
+                <option>No</option>
+              </select>
+            </label>
+          </div>
+          <button type="button" className="intake-primary" onClick={stageManual}>Stage road record</button>
+        </section>
+
+        <section className="query-panel intake-paste-panel">
+          <div className="product-panel-head">
+            <h3>Batch Paste Intake</h3>
+            <span>{formatCount(draftRows.length)} parsed rows</span>
+          </div>
+          <textarea value={pasteText} onChange={(event) => setPasteText(event.target.value)} spellCheck="false" />
+          <div className="intake-actions">
+            <button type="button" className="intake-primary" onClick={stagePaste} disabled={!draftRows.length}>Stage pasted rows</button>
+            <button type="button" className="intake-secondary" onClick={() => setPasteText(QUICK_ASSET_TEMPLATE)}>Reset template</button>
+          </div>
+        </section>
+
+        <section className="query-panel intake-scenario-panel">
+          <div className="product-panel-head">
+            <h3>Scenario Mixer</h3>
+            <span>{intakeStatus}</span>
+          </div>
+          <div className="scenario-control-grid">
+            <label>
+              Budget UGX
+              <input type="number" value={budget} onChange={(event) => onBudgetChange(Number(event.target.value))} />
+            </label>
+            <label>
+              Reserve %
+              <input type="number" value={reservePercent} onChange={(event) => onReserveChange(Number(event.target.value))} />
+            </label>
+          </div>
+          <div className="mini-scenario-row">
+            {BUDGET_SCENARIOS.slice(0, 4).map((scenario) => (
+              <button key={scenario.name} type="button" onClick={() => onScenario(scenario)}>{scenario.name}</button>
+            ))}
+          </div>
+          <div className="intake-preview-stats">
+            <ProductStat label="Preview records" value={formatCount(preview.summary.records)} note="staged intake only" tone="cyan" />
+            <ProductStat label="Preview selected" value={formatMoneyCompact(preview.summary.selectedCost)} note={`${formatCount(preview.summary.selected)} affordable records`} tone="green" />
+            <ProductStat label="Preview risk" value={formatCount(preview.summary.highRisk)} note="high-risk staged records" tone="red" />
+          </div>
+        </section>
+      </div>
+
+      <section className="intake-ledger">
+        <div className="product-panel-head">
+          <h3>Staged Backend Sync Ledger</h3>
+          <span>{formatCount(stagedRecords.length)} staged records included in active analysis</span>
+        </div>
+        <div className="staged-record-strip">
+          {(stagedRecords.length ? stagedRecords : previewRecords.slice(0, 3)).slice(0, 10).map((row) => (
+            <article key={row.assetId}>
+              <strong>{row.assetId}</strong>
+              <span>{row.admin || "District pending"} / {row.functionalClass}</span>
+              <em>{row.intervention} / {formatKm(row.quantity)}</em>
+            </article>
+          ))}
+        </div>
+        <div className="intake-actions">
+          <button type="button" className="intake-secondary" onClick={onClearStaged} disabled={!stagedRecords.length}>Clear staged records</button>
+          <span>Backend persistence is kept discrete: records are active in this scenario and ready for controlled sync.</span>
+        </div>
+      </section>
+    </section>
+  );
+}
+
 function SqlChartGallery({ insights }) {
   return (
     <section className="sql-chart-gallery">
@@ -6120,7 +6317,18 @@ function ModernGeoMap({ features = [], programme = [] }) {
   );
 }
 
-function CommandView({ insights }) {
+function CommandView({
+  insights,
+  budget,
+  reservePercent,
+  stagedRecords,
+  intakeStatus,
+  onBudgetChange,
+  onReserveChange,
+  onScenario,
+  onStageRecords,
+  onClearStaged,
+}) {
   return (
     <div className="product-view">
       <section className="command-hero">
@@ -6146,6 +6354,17 @@ function CommandView({ insights }) {
           </article>
         ))}
       </section>
+      <CommandIntakeStudio
+        budget={budget}
+        reservePercent={reservePercent}
+        stagedRecords={stagedRecords}
+        intakeStatus={intakeStatus}
+        onBudgetChange={onBudgetChange}
+        onReserveChange={onReserveChange}
+        onScenario={onScenario}
+        onStageRecords={onStageRecords}
+        onClearStaged={onClearStaged}
+      />
       <FrameworkFlow steps={insights.frameworkFlow} />
       <div className="chart-showcase">
         <ProductPieChart title="Decision Share" subtitle="Programme status split from the priority run" rows={insights.charts.statusSplit} />
@@ -7514,14 +7733,22 @@ function App() {
   const [budget, setBudget] = useState(250000000);
   const [reservePercent, setReservePercent] = useState(5);
   const [refreshNonce, setRefreshNonce] = useState(0);
+  const [stagedRecords, setStagedRecords] = useState(() => readStagedAssets());
+  const [intakeStatus, setIntakeStatus] = useState(() => {
+    const count = readStagedAssets().length;
+    return count ? `${formatCount(count)} staged records active` : "No staged records";
+  });
   const [activeView, setActiveView] = useState(() => {
     const hash = window.location.hash.replace("#", "") || "command";
     return NAV_ITEMS.some((item) => item.id === hash) ? hash : "command";
   });
   const evidenceStore = useUnifiedDatabase();
   const productRecords = useMemo(
-    () => evidenceStore?.programmeAssets?.length ? evidenceStore.programmeAssets : sample,
-    [evidenceStore],
+    () => {
+      const baseRecords = evidenceStore?.programmeAssets?.length ? evidenceStore.programmeAssets : sample;
+      return [...baseRecords, ...stagedRecords];
+    },
+    [evidenceStore, stagedRecords],
   );
   const analysis = useMemo(
     () => localAnalysis(productRecords, budget, reservePercent),
@@ -7573,6 +7800,32 @@ function App() {
     setReservePercent(scenario.reserve);
   }
 
+  function stageRecords(rows, source) {
+    if (!rows.length) {
+      setIntakeStatus("No valid records detected");
+      return;
+    }
+    setStagedRecords((current) => {
+      const seen = new Map(current.map((row) => [row.assetId, row]));
+      rows.forEach((row, index) => {
+        const key = row.assetId || `USER-${Date.now()}-${index}`;
+        seen.set(key, { ...row, assetId: key });
+      });
+      const next = [...seen.values()];
+      writeStagedAssets(next);
+      setIntakeStatus(`${formatCount(rows.length)} ${source === "paste" ? "pasted" : "manual"} records staged for backend sync`);
+      return next;
+    });
+    runAnalysis();
+  }
+
+  function clearStagedRecords() {
+    setStagedRecords([]);
+    writeStagedAssets([]);
+    setIntakeStatus("Staged records cleared");
+    runAnalysis();
+  }
+
   const activeMeta = NAV_ITEMS.find((item) => item.id === activeView) || NAV_ITEMS[0];
 
   return (
@@ -7592,7 +7845,20 @@ function App() {
             <button className="icon-action" onClick={() => runAnalysis()} aria-label="Refresh"><RefreshCcw size={16} /></button>
           </div>
         </header>
-        {activeView === "command" && <CommandView insights={insights} />}
+        {activeView === "command" && (
+          <CommandView
+            insights={insights}
+            budget={budget}
+            reservePercent={reservePercent}
+            stagedRecords={stagedRecords}
+            intakeStatus={intakeStatus}
+            onBudgetChange={setBudget}
+            onReserveChange={setReservePercent}
+            onScenario={applyScenario}
+            onStageRecords={stageRecords}
+            onClearStaged={clearStagedRecords}
+          />
+        )}
         {activeView === "portfolio" && (
           <PortfolioView
             insights={insights}
