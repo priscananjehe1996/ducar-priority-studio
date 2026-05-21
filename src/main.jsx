@@ -5618,6 +5618,159 @@ function NumericFieldChartBank({ links = [] }) {
   );
 }
 
+function ProductColumnChart({ title, subtitle, rows, formatValue = (value) => formatCount(value), maxRows = 10 }) {
+  const visible = normalizeChartRows(rows, maxRows);
+  const maxValue = Math.max(1, ...visible.map((row) => Number(row.value || 0)));
+  if (!visible.length) return null;
+  return (
+    <section className="query-panel column-chart-panel">
+      <div className="product-panel-head">
+        <h3>{title}</h3>
+        <span>{subtitle}</span>
+      </div>
+      <div className="column-chart-grid" style={{ "--count": visible.length }}>
+        {visible.map((row, index) => {
+          const height = Math.max(6, (Number(row.value || 0) / maxValue) * 100);
+          return (
+            <article key={`${title}-${row.label}-${index}`} style={{ "--accent": productChartColor(index), "--height": `${height}%`, "--delay": `${index * 55}ms` }}>
+              <strong>{formatValue(row.value)}</strong>
+              <i><b /></i>
+              <span>{row.label}</span>
+            </article>
+          );
+        })}
+      </div>
+      <ChartReferenceLink />
+    </section>
+  );
+}
+
+function FieldTimeSlider({ title, field, rows = [] }) {
+  const [year, setYear] = useState(2026);
+  const values = rows
+    .map((item) => Number(item[field]))
+    .filter((value) => Number.isFinite(value));
+  if (!values.length) return null;
+  const base = values.reduce((sum, value) => sum + value, 0);
+  const pressure = Math.max(0.02, Math.min(0.18, values.reduce((sum, value) => sum + Math.abs(value), 0) / Math.max(1, values.length) / 100));
+  const projected = base * (1 + pressure * Math.max(0, year - 2026));
+  return (
+    <section className="query-panel time-slider-panel">
+      <div className="product-panel-head">
+        <h3>{title}</h3>
+        <span>{year} projection</span>
+      </div>
+      <div className="time-slider-stage">
+        <strong>{formatNumericFieldValue(field, projected)}</strong>
+        <span>aggregate {titleFromField(field).toLowerCase()}</span>
+        <input type="range" min="2026" max="2040" step="1" value={year} onChange={(event) => setYear(Number(event.target.value))} />
+        <div>
+          <em>2026</em>
+          <b>{year}</b>
+          <em>2040</em>
+        </div>
+      </div>
+      <ChartReferenceLink />
+    </section>
+  );
+}
+
+function Product3DPieChart(props) {
+  return (
+    <div className="pie-3d-wrap">
+      <ProductPieChart {...props} />
+    </div>
+  );
+}
+
+function FieldAnalyticsStudio({ links = [], title = "All Field Analytics" }) {
+  const { numericFields, categoricalFields, categoricalRows } = useMemo(() => {
+    const numeric = new Set();
+    const categorical = new Set();
+    const catRows = new Map();
+    for (const item of links) {
+      for (const [field, value] of Object.entries(item)) {
+        if (value === null || value === undefined || value === "") continue;
+        if (["assetId"].includes(field)) continue;
+        const number = Number(value);
+        if (Number.isFinite(number) && typeof value !== "string") {
+          if (number !== 0) numeric.add(field);
+        } else if (!Number.isFinite(number) || typeof value === "string") {
+          const text = String(value).trim();
+          if (!text || text.length > 72) continue;
+          categorical.add(field);
+          if (!catRows.has(field)) catRows.set(field, new Map());
+          const map = catRows.get(field);
+          map.set(text, (map.get(text) || 0) + 1);
+        }
+      }
+    }
+    const categoricalData = Object.fromEntries([...catRows.entries()].map(([field, map]) => [
+      field,
+      [...map.entries()].sort((a, b) => b[1] - a[1]),
+    ]));
+    return {
+      numericFields: [...numeric],
+      categoricalFields: [...categorical],
+      categoricalRows: categoricalData,
+    };
+  }, [links]);
+  if (!links.length) return null;
+  return (
+    <section className="field-analytics-studio">
+      <div className="product-panel-head field-analytics-head">
+        <div>
+          <h3>{title}</h3>
+          <span>{numericFields.length} numerical fields and {categoricalFields.length} categorical fields discovered</span>
+        </div>
+      </div>
+      <div className="field-chart-section">
+        <div className="field-section-title">
+          <strong>Column graphs for categorical fields</strong>
+          <span>{categoricalFields.length} grouped distributions</span>
+        </div>
+        <div className="field-chart-grid">
+          {categoricalFields.map((field) => (
+            <ProductColumnChart key={`column-${field}`} title={`${titleFromField(field)} Columns`} subtitle="Categorical field distribution" rows={categoricalRows[field]} maxRows={12} />
+          ))}
+        </div>
+      </div>
+      <div className="field-chart-section">
+        <div className="field-section-title">
+          <strong>3D pie charts for categorical fields</strong>
+          <span>same fields, share view</span>
+        </div>
+        <div className="field-chart-grid">
+          {categoricalFields.map((field) => (
+            <Product3DPieChart key={`pie-${field}`} title={`${titleFromField(field)} 3D Pie`} subtitle="Categorical share by active records" rows={categoricalRows[field]} maxRows={8} />
+          ))}
+        </div>
+      </div>
+      <div className="field-chart-section">
+        <div className="field-section-title">
+          <strong>Funnels and time sliders for numerical fields</strong>
+          <span>{numericFields.length} ranked and projected measures</span>
+        </div>
+        <div className="field-chart-grid">
+          {numericFields.map((field) => (
+            <ProductFunnelChart
+              key={`funnel-${field}`}
+              title={`${titleFromField(field)} Funnel`}
+              subtitle="Highest road-link values"
+              rows={links.map((item) => [item.assetId, Number(item[field] || 0), `${item.district || item.region || "Road link"} / ${item.treatment || item.status || ""}`])}
+              formatValue={(value) => formatNumericFieldValue(field, value)}
+              maxRows={10}
+            />
+          ))}
+          {numericFields.map((field) => (
+            <FieldTimeSlider key={`time-${field}`} title={`${titleFromField(field)} Time Slider`} field={field} rows={links} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function PriorityDecisionBars({ links = [] }) {
   const visible = links;
   if (!visible.length) return null;
@@ -6418,6 +6571,7 @@ function CommandView({
         <ProductPieChart title="Road Network Share" subtitle="National, district, urban and community road length context" rows={insights.charts.networkCategory} formatValue={(value) => formatKm(value)} />
       </div>
       <SqlChartGallery insights={insights} />
+      <FieldAnalyticsStudio links={insights.priorityLinks} title="Command Field Analytics" />
       <div className="product-grid two">
         <ProductBarChart title="Budget by Region" subtitle="Selected assets only" rows={insights.charts.regionAllocation} formatValue={(value) => `UGX ${currency.format(value)}`} />
         <ProductBarChart title="Highest Flow Links" subtitle="Traffic pressure by named road link" rows={insights.charts.trafficFlow} formatValue={(value) => `${Math.round(Number(value || 0))}%`} maxRows={8} />
@@ -6478,6 +6632,7 @@ function PortfolioView({ insights, budget, reservePercent, onBudgetChange, onRes
         <ProductBarChart title="Regional Demand" subtitle="Total cost pressure by region" rows={insights.charts.regionDemand} formatValue={(value) => `UGX ${currency.format(value)}`} maxRows={8} />
         <ProductBarChart title="Asset Cost Ranking" subtitle="Largest cost items in the programme" rows={insights.charts.assetCostBars} formatValue={(value) => `UGX ${currency.format(value)}`} maxRows={8} />
       </div>
+      <FieldAnalyticsStudio links={insights.priorityLinks} title="Portfolio Field Analytics" />
       <div className="product-grid two">
         <ProductFunnelChart title="HDM-4 Readiness Funnel" subtitle="Economic and pavement model indicators by retained readiness score" rows={insights.charts.hdm4Readiness} formatValue={(value) => `${Math.round(Number(value || 0))}%`} />
         <ProductPieChart title="Programme Status" subtitle="Selected, deferred and referred assets after the fiscal gate" rows={insights.charts.statusSplit} />
