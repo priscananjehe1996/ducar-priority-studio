@@ -3201,7 +3201,11 @@ function ProcessFlow({ analysis, grouped }) {
 function formatEvidenceCell(value) {
   if (value === null || value === undefined || value === "") return "No data";
   if (typeof value === "number") return Number.isInteger(value) ? value.toLocaleString() : value.toLocaleString(undefined, { maximumFractionDigits: 2 });
-  return String(value);
+  const text = String(value);
+  if (/(^[A-Za-z]:\\|\\\\|\/Users\/|\/home\/|\\OneDrive\\|TOR - DUCACR|networkfy25_26\.shp)/i.test(text)) {
+    return "Protected backend reference";
+  }
+  return text;
 }
 
 const SITE_DOWNLOAD_FILES = [
@@ -3210,8 +3214,6 @@ const SITE_DOWNLOAD_FILES = [
   "data/DUCAR_OSM_Road_Classification_Rules_2026-05-18.csv",
   "data/DUCAR_source_digest.json",
   "data/ducar_sync_report.json",
-  "data/ducar_unified.sqlite",
-  "data/ducar_unified_manifest.json",
   "data/evidence_synthesis.json",
   "data/kcca_roads.geojson",
   "data/manuals_catalog.json",
@@ -4449,18 +4451,52 @@ function sqlIdentifier(name) {
   return `"${String(name).replaceAll('"', '""')}"`;
 }
 
-function runSqlTable(db, name) {
-  const result = db.exec(`SELECT * FROM ${sqlIdentifier(name)}`)[0];
-  if (!result) return { title: `SQLite table: ${name}`, columns: [], rows: [] };
+function chartFromSql(rows, labelKey, valueKey, extraKey) {
+  return rows.map((row) => extraKey ? [row[labelKey], Number(row[valueKey] || 0), row[extraKey]] : [row[labelKey], Number(row[valueKey] || 0)]);
+}
+
+function safeNetworkCell(key, value) {
+  if (value === null || value === undefined || value === "") return "";
+  const text = String(value);
+  const isLocalPath = /(^[A-Za-z]:\\|\\\\|\/Users\/|\/home\/|\\OneDrive\\|\.shp$|\.geojson$)/i.test(text);
+  if (/source_(file|path)|path|file/i.test(key)) {
+    return "Backend source register";
+  }
+  if (!isLocalPath) return value;
+  return "Backend source register";
+}
+
+function featureTableFromGeoJson(title, data) {
+  const features = data?.features || [];
+  const columns = [];
+  for (const feature of features) {
+    for (const key of Object.keys(feature.properties || {})) {
+      if (!columns.includes(key)) columns.push(key);
+    }
+  }
   return {
-    title: `SQLite table: ${name}`,
-    columns: result.columns,
-    rows: result.values,
+    title,
+    columns,
+    rows: features.map((feature) => columns.map((key) => safeNetworkCell(key, feature.properties?.[key]))),
   };
 }
 
-function chartFromSql(rows, labelKey, valueKey, extraKey) {
-  return rows.map((row) => extraKey ? [row[labelKey], Number(row[valueKey] || 0), row[extraKey]] : [row[labelKey], Number(row[valueKey] || 0)]);
+async function loadNetworkListTables() {
+  const specs = [
+    ["Complete Uganda road network list", "uganda_unified_roads_web.geojson"],
+    ["Route-level road network list", "uganda_clean_road_routes_web.geojson"],
+    ["Open mapping major roads list", "uganda_osm_major_roads_web.geojson"],
+    ["National roads coordination list", "uganda_national_roads_fy25_26.geojson"],
+    ["District roads source list", "district_roads_dissolved.geojson"],
+  ];
+  const settled = await Promise.allSettled(specs.map(async ([title, file]) => {
+    const response = await fetch(`${BASE}data/${file}`, { cache: "no-store" });
+    if (!response.ok) throw new Error(`${file} HTTP ${response.status}`);
+    return featureTableFromGeoJson(title, await response.json());
+  }));
+  return settled
+    .filter((result) => result.status === "fulfilled" && result.value.rows.length)
+    .map((result) => result.value);
 }
 
 function normalizeProgrammeAssetRow(row) {
@@ -4502,7 +4538,7 @@ function useUnifiedDatabase() {
           const name = row.name;
           return [name, Number(runSqlValue(db, `SELECT COUNT(*) FROM ${sqlIdentifier(name)}`) || 0)];
         });
-        const databaseTables = tableNames.map((row) => runSqlTable(db, row.name));
+        const networkListTables = await loadNetworkListTables();
         const tableSet = new Set(tableCounts.map(([name]) => name));
         const programmeAssetRows = tableSet.has("programme_assets")
           ? runSqlRows(db, `
@@ -4842,7 +4878,7 @@ function useUnifiedDatabase() {
         const manifestRows = tableCounts.map(([name, count]) => [name, count]);
         const payload = {
           loadedFromDatabase: true,
-          databaseBackend: "SQLite over GitHub Pages",
+          databaseBackend: "Secure packaged data service",
           programmeAssets: programmeAssetRows,
           summary,
           sourceCoverage: { sourceAreaChart: { rows: sourceCoverage } },
@@ -4872,10 +4908,10 @@ function useUnifiedDatabase() {
               columns: ["Table", "Rows"],
               rows: manifestRows,
             },
-            databaseTables,
           },
           ugandaNetwork: {
             kpis: networkKpis,
+            networkListTables,
             categoryChart: { rows: networkCategoryChart },
             conditionRows: roadConditionRows,
             crashTrend: crashTrendRows,
@@ -4986,7 +5022,7 @@ function useUnifiedDatabase() {
         db.close();
         if (active) setStore(payload);
       } catch (error) {
-        console.warn("DUCAR SQLite load failed", error);
+        console.warn("DUCAR packaged data load failed", error);
         if (active) setStore(null);
       }
     }
@@ -5056,7 +5092,6 @@ function buildProductInsights(analysis, evidence) {
   const regionDemand = sumBy(programme, (item) => item.region, (item) => item.cost).slice(0, 8);
   const riskTable = programme
     .toSorted((a, b) => Number(b.mlRisk || 0) - Number(a.mlRisk || 0))
-    .slice(0, 7)
     .map((item) => [item.assetId, item.admin, item.intervention, `${Math.round(Number(item.mlRisk || 0) * 100)}%`, item.predictionStatus || item.status]);
   const priorityLinks = programme
     .toSorted((a, b) => Number(a.rank || 9999) - Number(b.rank || 9999))
@@ -5103,16 +5138,14 @@ function buildProductInsights(analysis, evidence) {
     .map((item) => [item.assetId, Number(item.evidence || 0), `${item.district} / ${item.treatment}`]);
   const selectedTable = selected
     .toSorted((a, b) => a.rank - b.rank)
-    .slice(0, 8)
     .map((item) => [item.rank, item.assetId, item.admin, item.functionalClass, item.intervention, `UGX ${currency.format(item.cost)}`]);
   const spatialRows = evidence?.spatialEvidence?.featureChart?.rows || [];
   const geometryRows = evidence?.spatialEvidence?.geometryChart?.rows || [];
-  const rawCatalogRows = evidence?.rawTables?.catalog?.rows || [];
   const tableGroupRows = sumBy(
-    rawCatalogRows.map((row) => ({ group: row[0], rows: Number(row[2] || 0) })),
+    (evidence?.ugandaNetwork?.networkListTables || []).map((table) => ({ group: table.title, rows: table.rows.length })),
     (item) => item.group,
     (item) => item.rows,
-  ).slice(0, 6);
+  );
   const pimsReadinessRows = (evidence?.frameworkFlow || []).map((row) => [row.title, Number(row.readiness_score || 0), row.phase]);
   const hdm4ReadinessRows = (evidence?.hdm4?.indicators || []).map((row) => [row.indicator, Number(row.readiness_score || 0), row.description]);
   const networkPoorRows = (evidence?.ugandaNetwork?.conditionRows || [])
@@ -5316,7 +5349,7 @@ function buildProductInsights(analysis, evidence) {
     predictions: evidence?.predictions || {},
     botSync: evidence?.botSync || {},
     databaseLoaded: Boolean(evidence?.loadedFromDatabase),
-    dataBackend: evidence?.databaseBackend || "Bundled JSON fallback",
+    dataBackend: evidence?.databaseBackend || "Packaged data fallback",
     programmeAssetCount: evidence?.programmeAssets?.length || 0,
   };
 }
@@ -5717,7 +5750,7 @@ function ProductTable({ table }) {
   const shownRows = filteredRows.slice(safePage * pageSize, safePage * pageSize + pageSize);
   function downloadCsv() {
     const csvRows = [table.columns, ...filteredRows].map((row) => row.map((cell) => {
-      const value = String(cell ?? "");
+      const value = cell === null || cell === undefined ? "" : formatEvidenceCell(cell);
       return /[",\n]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value;
     }).join(","));
     const blob = new Blob([csvRows.join("\n")], { type: "text/csv;charset=utf-8" });
@@ -5857,8 +5890,8 @@ function SqlChartGallery({ insights }) {
   return (
     <section className="sql-chart-gallery">
       <div className="product-panel-head gallery-head">
-        <h3>SQL Programme Chart Gallery</h3>
-        <span>{formatCount(insights.programmeAssetCount)} assets queried from SQLite</span>
+        <h3>Programme Chart Gallery</h3>
+        <span>{formatCount(insights.programmeAssetCount)} assets loaded from the protected data service</span>
       </div>
       <div className="chart-showcase">
         <ProductPieChart title="Surface Mix" subtitle="Candidate assets by pavement or surface type" rows={insights.charts.surfaceSplit} />
@@ -5871,7 +5904,7 @@ function SqlChartGallery({ insights }) {
         <ProductBarChart title="Class Counts" subtitle="Candidate assets by functional class" rows={insights.charts.classAssetCount} maxRows={8} />
       </div>
       <div className="chart-showcase">
-        <ProductBarChart title="Asset Risk %" subtitle="Highest ML risk probabilities from SQL programme assets" rows={insights.charts.assetRiskBars} formatValue={(value) => `${Math.round(Number(value || 0))}%`} maxRows={8} />
+        <ProductBarChart title="Asset Risk %" subtitle="Highest ML risk probabilities from programme assets" rows={insights.charts.assetRiskBars} formatValue={(value) => `${Math.round(Number(value || 0))}%`} maxRows={8} />
         <ProductBarChart title="Asset Cost" subtitle="Largest candidate cost items" rows={insights.charts.assetCostBars} formatValue={(value) => `UGX ${currency.format(value)}`} maxRows={8} />
         <ProductBarChart title="Evidence Readiness" subtitle="Completeness score by programme asset" rows={insights.charts.assetEvidenceBars} formatValue={(value) => `${Math.round(Number(value || 0))}%`} maxRows={8} />
       </div>
@@ -6178,7 +6211,7 @@ function PortfolioView({ insights, budget, reservePercent, onBudgetChange, onRes
       <div className="chart-showcase">
         <ProductPieChart title="Surface Mix" subtitle="Portfolio candidates by surface" rows={insights.charts.surfaceSplit} />
         <ProductBarChart title="Regional Demand" subtitle="Total cost pressure by region" rows={insights.charts.regionDemand} formatValue={(value) => `UGX ${currency.format(value)}`} maxRows={8} />
-        <ProductBarChart title="Asset Cost Ranking" subtitle="Largest cost items in the SQL programme" rows={insights.charts.assetCostBars} formatValue={(value) => `UGX ${currency.format(value)}`} maxRows={8} />
+        <ProductBarChart title="Asset Cost Ranking" subtitle="Largest cost items in the programme" rows={insights.charts.assetCostBars} formatValue={(value) => `UGX ${currency.format(value)}`} maxRows={8} />
       </div>
       <div className="product-grid two">
         <ProductFunnelChart title="HDM-4 Readiness Funnel" subtitle="Economic and pavement model indicators by retained readiness score" rows={insights.charts.hdm4Readiness} formatValue={(value) => `${Math.round(Number(value || 0))}%`} />
@@ -6261,15 +6294,15 @@ function NetworkSummariesView({ insights }) {
       ["District summaries", formatCount(latestMaster.district_summary_count), "district inventory rows"],
       ["OSM major features", formatCount(latestMaster.osm_major_feature_count), "major road reference features"],
       ["GIS layers read", formatCount(insights.spatialSummary.layers_read), "spatial evidence layers"],
-      ["Mapped features", formatCount(insights.spatialSummary.feature_count), "features represented in the evidence database"],
+      ["Mapped features", formatCount(insights.spatialSummary.feature_count), "features represented in the protected evidence service"],
       ["Traffic flow links", formatCount(insights.traffic?.stats?.flow_links), `mean flow ${Math.round(Number(insights.traffic?.stats?.avg_flow_index || 0))}%`],
-      ["Programme assets", formatCount(insights.programmeAssetCount), insights.dataBackend],
+      ["Programme assets", formatCount(insights.programmeAssetCount), "priority records available"],
     ],
   );
-  const tableGroupsSummary = compactSummaryTable(
-    "Available summary table groups",
-    ["Table group", "Rows", "Source"],
-    rowsFromChart(insights.charts.tableGroups, "Rows"),
+  const networkListSummary = compactSummaryTable(
+    "Network list summary",
+    ["Network list", "Records", "Notes"],
+    rowsFromChart(insights.charts.tableGroups, "Records"),
   );
   const roadMasterClassTable = compactSummaryTable(
     "Road master class summary",
@@ -6304,12 +6337,6 @@ function NetworkSummariesView({ insights }) {
     : null;
   const spatialLayerTable = insights.spatialEvidence?.layerTable
     ? { ...insights.spatialEvidence.layerTable, title: "GIS and road infrastructure layer summaries" }
-    : null;
-  const rawCatalogTable = insights.rawTables?.catalog
-    ? { ...insights.rawTables.catalog, title: "Available source table catalogue" }
-    : null;
-  const manifestTable = insights.rawTables?.manifest
-    ? { ...insights.rawTables.manifest, title: "SQLite database table manifest" }
     : null;
   const trafficTable = insights.traffic?.flowTable
     ? { ...insights.traffic.flowTable, title: "Traffic flow road-link summary" }
@@ -6374,7 +6401,8 @@ function NetworkSummariesView({ insights }) {
     : null;
   const summaryTables = [
     networkSummary,
-    tableGroupsSummary,
+    networkListSummary,
+    ...(insights.ugandaNetwork?.networkListTables || []),
     programmeSelectedTable,
     programmeRiskTable,
     networkLengthTable,
@@ -6398,9 +6426,6 @@ function NetworkSummariesView({ insights }) {
     decisionAssumptionsTable,
     benchmarkTable,
     referenceTable,
-    rawCatalogTable,
-    manifestTable,
-    ...(insights.rawTables?.databaseTables || []),
   ].filter((table) => table?.rows?.length);
 
   return (
@@ -6420,13 +6445,14 @@ function NetworkSummariesView({ insights }) {
           "Infrastructure summary",
           "Priority programme",
           "District inventories",
+          "All road lists",
           "Condition pressure",
           "Classification rules",
           "GIS layers",
           "Traffic links",
           "PIMS and HDM-4",
           "Global cases",
-          "SQLite manifest",
+          "Protected data references",
         ].map((item) => <span key={item}>{item}</span>)}
       </section>
 
@@ -7560,8 +7586,8 @@ function App() {
             <strong>{activeMeta.label}</strong>
           </div>
           <div className="product-topbar-actions">
-            <span><Database size={15} /> {insights.databaseLoaded ? "SQL model live" : "SQL model loading"}</span>
-            <span><GitBranch size={15} /> {insights.programmeAssetCount ? `${formatCount(insights.programmeAssetCount)} SQL assets` : "JSON fallback"}</span>
+            <span><Database size={15} /> {insights.databaseLoaded ? "Data service live" : "Data service loading"}</span>
+            <span><GitBranch size={15} /> {insights.programmeAssetCount ? `${formatCount(insights.programmeAssetCount)} priority assets` : "Packaged fallback"}</span>
             <span><ShieldAlert size={15} /> {insights.latestRoadMaster?.run?.generated_at_utc ? `Road master ${formatCompactDate(insights.latestRoadMaster.run.generated_at_utc)}` : "Infrastructure intelligence ready"}</span>
             <button className="icon-action" onClick={() => runAnalysis()} aria-label="Refresh"><RefreshCcw size={16} /></button>
           </div>
