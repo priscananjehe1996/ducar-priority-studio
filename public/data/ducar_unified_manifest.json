@@ -59,9 +59,9 @@
     "raw_tables": "SELECT table_group, table_name, COUNT(*) AS cells FROM raw_table_cells GROUP BY table_group, table_name ORDER BY cells DESC;"
   },
   "bot": {
-    "run_id": "20260522T062016Z",
-    "started_at_utc": "2026-05-22T06:20:16+00:00",
-    "completed_at_utc": "2026-05-22T06:20:16+00:00",
+    "run_id": "20260523T054827Z",
+    "started_at_utc": "2026-05-23T05:48:27+00:00",
+    "completed_at_utc": "2026-05-23T05:48:27+00:00",
     "source_roots": [
       "/home/runner/work/ducar-priority-studio/ducar-priority-studio/data",
       "/home/runner/work/ducar-priority-studio/ducar-priority-studio/public/data",
