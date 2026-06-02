@@ -262,7 +262,7 @@ def build_web_layer(master: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
             "geometry",
         ]
     ]
-    web["geometry"] = web.to_crs(epsg=32636).geometry.simplify(80, preserve_topology=False)
+    web["geometry"] = web.to_crs(epsg=32636).geometry
     web = web.to_crs(epsg=4326)
     web = web[web.geometry.notna() & ~web.geometry.is_empty]
     return web

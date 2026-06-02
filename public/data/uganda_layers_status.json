@@ -1,11 +1,11 @@
 {
-  "updated_at_utc": "2026-05-14T08:24:30.393404+00:00",
+  "updated_at_utc": "2026-06-02T13:27:45.140435+00:00",
   "layers": [
     {
       "id": "unified-roads",
       "label": "Unified road intelligence layer",
-      "file": "uganda_unified_roads_web_2026-05-13.geojson",
-      "generated_at_utc": "2026-05-13T06:34:27.434325+00:00",
+      "file": "uganda_unified_roads_web_2026-06-02.geojson",
+      "generated_at_utc": "2026-06-02T13:27:22.643289+00:00",
       "record_count": 16319,
       "total_length_km": 93391.21,
       "ducar_analysis_record_count": 13500,
@@ -36,16 +36,16 @@
       "id": "cartographic-routes",
       "label": "Fast cartographic route layer",
       "file": "uganda_clean_road_routes_web.geojson",
-      "generated_at_utc": "2026-05-14T08:24:29.258867+00:00",
-      "record_count": 5604,
-      "total_length_km": 92253.85,
-      "edge_count": 37352,
+      "generated_at_utc": "2026-06-02T13:27:44.773934+00:00",
+      "record_count": 5626,
+      "total_length_km": 92856.94,
+      "edge_count": 37488,
       "node_count": 44972,
       "source_record_count": 16319,
       "by_network_category": {
-        "City Roads": 2257,
-        "Community Access Roads": 592,
-        "District Roads": 1735,
+        "City Roads": 2258,
+        "Community Access Roads": 594,
+        "District Roads": 1754,
         "KCCA": 7,
         "National Roads": 1013
       },
@@ -54,8 +54,8 @@
     {
       "id": "national-roads",
       "label": "National road reference layer",
-      "file": "uganda_national_roads_fy25_26_2026-05-13.geojson",
-      "generated_at_utc": "2026-05-13T06:34:32.749070+00:00",
+      "file": "uganda_national_roads_fy25_26_2026-06-02.geojson",
+      "generated_at_utc": "2026-06-02T13:27:15.926552+00:00",
       "record_count": 1014,
       "total_length_km": 21227.44,
       "ducar_analysis_record_count": null,
@@ -69,8 +69,8 @@
     {
       "id": "road-master",
       "label": "Editable all-road master",
-      "file": "uganda_roads_master_2026-05-13.gpkg",
-      "generated_at_utc": "2026-05-13T23:33:23.079325+00:00",
+      "file": "uganda_roads_master.gpkg",
+      "generated_at_utc": "2026-06-02T13:20:20.657598+00:00",
       "record_count": 708651,
       "total_length_km": 410243.69,
       "by_source": {

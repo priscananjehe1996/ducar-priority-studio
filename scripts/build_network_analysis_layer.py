@@ -179,7 +179,6 @@ def build_cartographic_routes(edges):
         )
     routes = gpd.GeoDataFrame(route_rows, geometry="geometry", crs=edges.crs)
     routes = routes[routes.geometry.notna() & ~routes.geometry.is_empty].copy()
-    routes["geometry"] = routes.geometry.simplify(0.00012, preserve_topology=True)
     routes_m = routes.to_crs(epsg=32636)
     routes["length_km"] = (routes_m.length / 1000).round(3)
     routes = routes[routes["length_km"] >= 0.03].copy()
